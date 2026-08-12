@@ -7,7 +7,7 @@
     "email": "support@zyno.io",
     "url": "https://zyno.io"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "homepage": "https://zyno-io.github.io/zynosales-ecommerce-sdk/",
   "repository": {
     "type": "git",
