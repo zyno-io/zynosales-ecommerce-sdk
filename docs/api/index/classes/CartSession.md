@@ -1,7 +1,5 @@
 # Class: CartSession
 
-Defined in: src/cart.ts:15
-
 Persistent, serialized cart state for one storefront instance.
 
 ## Constructors
@@ -9,8 +7,6 @@ Persistent, serialized cart state for one storefront instance.
 ### Constructor
 
 > **new CartSession**(`options`): `CartSession`
-
-Defined in: src/cart.ts:27
 
 #### Parameters
 
@@ -38,8 +34,6 @@ Defined in: src/cart.ts:27
 
 > **abandon**(): `Promise`\<`void`\>
 
-Defined in: src/cart.ts:95
-
 Abandons the current cart and removes its local capability.
 
 #### Returns
@@ -51,8 +45,6 @@ Abandons the current cart and removes its local capability.
 ### add()
 
 > **add**(`item`): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
-
-Defined in: src/cart.ts:67
 
 Adds a product to the cart, merging the same product/notes combination when possible.
 
@@ -72,8 +64,6 @@ Adds a product to the cart, merging the same product/notes combination when poss
 
 > **clear**(): `void`
 
-Defined in: src/cart.ts:117
-
 Clears local cart state without issuing an API call.
 
 #### Returns
@@ -85,8 +75,6 @@ Clears local cart state without issuing an API call.
 ### getSnapshot()
 
 > **getSnapshot**(): [`CartSnapshot`](../type-aliases/CartSnapshot.md)
-
-Defined in: src/cart.ts:35
 
 Returns the latest render-safe cart snapshot.
 
@@ -100,8 +88,6 @@ Returns the latest render-safe cart snapshot.
 
 > **refresh**(): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
 
-Defined in: src/cart.ts:57
-
 Reads the cart from Sales without creating a new cart.
 
 #### Returns
@@ -113,8 +99,6 @@ Reads the cart from Sales without creating a new cart.
 ### remove()
 
 > **remove**(`input`): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
-
-Defined in: src/cart.ts:90
 
 Removes an existing server cart item.
 
@@ -136,8 +120,6 @@ Removes an existing server cart item.
 
 > **restore**(): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
 
-Defined in: src/cart.ts:52
-
 Restores the persisted cart, clearing it when its capability is stale.
 
 #### Returns
@@ -149,8 +131,6 @@ Restores the persisted cart, clearing it when its capability is stale.
 ### setItems()
 
 > **setItems**(`items`): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
-
-Defined in: src/cart.ts:62
 
 Replaces all cart line inputs. An empty list abandons the open cart.
 
@@ -169,8 +149,6 @@ Replaces all cart line inputs. An empty list abandons the open cart.
 ### setQuantity()
 
 > **setQuantity**(`input`): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
-
-Defined in: src/cart.ts:82
 
 Updates an existing server cart item's quantity. A zero quantity removes it.
 
@@ -196,8 +174,6 @@ Updates an existing server cart item's quantity. A zero quantity removes it.
 
 > **subscribe**(`listener`): () => `void`
 
-Defined in: src/cart.ts:45
-
 Subscribes to render-safe cart changes. Capability values are never included.
 
 #### Parameters
@@ -215,8 +191,6 @@ Subscribes to render-safe cart changes. Capability values are never included.
 ### withServerAccess()
 
 > **withServerAccess**\<`T`\>(`callback`): `Promise`\<`T`\>
-
-Defined in: src/cart.ts:122
 
 Runs a same-origin server handoff with the current cart capability.
 

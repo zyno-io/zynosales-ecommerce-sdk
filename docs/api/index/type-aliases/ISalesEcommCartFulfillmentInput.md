@@ -2,8 +2,6 @@
 
 > **ISalesEcommCartFulfillmentInput** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:88
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -12,15 +10,11 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 > `optional` **notes?**: `string` \| `null`
 
-Defined in: src/generated/sales/types.gen.ts:95
-
 ***
 
 ### packageRates?
 
 > `optional` **packageRates?**: `object`[]
-
-Defined in: src/generated/sales/types.gen.ts:91
 
 #### packageId
 
@@ -36,12 +30,8 @@ Defined in: src/generated/sales/types.gen.ts:91
 
 > **recipient**: [`SalesFulfillmentOrderRecipient`](SalesFulfillmentOrderRecipient.md)
 
-Defined in: src/generated/sales/types.gen.ts:89
-
 ***
 
 ### shippingPlanId?
 
 > `optional` **shippingPlanId?**: `string` \| `null`
-
-Defined in: src/generated/sales/types.gen.ts:90

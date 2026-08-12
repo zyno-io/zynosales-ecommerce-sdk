@@ -2,8 +2,6 @@
 
 > `const` **SALES\_API\_BASES**: `object`
 
-Defined in: src/configuration.ts:2
-
 Production and alpha endpoints embedded in the SDK.
 
 ## Type Declaration

@@ -2,23 +2,17 @@
 
 > **PostSalesEcommCheckoutEmbeddedVerifyAddressData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:531
-
 ## Properties
 
 ### body
 
 > **body**: [`ISalesEcommAddressVerificationInput`](../../../index/type-aliases/ISalesEcommAddressVerificationInput.md)
 
-Defined in: src/generated/sales/types.gen.ts:532
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:533
 
 #### x-zs-cart-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:533
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:537
-
 #### cartId
 
 > **cartId**: `string`
@@ -46,12 +38,8 @@ Defined in: src/generated/sales/types.gen.ts:537
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:540
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/carts/{cartId}/address/verify"`
-
-Defined in: src/generated/sales/types.gen.ts:541

@@ -2,23 +2,17 @@
 
 > **PostSalesEcommCheckoutEmbeddedCalculateShippingRatesData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:553
-
 ## Properties
 
 ### body
 
 > **body**: [`ISalesEcommCartShippingRatesInput`](../../../index/type-aliases/ISalesEcommCartShippingRatesInput.md)
 
-Defined in: src/generated/sales/types.gen.ts:554
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:555
 
 #### x-zs-cart-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:555
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:559
-
 #### cartId
 
 > **cartId**: `string`
@@ -46,12 +38,8 @@ Defined in: src/generated/sales/types.gen.ts:559
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:562
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/carts/{cartId}/shipping/rates"`
-
-Defined in: src/generated/sales/types.gen.ts:563

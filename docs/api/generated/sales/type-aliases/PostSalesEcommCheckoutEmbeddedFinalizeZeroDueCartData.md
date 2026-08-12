@@ -2,23 +2,17 @@
 
 > **PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:773
-
 ## Properties
 
 ### body?
 
 > `optional` **body?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:774
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:775
 
 #### x-zs-cart-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:775
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:779
-
 #### cartId
 
 > **cartId**: `string`
@@ -46,12 +38,8 @@ Defined in: src/generated/sales/types.gen.ts:779
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:782
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/carts/{cartId}/finalize"`
-
-Defined in: src/generated/sales/types.gen.ts:783

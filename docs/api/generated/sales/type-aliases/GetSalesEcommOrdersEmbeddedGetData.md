@@ -2,23 +2,17 @@
 
 > **GetSalesEcommOrdersEmbeddedGetData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:795
-
 ## Properties
 
 ### body?
 
 > `optional` **body?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:796
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:797
 
 #### x-zs-order-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:797
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:801
-
 #### orderId
 
 > **orderId**: `string`
@@ -46,12 +38,8 @@ Defined in: src/generated/sales/types.gen.ts:801
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:804
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/orders/{orderId}"`
-
-Defined in: src/generated/sales/types.gen.ts:805

@@ -1,7 +1,5 @@
 # Class: SalesSalesEcommStorefrontConfigEmbeddedApi
 
-Defined in: src/generated/sales/sdk.gen.ts:180
-
 ## Constructors
 
 ### Constructor
@@ -17,8 +15,6 @@ Defined in: src/generated/sales/sdk.gen.ts:180
 ### getSalesEcommStorefrontConfigEmbeddedGet()
 
 > `static` **getSalesEcommStorefrontConfigEmbeddedGet**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`GetSalesEcommStorefrontConfigEmbeddedGetResponses`](../type-aliases/GetSalesEcommStorefrontConfigEmbeddedGetResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:181
 
 #### Type Parameters
 

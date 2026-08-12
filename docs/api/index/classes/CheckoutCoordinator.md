@@ -1,7 +1,5 @@
 # Class: CheckoutCoordinator
 
-Defined in: src/checkout.ts:35
-
 Coordinates framework-agnostic checkout transitions for the active cart.
 
 ## Constructors
@@ -9,8 +7,6 @@ Coordinates framework-agnostic checkout transitions for the active cart.
 ### Constructor
 
 > **new CheckoutCoordinator**(`options`): `CheckoutCoordinator`
-
-Defined in: src/checkout.ts:50
 
 #### Parameters
 
@@ -46,8 +42,6 @@ Defined in: src/checkout.ts:50
 
 > **applyDiscount**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
 
-Defined in: src/checkout.ts:146
-
 Applies a discount code and returns the authoritative cart.
 
 #### Parameters
@@ -66,8 +60,6 @@ Applies a discount code and returns the authoritative cart.
 
 > **beginCardPayment**(): `Promise`\<[`ISalesEcommCartPaymentSetupResponse`](../type-aliases/ISalesEcommCartPaymentSetupResponse.md) \| `null`\>
 
-Defined in: src/checkout.ts:169
-
 Runs the final policy hook and opens a card-payment attempt.
 For a zero-due cart it finalizes the order and returns `null`.
 
@@ -80,8 +72,6 @@ For a zero-due cart it finalizes the order and returns `null`.
 ### cancelPaymentAttempt()
 
 > **cancelPaymentAttempt**(`attemptId`): `Promise`\<`void`\>
-
-Defined in: src/checkout.ts:242
 
 Cancels an unneeded payment attempt.
 
@@ -101,8 +91,6 @@ Cancels an unneeded payment attempt.
 
 > **completeCardPayment**(`input`): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
 
-Defined in: src/checkout.ts:220
-
 Records an authorized Stripe PaymentIntent with Sales.
 
 #### Parameters
@@ -121,8 +109,6 @@ Records an authorized Stripe PaymentIntent with Sales.
 
 > **getOrder**(): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
 
-Defined in: src/checkout.ts:259
-
 Reads the completed order using the retained order capability.
 
 #### Returns
@@ -134,8 +120,6 @@ Reads the completed order using the retained order capability.
 ### getPaymentAttempt()
 
 > **getPaymentAttempt**(`attemptId`): `Promise`\<[`ISalesEcommPaymentAttemptResponse`](../type-aliases/ISalesEcommPaymentAttemptResponse.md)\>
-
-Defined in: src/checkout.ts:230
 
 Reads one payment attempt for host-managed payment UI/recovery.
 
@@ -155,8 +139,6 @@ Reads one payment attempt for host-managed payment UI/recovery.
 
 > **getShippingRates**(`input`): `Promise`\<[`ISalesEcommShippingRatesResponse`](../type-aliases/ISalesEcommShippingRatesResponse.md)\>
 
-Defined in: src/checkout.ts:102
-
 Requests backend-authoritative shipping rates.
 
 #### Parameters
@@ -175,8 +157,6 @@ Requests backend-authoritative shipping rates.
 
 > **getSnapshot**(): [`CheckoutSnapshot`](../type-aliases/CheckoutSnapshot.md)
 
-Defined in: src/checkout.ts:66
-
 Returns the latest render-safe checkout snapshot.
 
 #### Returns
@@ -188,8 +168,6 @@ Returns the latest render-safe checkout snapshot.
 ### quoteShippingSelection()
 
 > **quoteShippingSelection**(`input`): `Promise`\<[`ISalesEcommShippingSelectionQuoteResponse`](../type-aliases/ISalesEcommShippingSelectionQuoteResponse.md)\>
-
-Defined in: src/checkout.ts:110
 
 Quotes a complete package-rate selection with backend-authoritative pricing.
 
@@ -209,8 +187,6 @@ Quotes a complete package-rate selection with backend-authoritative pricing.
 
 > **recoverPayment**(): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md) \| `null`\>
 
-Defined in: src/checkout.ts:254
-
 Recovers a paid order or a previously authorized payment attempt after a reload.
 
 #### Returns
@@ -222,8 +198,6 @@ Recovers a paid order or a previously authorized payment attempt after a reload.
 ### removeDiscount()
 
 > **removeDiscount**(): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
-
-Defined in: src/checkout.ts:156
 
 Removes the active discount and returns the authoritative cart.
 
@@ -237,8 +211,6 @@ Removes the active discount and returns the authoritative cart.
 
 > **removeFulfillment**(): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
 
-Defined in: src/checkout.ts:128
-
 Removes fulfillment from the active cart.
 
 #### Returns
@@ -250,8 +222,6 @@ Removes fulfillment from the active cart.
 ### setBuyer()
 
 > **setBuyer**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
-
-Defined in: src/checkout.ts:84
 
 Updates buyer identity on the active cart.
 
@@ -271,8 +241,6 @@ Updates buyer identity on the active cart.
 
 > **setFulfillment**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
 
-Defined in: src/checkout.ts:118
-
 Applies fulfillment details and selected shipping rates to the active cart.
 
 #### Parameters
@@ -290,8 +258,6 @@ Applies fulfillment details and selected shipping rates to the active cart.
 ### subscribe()
 
 > **subscribe**(`listener`): () => `void`
-
-Defined in: src/checkout.ts:77
 
 Subscribes to render-safe checkout changes.
 
@@ -311,8 +277,6 @@ Subscribes to render-safe checkout changes.
 
 > **validateDiscount**(`code`): `Promise`\<[`IValidateDiscountCodeResponse`](../type-aliases/IValidateDiscountCodeResponse.md)\>
 
-Defined in: src/checkout.ts:138
-
 Validates a discount code without changing the cart.
 
 #### Parameters
@@ -330,8 +294,6 @@ Validates a discount code without changing the cart.
 ### verifyAddress()
 
 > **verifyAddress**(`input`): `Promise`\<[`ISalesFulfillmentAddressVerificationResponse`](../type-aliases/ISalesFulfillmentAddressVerificationResponse.md)\>
-
-Defined in: src/checkout.ts:94
 
 Verifies an address without silently choosing a normalization candidate.
 

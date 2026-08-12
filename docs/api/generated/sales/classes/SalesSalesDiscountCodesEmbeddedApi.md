@@ -1,7 +1,5 @@
 # Class: SalesSalesDiscountCodesEmbeddedApi
 
-Defined in: src/generated/sales/sdk.gen.ts:21
-
 ## Constructors
 
 ### Constructor
@@ -17,8 +15,6 @@ Defined in: src/generated/sales/sdk.gen.ts:21
 ### postSalesDiscountCodesEmbeddedValidate()
 
 > `static` **postSalesDiscountCodesEmbeddedValidate**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesDiscountCodesEmbeddedValidateResponses`](../type-aliases/PostSalesDiscountCodesEmbeddedValidateResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:22
 
 #### Type Parameters
 

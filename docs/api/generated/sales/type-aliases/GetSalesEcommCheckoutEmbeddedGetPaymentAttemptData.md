@@ -2,23 +2,17 @@
 
 > **GetSalesEcommCheckoutEmbeddedGetPaymentAttemptData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:728
-
 ## Properties
 
 ### body?
 
 > `optional` **body?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:729
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:730
 
 #### x-zs-cart-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:730
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:734
-
 #### attemptId
 
 > **attemptId**: `string`
@@ -50,12 +42,8 @@ Defined in: src/generated/sales/types.gen.ts:734
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:738
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/carts/{cartId}/payments/{attemptId}"`
-
-Defined in: src/generated/sales/types.gen.ts:739

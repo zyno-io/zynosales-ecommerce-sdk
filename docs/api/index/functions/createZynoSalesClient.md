@@ -2,8 +2,6 @@
 
 > **createZynoSalesClient**(`options`): [`ZynoSalesClient`](../classes/ZynoSalesClient.md)
 
-Defined in: src/storefront.ts:83
-
 Creates a raw generated-contract client without cart/session orchestration.
 
 ## Parameters

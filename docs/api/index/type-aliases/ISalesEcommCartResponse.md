@@ -2,8 +2,6 @@
 
 > **ISalesEcommCartResponse** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:22
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -12,15 +10,11 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 > **cart**: [`ISalesEcommPublicCart`](ISalesEcommPublicCart.md)
 
-Defined in: src/generated/sales/types.gen.ts:26
-
 ***
 
 ### cartId
 
 > **cartId**: `string`
-
-Defined in: src/generated/sales/types.gen.ts:23
 
 ***
 
@@ -28,12 +22,8 @@ Defined in: src/generated/sales/types.gen.ts:23
 
 > `optional` **cartKey?**: `string`
 
-Defined in: src/generated/sales/types.gen.ts:24
-
 ***
 
 ### orderKey?
 
 > `optional` **orderKey?**: `string`
-
-Defined in: src/generated/sales/types.gen.ts:25

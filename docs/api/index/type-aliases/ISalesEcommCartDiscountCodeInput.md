@@ -2,8 +2,6 @@
 
 > **ISalesEcommCartDiscountCodeInput** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:98
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -11,5 +9,3 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### code
 
 > **code**: `string`
-
-Defined in: src/generated/sales/types.gen.ts:99

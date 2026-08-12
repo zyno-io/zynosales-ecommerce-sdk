@@ -2,8 +2,6 @@
 
 > **Options**\<`TData`, `ThrowOnError`, `TResponse`\> = `Options2`\<`TData`, `ThrowOnError`, `TResponse`\> & `object`
 
-Defined in: src/generated/sales/sdk.gen.ts:7
-
 ## Type Declaration
 
 ### client?

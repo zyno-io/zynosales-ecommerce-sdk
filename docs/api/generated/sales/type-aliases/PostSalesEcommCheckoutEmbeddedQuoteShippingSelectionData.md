@@ -2,23 +2,17 @@
 
 > **PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:575
-
 ## Properties
 
 ### body
 
 > **body**: [`ISalesEcommShippingSelectionQuoteInput`](../../../index/type-aliases/ISalesEcommShippingSelectionQuoteInput.md)
 
-Defined in: src/generated/sales/types.gen.ts:576
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:577
 
 #### x-zs-cart-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:577
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:581
-
 #### cartId
 
 > **cartId**: `string`
@@ -46,12 +38,8 @@ Defined in: src/generated/sales/types.gen.ts:581
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:584
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/carts/{cartId}/shipping/selection-quote"`
-
-Defined in: src/generated/sales/types.gen.ts:585

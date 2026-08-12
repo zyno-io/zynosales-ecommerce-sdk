@@ -2,8 +2,6 @@
 
 > **ZynoSalesHooks** = `object`
 
-Defined in: src/types.ts:58
-
 Hooks that let a host integrate server-owned policy without UI components.
 
 ## Properties
@@ -11,8 +9,6 @@ Hooks that let a host integrate server-owned policy without UI components.
 ### afterOrderCompleted?
 
 > `optional` **afterOrderCompleted?**: (`context`) => `Promise`\<`void`\> \| `void`
-
-Defined in: src/types.ts:60
 
 #### Parameters
 
@@ -36,8 +32,6 @@ Defined in: src/types.ts:60
 
 > `optional` **beforePayment?**: (`context`) => `Promise`\<`void`\> \| `void`
 
-Defined in: src/types.ts:59
-
 #### Parameters
 
 ##### context
@@ -59,8 +53,6 @@ Defined in: src/types.ts:59
 ### onCartChanged?
 
 > `optional` **onCartChanged?**: (`snapshot`) => `void`
-
-Defined in: src/types.ts:61
 
 #### Parameters
 

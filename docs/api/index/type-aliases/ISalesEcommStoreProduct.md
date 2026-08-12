@@ -2,8 +2,6 @@
 
 > **ISalesEcommStoreProduct** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:178
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -12,15 +10,11 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 > **description**: `string`
 
-Defined in: src/generated/sales/types.gen.ts:184
-
 ***
 
 ### id
 
 > **id**: `string`
-
-Defined in: src/generated/sales/types.gen.ts:179
 
 ***
 
@@ -28,15 +22,11 @@ Defined in: src/generated/sales/types.gen.ts:179
 
 > **images**: [`ISalesEcommProductImage`](../../generated/sales/type-aliases/ISalesEcommProductImage.md)[]
 
-Defined in: src/generated/sales/types.gen.ts:185
-
 ***
 
 ### name
 
 > **name**: `string`
-
-Defined in: src/generated/sales/types.gen.ts:180
 
 ***
 
@@ -44,15 +34,11 @@ Defined in: src/generated/sales/types.gen.ts:180
 
 > **price**: `number`
 
-Defined in: src/generated/sales/types.gen.ts:181
-
 ***
 
 ### shippingMeta?
 
 > `optional` **shippingMeta?**: [`ISalesFulfillmentProductShippingMeta`](../../generated/sales/type-aliases/ISalesFulfillmentProductShippingMeta.md)
-
-Defined in: src/generated/sales/types.gen.ts:186
 
 ***
 
@@ -60,23 +46,17 @@ Defined in: src/generated/sales/types.gen.ts:186
 
 > **slug**: `string`
 
-Defined in: src/generated/sales/types.gen.ts:183
-
 ***
 
 ### type
 
 > **type**: `"standard"` \| `"variant"`
 
-Defined in: src/generated/sales/types.gen.ts:182
-
 ***
 
 ### variant?
 
 > `optional` **variant?**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:187
 
 #### groupId
 

@@ -2,15 +2,11 @@
 
 > **ISalesEcommOrderItem** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:288
-
 ## Properties
 
 ### effectivePrice
 
 > **effectivePrice**: `number`
-
-Defined in: src/generated/sales/types.gen.ts:291
 
 ***
 
@@ -18,15 +14,11 @@ Defined in: src/generated/sales/types.gen.ts:291
 
 > **id**: `string`
 
-Defined in: src/generated/sales/types.gen.ts:289
-
 ***
 
 ### notes
 
 > **notes**: `string` \| `null`
-
-Defined in: src/generated/sales/types.gen.ts:292
 
 ***
 
@@ -34,15 +26,11 @@ Defined in: src/generated/sales/types.gen.ts:292
 
 > **priceBase**: `number`
 
-Defined in: src/generated/sales/types.gen.ts:293
-
 ***
 
 ### priceOverride?
 
 > `optional` **priceOverride?**: [`ISalesEcommPublicPriceOverride`](ISalesEcommPublicPriceOverride.md)
-
-Defined in: src/generated/sales/types.gen.ts:296
 
 ***
 
@@ -50,23 +38,17 @@ Defined in: src/generated/sales/types.gen.ts:296
 
 > **priceTax**: `number`
 
-Defined in: src/generated/sales/types.gen.ts:294
-
 ***
 
 ### priceTotal
 
 > **priceTotal**: `number`
 
-Defined in: src/generated/sales/types.gen.ts:295
-
 ***
 
 ### product
 
 > **product**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:297
 
 #### id
 
@@ -89,5 +71,3 @@ Defined in: src/generated/sales/types.gen.ts:297
 ### qty
 
 > **qty**: `number`
-
-Defined in: src/generated/sales/types.gen.ts:290

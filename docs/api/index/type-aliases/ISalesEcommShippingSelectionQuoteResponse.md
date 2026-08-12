@@ -2,8 +2,6 @@
 
 > **ISalesEcommShippingSelectionQuoteResponse** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:68
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -11,8 +9,6 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### packageRates
 
 > **packageRates**: `object`[]
-
-Defined in: src/generated/sales/types.gen.ts:70
 
 #### carrier
 
@@ -40,12 +36,8 @@ Defined in: src/generated/sales/types.gen.ts:70
 
 > **shippingPlanId**: `string`
 
-Defined in: src/generated/sales/types.gen.ts:69
-
 ***
 
 ### shippingPrice
 
 > **shippingPrice**: `number`
-
-Defined in: src/generated/sales/types.gen.ts:77

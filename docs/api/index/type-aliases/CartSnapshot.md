@@ -2,8 +2,6 @@
 
 > **CartSnapshot** = `object`
 
-Defined in: src/types.ts:35
-
 The render-safe state emitted by the cart session.
 
 ## Properties
@@ -12,15 +10,11 @@ The render-safe state emitted by the cart session.
 
 > **cart**: [`Cart`](Cart.md) \| `null`
 
-Defined in: src/types.ts:36
-
 ***
 
 ### hasCart
 
 > **hasCart**: `boolean`
-
-Defined in: src/types.ts:37
 
 ***
 
@@ -28,12 +22,8 @@ Defined in: src/types.ts:37
 
 > **isBusy**: `boolean`
 
-Defined in: src/types.ts:38
-
 ***
 
 ### lastError
 
 > **lastError**: [`PublicError`](PublicError.md) \| `null`
-
-Defined in: src/types.ts:39

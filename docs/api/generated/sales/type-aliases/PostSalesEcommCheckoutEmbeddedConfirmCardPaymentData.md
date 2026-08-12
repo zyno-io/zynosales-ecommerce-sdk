@@ -2,23 +2,17 @@
 
 > **PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:751
-
 ## Properties
 
 ### body
 
 > **body**: [`ISalesEcommCartConfirmPaymentInput`](ISalesEcommCartConfirmPaymentInput.md)
 
-Defined in: src/generated/sales/types.gen.ts:752
-
 ***
 
 ### headers
 
 > **headers**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:753
 
 #### x-zs-cart-key
 
@@ -34,8 +28,6 @@ Defined in: src/generated/sales/types.gen.ts:753
 
 > **path**: `object`
 
-Defined in: src/generated/sales/types.gen.ts:757
-
 #### cartId
 
 > **cartId**: `string`
@@ -46,12 +38,8 @@ Defined in: src/generated/sales/types.gen.ts:757
 
 > `optional` **query?**: `never`
 
-Defined in: src/generated/sales/types.gen.ts:760
-
 ***
 
 ### url
 
 > **url**: `"/embedded/sales/ecomm/carts/{cartId}/payments/confirm-payment-intent"`
-
-Defined in: src/generated/sales/types.gen.ts:761

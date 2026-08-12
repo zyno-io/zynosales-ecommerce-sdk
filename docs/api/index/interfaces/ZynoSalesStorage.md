@@ -1,7 +1,5 @@
 # Interface: ZynoSalesStorage
 
-Defined in: src/storage.ts:2
-
 Minimal storage interface accepted by the SDK.
 
 ## Methods
@@ -9,8 +7,6 @@ Minimal storage interface accepted by the SDK.
 ### getItem()
 
 > **getItem**(`key`): `string` \| `null`
-
-Defined in: src/storage.ts:3
 
 #### Parameters
 
@@ -28,8 +24,6 @@ Defined in: src/storage.ts:3
 
 > **removeItem**(`key`): `void`
 
-Defined in: src/storage.ts:5
-
 #### Parameters
 
 ##### key
@@ -45,8 +39,6 @@ Defined in: src/storage.ts:5
 ### setItem()
 
 > **setItem**(`key`, `value`): `void`
-
-Defined in: src/storage.ts:4
 
 #### Parameters
 

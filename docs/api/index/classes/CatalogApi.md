@@ -1,7 +1,5 @@
 # Class: CatalogApi
 
-Defined in: src/catalog.ts:6
-
 Explicit catalog reads and cache control. The current storefront API has no modifier contract yet.
 
 ## Constructors
@@ -9,8 +7,6 @@ Explicit catalog reads and cache control. The current storefront API has no modi
 ### Constructor
 
 > **new CatalogApi**(`client`): `CatalogApi`
-
-Defined in: src/catalog.ts:10
 
 #### Parameters
 
@@ -28,8 +24,6 @@ Defined in: src/catalog.ts:10
 
 > **clearCache**(): `void`
 
-Defined in: src/catalog.ts:29
-
 Clears the in-memory product cache.
 
 #### Returns
@@ -41,8 +35,6 @@ Clears the in-memory product cache.
 ### getProduct()
 
 > **getProduct**(`slug`): `Promise`\<[`StoreProduct`](../type-aliases/StoreProduct.md)\>
-
-Defined in: src/catalog.ts:23
 
 Fetches one product by slug.
 
@@ -61,8 +53,6 @@ Fetches one product by slug.
 ### getProducts()
 
 > **getProducts**(`options?`): `Promise`\<[`StoreProduct`](../type-aliases/StoreProduct.md)[]\>
-
-Defined in: src/catalog.ts:15
 
 Fetches products, returning the explicit cache unless `refresh` is requested.
 

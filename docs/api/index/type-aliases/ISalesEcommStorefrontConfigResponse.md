@@ -2,8 +2,6 @@
 
 > **ISalesEcommStorefrontConfigResponse** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:162
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -11,8 +9,6 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### capabilities
 
 > **capabilities**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:171
 
 #### addressVerification
 
@@ -32,15 +28,11 @@ Defined in: src/generated/sales/types.gen.ts:171
 
 > **currency**: `"usd"`
 
-Defined in: src/generated/sales/types.gen.ts:164
-
 ***
 
 ### payments
 
 > **payments**: `object`
-
-Defined in: src/generated/sales/types.gen.ts:165
 
 #### cardEnabled
 
@@ -63,5 +55,3 @@ Defined in: src/generated/sales/types.gen.ts:165
 ### tenantId
 
 > **tenantId**: `string`
-
-Defined in: src/generated/sales/types.gen.ts:163

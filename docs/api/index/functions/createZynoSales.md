@@ -2,8 +2,6 @@
 
 > **createZynoSales**(`options`): [`ZynoSalesStorefront`](../type-aliases/ZynoSalesStorefront.md)
 
-Defined in: src/storefront.ts:37
-
 Creates a complete ecommerce SDK instance. It renders no UI and has no framework dependency.
 
 ## Parameters

@@ -1,7 +1,5 @@
 # Class: SalesSalesEcommProductsEmbeddedApi
 
-Defined in: src/generated/sales/sdk.gen.ts:186
-
 ## Constructors
 
 ### Constructor
@@ -17,8 +15,6 @@ Defined in: src/generated/sales/sdk.gen.ts:186
 ### getSalesEcommProductsEmbeddedIndex()
 
 > `static` **getSalesEcommProductsEmbeddedIndex**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`GetSalesEcommProductsEmbeddedIndexResponses`](../type-aliases/GetSalesEcommProductsEmbeddedIndexResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:187
 
 #### Type Parameters
 
@@ -41,8 +37,6 @@ Defined in: src/generated/sales/sdk.gen.ts:187
 ### getSalesEcommProductsEmbeddedShow()
 
 > `static` **getSalesEcommProductsEmbeddedShow**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`GetSalesEcommProductsEmbeddedShowResponses`](../type-aliases/GetSalesEcommProductsEmbeddedShowResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:191
 
 #### Type Parameters
 

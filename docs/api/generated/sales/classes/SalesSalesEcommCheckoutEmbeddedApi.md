@@ -1,7 +1,5 @@
 # Class: SalesSalesEcommCheckoutEmbeddedApi
 
-Defined in: src/generated/sales/sdk.gen.ts:34
-
 ## Constructors
 
 ### Constructor
@@ -17,8 +15,6 @@ Defined in: src/generated/sales/sdk.gen.ts:34
 ### deleteSalesEcommCheckoutEmbeddedAbandonCart()
 
 > `static` **deleteSalesEcommCheckoutEmbeddedAbandonCart**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses`](../type-aliases/DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:46
 
 #### Type Parameters
 
@@ -42,8 +38,6 @@ Defined in: src/generated/sales/sdk.gen.ts:46
 
 > `static` **deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses`](../type-aliases/DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:150
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -65,8 +59,6 @@ Defined in: src/generated/sales/sdk.gen.ts:150
 ### deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode()
 
 > `static` **deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses`](../type-aliases/DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:124
 
 #### Type Parameters
 
@@ -90,8 +82,6 @@ Defined in: src/generated/sales/sdk.gen.ts:124
 
 > `static` **deleteSalesEcommCheckoutEmbeddedRemoveFulfillment**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses`](../type-aliases/DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:109
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -113,8 +103,6 @@ Defined in: src/generated/sales/sdk.gen.ts:109
 ### getSalesEcommCheckoutEmbeddedGetCart()
 
 > `static` **getSalesEcommCheckoutEmbeddedGetCart**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`GetSalesEcommCheckoutEmbeddedGetCartResponses`](../type-aliases/GetSalesEcommCheckoutEmbeddedGetCartResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:50
 
 #### Type Parameters
 
@@ -138,8 +126,6 @@ Defined in: src/generated/sales/sdk.gen.ts:50
 
 > `static` **getSalesEcommCheckoutEmbeddedGetPaymentAttempt**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses`](../type-aliases/GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:154
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -161,8 +147,6 @@ Defined in: src/generated/sales/sdk.gen.ts:154
 ### postSalesEcommCheckoutEmbeddedApplyDiscountCode()
 
 > `static` **postSalesEcommCheckoutEmbeddedApplyDiscountCode**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:128
 
 #### Type Parameters
 
@@ -186,8 +170,6 @@ Defined in: src/generated/sales/sdk.gen.ts:128
 
 > `static` **postSalesEcommCheckoutEmbeddedCalculateShippingRates**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:87
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -209,8 +191,6 @@ Defined in: src/generated/sales/sdk.gen.ts:87
 ### postSalesEcommCheckoutEmbeddedConfirmCardPayment()
 
 > `static` **postSalesEcommCheckoutEmbeddedConfirmCardPayment**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:158
 
 #### Type Parameters
 
@@ -234,8 +214,6 @@ Defined in: src/generated/sales/sdk.gen.ts:158
 
 > `static` **postSalesEcommCheckoutEmbeddedCreateCart**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedCreateCartResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedCreateCartResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:35
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -257,8 +235,6 @@ Defined in: src/generated/sales/sdk.gen.ts:35
 ### postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart()
 
 > `static` **postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:169
 
 #### Type Parameters
 
@@ -282,8 +258,6 @@ Defined in: src/generated/sales/sdk.gen.ts:169
 
 > `static` **postSalesEcommCheckoutEmbeddedQuoteShippingSelection**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:98
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -305,8 +279,6 @@ Defined in: src/generated/sales/sdk.gen.ts:98
 ### postSalesEcommCheckoutEmbeddedSetupCardPayment()
 
 > `static` **postSalesEcommCheckoutEmbeddedSetupCardPayment**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:139
 
 #### Type Parameters
 
@@ -330,8 +302,6 @@ Defined in: src/generated/sales/sdk.gen.ts:139
 
 > `static` **postSalesEcommCheckoutEmbeddedVerifyAddress**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedVerifyAddressResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedVerifyAddressResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:76
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -353,8 +323,6 @@ Defined in: src/generated/sales/sdk.gen.ts:76
 ### putSalesEcommCheckoutEmbeddedReplaceItems()
 
 > `static` **putSalesEcommCheckoutEmbeddedReplaceItems**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PutSalesEcommCheckoutEmbeddedReplaceItemsResponses`](../type-aliases/PutSalesEcommCheckoutEmbeddedReplaceItemsResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:54
 
 #### Type Parameters
 
@@ -378,8 +346,6 @@ Defined in: src/generated/sales/sdk.gen.ts:54
 
 > `static` **putSalesEcommCheckoutEmbeddedUpdateBuyer**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses`](../type-aliases/PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses.md), `unknown`, `ThrowOnError`\>
 
-Defined in: src/generated/sales/sdk.gen.ts:65
-
 #### Type Parameters
 
 ##### ThrowOnError
@@ -401,8 +367,6 @@ Defined in: src/generated/sales/sdk.gen.ts:65
 ### putSalesEcommCheckoutEmbeddedUpdateFulfillment()
 
 > `static` **putSalesEcommCheckoutEmbeddedUpdateFulfillment**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses`](../type-aliases/PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses.md), `unknown`, `ThrowOnError`\>
-
-Defined in: src/generated/sales/sdk.gen.ts:113
 
 #### Type Parameters
 

@@ -2,8 +2,6 @@
 
 > **ISalesEcommAddressVerificationInput** = `object`
 
-Defined in: src/generated/sales/types.gen.ts:51
-
 Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
@@ -11,5 +9,3 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### address
 
 > **address**: [`ISalesFullfillmentAddress`](ISalesFullfillmentAddress.md)
-
-Defined in: src/generated/sales/types.gen.ts:52
