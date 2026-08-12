@@ -3,7 +3,7 @@
 Install the package:
 
 ```sh
-npm install @zyno-io/zynosales-ecommerce-sdk
+yarn add @zyno-io/zynosales-ecommerce-sdk
 ```
 
 Create a storefront with a Sales publishable key. Production is embedded as the

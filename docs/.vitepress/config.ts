@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
+    base: '/zynosales-ecommerce-sdk/',
     title: 'ZynoSales eCommerce SDK',
     description: 'Framework-neutral JavaScript APIs for ZynoSales storefronts.',
     themeConfig: {

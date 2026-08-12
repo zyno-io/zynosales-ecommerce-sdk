@@ -1,4 +1,5 @@
 .working/
+.yarn/
 node_modules/
 dist/
 docs/.vitepress/dist/

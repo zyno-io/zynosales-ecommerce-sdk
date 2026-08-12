@@ -11,4 +11,5 @@ const storefront = createZynoSales({ publishableKey: 'zs_pk_...' });
 await storefront.cart.restore();
 ```
 
-See the published VitePress site for the integration Guide and generated SDK API reference.
+See the [published documentation](https://zyno-io.github.io/zynosales-ecommerce-sdk/)
+for the integration guide and generated SDK API reference.

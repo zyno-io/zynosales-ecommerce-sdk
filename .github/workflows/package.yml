@@ -22,22 +22,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
+          cache: yarn
+
+      - name: Enable Corepack
+        run: corepack enable
 
       - name: Install dependencies
-        run: npm ci --registry=https://registry.npmjs.org --@zyno-io:registry=https://registry.npmjs.org --replace-registry-host=always
+        run: yarn install --immutable
 
       - name: Validate
-        run: npm run check
+        run: yarn check
 
       - name: Verify generated documentation
         run: git diff --exit-code
 
       - name: Build
-        run: npm run build
+        run: yarn build
 
       - name: Validate release tag
         if: startsWith(github.ref, 'refs/tags/')
@@ -52,7 +55,8 @@ jobs:
       - name: Create package archive
         run: |
           mkdir package
-          npm pack --pack-destination package
+          PACKAGE_VERSION="$(node --print "require('./package.json').version")"
+          yarn pack --out "package/zyno-io-zynosales-ecommerce-sdk-${PACKAGE_VERSION}.tgz"
 
       - name: Upload package archive
         uses: actions/upload-artifact@v4
