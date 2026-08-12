@@ -91,7 +91,7 @@ describe('CartSession', () => {
 
         expect(createCart).toHaveBeenCalledTimes(1);
         expect(replaceItems).toHaveBeenCalledWith('cart-1', 'cart-secret', {
-            items: [{ productId: 'product-1', qty: 2 }]
+            items: [{ productId: 'product-1', qty: 2, notes: null }]
         });
     });
 
@@ -112,9 +112,28 @@ describe('CartSession', () => {
         expect(getCart).toHaveBeenCalledWith('cart-1', 'cart-secret');
         expect(replaceItems).toHaveBeenCalledWith('cart-1', 'cart-secret', {
             items: [
-                { productId: 'product-1', qty: 1 },
+                { productId: 'product-1', qty: 1, notes: null },
                 { productId: 'product-2', qty: 1 }
             ]
+        });
+    });
+
+    it('merges omitted notes with an existing null-notes line', async () => {
+        const storage = new TestStorage();
+        storage.setItem('cart', JSON.stringify({
+            cartId: 'cart-1',
+            cartKey: 'cart-secret',
+            orderKey: 'order-secret'
+        }));
+        const getCart = vi.fn(async () => firstCart);
+        const replaceItems = vi.fn(async () => firstCart);
+        const client = { getCart, replaceItems } as unknown as ZynoSalesClient;
+        const cart = new CartSession({ client, storage, storageKey: 'cart' });
+
+        await cart.add({ productId: 'product-1', qty: 1 });
+
+        expect(replaceItems).toHaveBeenCalledWith('cart-1', 'cart-secret', {
+            items: [{ productId: 'product-1', qty: 2, notes: null }]
         });
     });
 
