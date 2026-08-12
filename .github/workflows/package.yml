@@ -86,7 +86,7 @@ jobs:
           path: package
 
       - name: Publish package
-        run: npm publish package/*.tgz --access public
+        run: npm publish ./package/*.tgz --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
