@@ -15,7 +15,7 @@ export type ZynoSalesSharedOptions = {
     hooks?: ZynoSalesHooks;
 };
 
-/** Creates an SDK instance using an embedded production or alpha Sales endpoint. */
+/** Creates an SDK instance using a built-in Sales endpoint or an explicit API base. */
 export type ZynoSalesOptions = ZynoSalesSharedOptions &
     (
         | { environment?: ZynoSalesEnvironment; apiBase?: never }

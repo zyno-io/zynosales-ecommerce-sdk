@@ -1,5 +1,5 @@
 # Type Alias: ZynoSalesOptions
 
-> **ZynoSalesOptions** = [`ZynoSalesSharedOptions`](ZynoSalesSharedOptions.md) & \{ `apiBase?`: `never`; `environment?`: [`ZynoSalesEnvironment`](ZynoSalesEnvironment.md); \} \| \{ `apiBase`: `string`; `environment?`: `never`; \}
+> **ZynoSalesOptions** = [`ZynoSalesSharedOptions`](ZynoSalesSharedOptions.md) & \{ `apiBase?`: `never`; `environment?`: `ZynoSalesEnvironment`; \} \| \{ `apiBase`: `string`; `environment?`: `never`; \}
 
-Creates an SDK instance using an embedded production or alpha Sales endpoint.
+Creates an SDK instance using a built-in Sales endpoint or an explicit API base.

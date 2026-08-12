@@ -52,19 +52,13 @@ The SDK owns API workflows and state; the website owns all UI.
 - [StorefrontConfig](type-aliases/StorefrontConfig.md)
 - [StoreProduct](type-aliases/StoreProduct.md)
 - [StripeBrowserConfiguration](type-aliases/StripeBrowserConfiguration.md)
-- [ZynoSalesEnvironment](type-aliases/ZynoSalesEnvironment.md)
 - [ZynoSalesHooks](type-aliases/ZynoSalesHooks.md)
 - [ZynoSalesOptions](type-aliases/ZynoSalesOptions.md)
 - [ZynoSalesSharedOptions](type-aliases/ZynoSalesSharedOptions.md)
 - [ZynoSalesStorefront](type-aliases/ZynoSalesStorefront.md)
 
-## Variables
-
-- [SALES\_API\_BASES](variables/SALES_API_BASES.md)
-
 ## Functions
 
 - [createZynoSales](functions/createZynoSales.md)
 - [createZynoSalesClient](functions/createZynoSalesClient.md)
-- [resolveApiBase](functions/resolveApiBase.md)
 - [stripeConfiguration](functions/stripeConfiguration.md)

@@ -1,13 +1,13 @@
-/** Production and alpha endpoints embedded in the SDK. */
+/** @hidden */
 export const SALES_API_BASES = {
     production: 'https://sales.api.zyno.app',
     alpha: 'https://sales.api-alpha.zyno.dev'
 } as const;
 
-/** An embedded ZynoSales deployment. */
+/** @hidden */
 export type ZynoSalesEnvironment = keyof typeof SALES_API_BASES;
 
-/** Resolves and validates the API endpoint for an SDK instance. */
+/** @hidden */
 export function resolveApiBase(environment: ZynoSalesEnvironment = 'production', apiBase?: string): string {
     const candidate = apiBase ?? SALES_API_BASES[environment];
     const parsed = new URL(candidate);
