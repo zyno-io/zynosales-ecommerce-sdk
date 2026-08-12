@@ -20,8 +20,15 @@ export class ZynoSalesError extends Error {
 
 /** A render-safe representation of an SDK error. */
 export type PublicError = {
+    /** Display-safe message suitable for checkout UI. */
     message: string;
+    /** HTTP status when a response was received. */
     status?: number;
+    /**
+     * - `network`: transport failure; local capability is usually retained
+     * - `capability-lost`: cart/order capability is no longer valid
+     * - `api`: validated business or request error
+     */
     kind: 'api' | 'capability-lost' | 'network';
 };
 

@@ -54,18 +54,18 @@ await storefront.cart.refresh();
 ```
 
 `withServerAccess()` does not refresh automatically. Refresh after your server
-changes the Sales cart.
+changes the Sales cart so browser snapshots match the new authoritative state.
 
 ## Merchant-server requirements
 
 The browser request is not proof that the caller owns the cart. Your endpoint
 must:
 
-1. authenticate and authorize its own application session;
-2. accept the cart capability only in a TLS-protected request body;
-3. independently decide the policy or mutation to apply;
-4. use the capability only for the immediate Sales request; and
-5. return no cart key, order key, client secret, or privileged Sales data.
+1. authenticate and authorize its own application session
+2. accept the cart capability only in a TLS-protected request body
+3. independently decide the policy or mutation to apply
+4. use the capability only for the immediate Sales request
+5. return no cart key, order key, client secret, or privileged Sales data
 
 Do not put capability values in URLs, query strings, logs, traces, analytics,
 error messages, data attributes, third-party services, or durable merchant
@@ -77,3 +77,15 @@ Use [`afterOrderCompleted`](./hooks#afterordercompleted) for provisioning,
 receipt requests, or account linking. Send only the public order ID and your own
 session context to the merchant server, then fetch and verify the order from a
 trusted backend. Make the endpoint idempotent by order ID.
+
+## When you do not need a server handoff
+
+Skip merchant-server cart access if you only need to:
+
+- render catalog, cart, and checkout state
+- collect buyer and shipping details through the SDK
+- complete Stripe payment and show a receipt
+- track analytics with public order IDs after completion
+
+Use a handoff when policy, inventory reservation, custom pricing, or
+account-specific eligibility must run on a server you control.

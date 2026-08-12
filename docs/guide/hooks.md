@@ -64,16 +64,18 @@ async beforePayment({ cart, cartAccess }) {
 
 This hook runs immediately before a **new** payment setup. It receives:
 
-- `cart`: the current render-safe authoritative cart;
-- `cartAccess.cartId`: the active Sales cart ID; and
-- `cartAccess.cartKey`: a transient capability for your trusted merchant server.
+| Field | Contents |
+| --- | --- |
+| `cart` | Current render-safe authoritative cart |
+| `cartAccess.cartId` | Active Sales cart ID |
+| `cartAccess.cartKey` | Transient capability for your trusted merchant server |
 
 After the hook resolves, the SDK refreshes the cart from Sales. This lets your
 server attach policy-driven data or reject checkout before the payment amount is
 created. Throwing or rejecting prevents payment setup and appears as checkout
 error state.
 
-The hook is not rerun while recovering or retrying the same persisted payment
+The hook is **not** rerun while recovering or retrying the same persisted payment
 setup. This preserves the setup's idempotency key and amount.
 
 Treat `cartAccess` as a secret. Send it only to a same-origin trusted server;
@@ -96,9 +98,14 @@ async afterOrderCompleted({ order, cartId }) {
 }
 ```
 
-This hook runs after Sales returns a paid order from card confirmation,
-zero-due finalization, or payment recovery. It receives the completed public
-order and originating cart ID; it never receives the order capability.
+This hook runs after Sales returns a paid order from:
+
+- card confirmation (`completeCardPayment`)
+- zero-due finalization (`beginCardPayment` returning `null` after finalization)
+- payment recovery (`recoverPayment`)
+
+It receives the completed public order and originating cart ID; it never
+receives the order capability.
 
 The SDK records a bounded completed-order marker in session storage before
 invoking the hook and will not invoke it again for the same stored order during
@@ -108,10 +115,10 @@ Hook failure does not turn a completed payment into a failed checkout. The SDK
 catches the hook error because Sales has already completed the order. Your
 merchant endpoint should therefore:
 
-- be idempotent by `order.id`;
-- authenticate the browser session;
-- look up and verify the order server-side before provisioning; and
-- own its retry/alerting policy when follow-up work is critical.
+- be idempotent by `order.id`
+- authenticate the browser session
+- look up and verify the order server-side before provisioning
+- own its retry/alerting policy when follow-up work is critical
 
 ## Hook timing
 
@@ -129,3 +136,8 @@ cart mutation
 
 For UI-only reactions, prefer subscriptions. Use hooks when behavior belongs at
 the storefront lifecycle boundary or must be configured centrally.
+
+## Next steps
+
+- [Server handoff](./server-handoff)
+- [State, recovery, and errors](./state-and-errors)

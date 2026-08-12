@@ -8,14 +8,24 @@ import type { StorefrontConfig, StripeBrowserConfiguration, ZynoSalesHooks } fro
 
 /** Common storefront configuration shared by environment and explicit-base setup. */
 export type ZynoSalesSharedOptions = {
+    /** Storefront publishable key (`zs_pk_...`). Safe to embed in browser bundles. */
     publishableKey: string;
+    /** Custom fetch implementation for tests or non-browser hosts. Defaults to global `fetch`. */
     fetch?: typeof fetch;
+    /** Persistent storage for cart/order capabilities. Defaults to `localStorage` in browsers. */
     storage?: ZynoSalesStorage;
+    /** Session storage for payment recovery markers. Defaults to `sessionStorage` in browsers. */
     sessionStorage?: ZynoSalesStorage;
+    /** Lifecycle callbacks for cart changes, payment policy, and completed orders. */
     hooks?: ZynoSalesHooks;
 };
 
-/** Creates an SDK instance using a built-in Sales endpoint or an explicit API base. */
+/**
+ * Creates an SDK instance using a built-in Sales endpoint or an explicit API base.
+ *
+ * Provide either a built-in `environment` or an explicit `apiBase`. The two
+ * options are mutually exclusive. Non-local bases must use HTTPS.
+ */
 export type ZynoSalesOptions = ZynoSalesSharedOptions &
     (
         | { environment?: ZynoSalesEnvironment; apiBase?: never }
@@ -24,12 +34,19 @@ export type ZynoSalesOptions = ZynoSalesSharedOptions &
 
 /** A complete, JavaScript-only ecommerce storefront instance. */
 export type ZynoSalesStorefront = {
+    /** Low-level generated Sales client for advanced integrations. */
     readonly client: ZynoSalesClient;
+    /** Product catalog reads with an explicit in-memory list cache. */
     readonly catalog: CatalogApi;
+    /** Persistent cart session with serialized mutations and render-safe snapshots. */
     readonly cart: CartSession;
+    /** Buyer, delivery, discount, payment, and recovery workflows. */
     readonly checkout: CheckoutCoordinator;
+    /** Cached runtime storefront configuration from Sales. */
     getConfig(): Promise<StorefrontConfig>;
+    /** Forces a fresh configuration read from Sales. */
     refreshConfig(): Promise<StorefrontConfig>;
+    /** Stripe.js options derived from runtime configuration, or `null` when cards are unavailable. */
     getStripeConfiguration(): Promise<StripeBrowserConfiguration | null>;
 };
 

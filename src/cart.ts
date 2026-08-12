@@ -121,6 +121,10 @@ export class CartSession {
     }
 
     /** Runs a same-origin server handoff with the current cart capability. */
+    /**
+     * Provides cart capability access for one trusted merchant-server call.
+     * Treat the returned key as a secret and refresh the cart after server mutations.
+     */
     public withServerAccess<T>(callback: (access: CartServerAccess) => Promise<T> | T): Promise<T> {
         const reference = this.requireReference();
         return Promise.resolve(callback({ cartId: reference.cartId, cartKey: reference.cartKey }));

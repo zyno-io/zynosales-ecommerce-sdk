@@ -192,7 +192,8 @@ Subscribes to render-safe cart changes. Capability values are never included.
 
 > **withServerAccess**\<`T`\>(`callback`): `Promise`\<`T`\>
 
-Runs a same-origin server handoff with the current cart capability.
+Provides cart capability access for one trusted merchant-server call.
+Treat the returned key as a secret and refresh the cart after server mutations.
 
 #### Type Parameters
 

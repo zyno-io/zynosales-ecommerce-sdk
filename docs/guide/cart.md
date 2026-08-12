@@ -25,6 +25,8 @@ state change. `getSnapshot()` provides the same value synchronously:
 const snapshot = storefront.cart.getSnapshot();
 ```
 
+`CartSnapshot` never includes cart keys, order keys, or other capabilities.
+
 ## Restore a saved cart
 
 ```ts
@@ -41,6 +43,12 @@ cart from Sales. A stale or completed cart capability is removed automatically.
 `hasCart` can be true while `cart` is still null immediately after SDK creation:
 that means a saved capability exists but has not been loaded. Call `restore()`
 before changing a specific line. `add()` performs this restoration for you.
+
+| `hasCart` | `cart` | Meaning |
+| --- | --- | --- |
+| `false` | `null` | No active cart capability |
+| `true` | `null` | Capability saved; not loaded yet—call `restore()` |
+| `true` | object | Authoritative cart is ready to render |
 
 ## Add products
 
@@ -121,12 +129,14 @@ if the network is unavailable.
 
 ## Render authoritative totals
 
-All money is expressed in minor units. For USD, `2599` means `$25.99`:
+All money is expressed in **minor units** for the storefront currency from
+`getConfig()`. For USD, `2599` means `$25.99`:
 
 ```ts
-const money = new Intl.NumberFormat('en-US', {
+const config = await storefront.getConfig();
+const money = new Intl.NumberFormat(undefined, {
     style: 'currency',
-    currency: 'USD'
+    currency: config.currency.toUpperCase()
 });
 
 function formatMoney(amount: number): string {
@@ -140,9 +150,20 @@ if (cart) {
 }
 ```
 
-Use `item.priceTotal`, `cart.priceDiscounted`, `cart.priceTax`,
-`cart.priceTotal`, and `cart.priceDue` from Sales. Do not recalculate tax,
-shipping, discounts, or order totals in the browser.
+Useful cart fields:
+
+| Field | Display as |
+| --- | --- |
+| `item.priceTotal` | Line total |
+| `cart.priceDiscounted` | Discounted merchandise subtotal |
+| `cart.priceTax` | Tax total |
+| `cart.priceTotal` | Order total |
+| `cart.priceDue` | Amount still due |
+| `cart.appliedDiscount` | Active discount summary |
+| `cart.taxStatus` | Tax readiness (`ok`, `unresolved`, `failed`) |
+| `cart.fulfillment` | Applied recipient and shipping selection |
+
+Do not recalculate tax, shipping, discounts, or order totals in the browser.
 
 ## Mutation and payment state
 
@@ -150,3 +171,8 @@ Cart mutations are queued in call order, so rapid add-to-cart clicks do not race
 one another. Any authoritative cart mutation invalidates an unfinished payment
 setup. Begin payment only after cart, buyer, fulfillment, and discount edits are
 complete.
+
+## Next steps
+
+- [Collect buyer details, delivery, and discounts](./checkout)
+- [State, recovery, and errors](./state-and-errors)

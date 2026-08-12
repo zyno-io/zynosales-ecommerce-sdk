@@ -10,8 +10,12 @@ A Stripe configuration that can be passed to `loadStripe` without bundling Strip
 
 > **publishableKey**: `string`
 
+Stripe publishable key from Sales runtime configuration.
+
 ***
 
 ### stripeAccount?
 
 > `optional` **stripeAccount?**: `string`
+
+Connected account id when Sales operates in connected-account mode.

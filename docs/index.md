@@ -43,5 +43,13 @@ if (firstProduct) {
 }
 ```
 
-Continue with [products](./guide/products), [cart management](./guide/cart), or the
-[complete checkout flow](./guide/checkout).
+### Recommended path
+
+1. [Install and configure](./guide/installation)
+2. [Load products](./guide/products)
+3. [Create and manage a cart](./guide/cart)
+4. [Collect buyer, delivery, and discounts](./guide/checkout)
+5. [Complete card or zero-due orders](./guide/stripe)
+6. [Wire lifecycle hooks](./guide/hooks) and [handle recovery](./guide/state-and-errors)
+
+Need exact signatures? Use the [API reference](./api/).

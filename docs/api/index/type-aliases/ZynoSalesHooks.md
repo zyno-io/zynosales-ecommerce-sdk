@@ -10,6 +10,9 @@ Hooks that let a host integrate server-owned policy without UI components.
 
 > `optional` **afterOrderCompleted?**: (`context`) => `Promise`\<`void`\> \| `void`
 
+Runs once after Sales returns a paid order from confirmation, zero-due
+finalization, or recovery. Failures are swallowed by the SDK.
+
 #### Parameters
 
 ##### context
@@ -32,6 +35,9 @@ Hooks that let a host integrate server-owned policy without UI components.
 
 > `optional` **beforePayment?**: (`context`) => `Promise`\<`void`\> \| `void`
 
+Runs before a new payment setup. Throw/reject to block payment.
+Not rerun when recovering the same persisted setup.
+
 #### Parameters
 
 ##### context
@@ -53,6 +59,8 @@ Hooks that let a host integrate server-owned policy without UI components.
 ### onCartChanged?
 
 > `optional` **onCartChanged?**: (`snapshot`) => `void`
+
+Application-wide cart snapshot listener; equivalent to `cart.subscribe` without unsubscribe.
 
 #### Parameters
 

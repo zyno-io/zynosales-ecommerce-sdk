@@ -34,9 +34,15 @@ const unsubscribe = storefront.checkout.subscribe(snapshot => {
 });
 ```
 
-Checkout and cart have separate snapshots. Render the cart snapshot for current
-totals and fulfillment, and the checkout snapshot for payment progress,
-completed order data, busy state, and errors.
+Checkout and cart have separate snapshots:
+
+| Snapshot | Render for |
+| --- | --- |
+| `storefront.cart` | Lines, totals, fulfillment, discounts, tax status |
+| `storefront.checkout` | Payment progress, completed order, checkout busy/errors |
+
+Checkout mutations that change the cart also update `storefront.cart`, so cart
+subscribers stay in sync.
 
 ## Set the buyer
 
@@ -78,7 +84,8 @@ if (!verification.valid) {
 ```
 
 A valid response contains a normalized address and a verification `id`. Let the
-buyer review the normalized result when it differs from their input.
+buyer review the normalized result when it differs from their input. Only call
+this path when `config.capabilities.addressVerification` is enabled.
 
 ## Request delivery rates
 
@@ -198,18 +205,26 @@ await storefront.checkout.removeDiscount();
 ```
 
 Always render `cart.appliedDiscount` and the recalculated totals returned by
-Sales. A successful validation is not an applied discount.
+Sales. A successful validation is not an applied discount. Only offer this UI
+when `config.capabilities.discountCodes` is enabled.
 
 ## Ready for payment
 
 Before payment, verify that:
 
-- the cart is loaded and still open;
-- required buyer fields have been saved;
-- every shippable package has a quoted and applied rate;
-- `taxStatus` is acceptable for your UI;
-- no cart mutation is still busy; and
-- your UI uses the current `priceDue` returned by Sales.
+- the cart is loaded (`snapshot.hasCart` and `snapshot.cart`) and still open
+- required buyer fields have been saved
+- every shippable package has a quoted and applied rate (when shipping applies)
+- `cart.taxStatus` is acceptable for your UI (typically `ok`)
+- no cart or checkout mutation is still busy
+- your UI uses the current `cart.priceDue` returned by Sales
 
 Then continue to [Stripe and order completion](./stripe). For merchant-side
-validation immediately before payment setup, use the [`beforePayment` hook](./hooks#beforepayment).
+validation immediately before payment setup, use the
+[`beforePayment` hook](./hooks#beforepayment).
+
+## Next steps
+
+- [Stripe and order completion](./stripe)
+- [Lifecycle hooks](./hooks)
+- [Server handoff](./server-handoff)

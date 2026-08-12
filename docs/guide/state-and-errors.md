@@ -14,10 +14,12 @@ type CartSnapshot = {
 };
 ```
 
-- `hasCart` says a persisted cart capability exists.
-- `cart` is the last loaded authoritative cart, or `null` before restore.
-- `isBusy` covers cart restoration and mutation operations.
-- `lastError` is safe to render and excludes capabilities and API internals.
+| Field | Meaning |
+| --- | --- |
+| `hasCart` | A persisted cart capability exists |
+| `cart` | Last loaded authoritative cart, or `null` before restore |
+| `isBusy` | Cart restoration or mutation is in flight |
+| `lastError` | Safe to render; excludes capabilities and API internals |
 
 ## Checkout snapshot
 
@@ -53,6 +55,12 @@ switch (snapshot.lastError?.kind) {
 }
 ```
 
+| `kind` | Typical cause | Local capability |
+| --- | --- | --- |
+| `network` | Transport failure; no HTTP status | Kept so the buyer can retry |
+| `capability-lost` | Cart/order no longer valid (HTTP 404) | Cleared automatically |
+| `api` | Validated business or request error | Depends on the operation |
+
 Operations also reject with `ZynoSalesError` for imperative error handling:
 
 ```ts
@@ -70,18 +78,18 @@ try {
 ```
 
 `ZynoSalesError` exposes `status`, `isNetworkError`, and `isCapabilityLost`.
-Capability loss clears stale local cart state automatically. Network errors keep
-the capability so the buyer can retry.
+Failed operations also update `lastError` on the relevant snapshot, so
+subscription-driven UIs and `try/catch` paths stay aligned.
 
 ## Persistence defaults
 
 | State | Default storage | Lifetime |
 | --- | --- | --- |
-| Cart and order capabilities | `localStorage` | Across browser reloads and sessions. |
-| Payment attempt recovery | `sessionStorage` | Current browser tab/session. |
-| Completed-order marker | `sessionStorage` | Current browser tab/session, bounded to one order. |
-| Product list cache | Memory | Current storefront instance. |
-| Runtime config cache | Memory | Current storefront instance. |
+| Cart and order capabilities | `localStorage` | Across browser reloads and sessions |
+| Payment attempt recovery | `sessionStorage` | Current browser tab/session |
+| Completed-order marker | `sessionStorage` | Current browser tab/session, bounded to one order |
+| Product list cache | Memory | Current storefront instance |
+| Runtime config cache | Memory | Current storefront instance |
 
 Storage keys are isolated by API base and publishable key before configuration,
 then by the Sales tenant once configuration is known. The SDK reconciles and
@@ -102,7 +110,8 @@ renderCart(cart.cart);
 ```
 
 Loading configuration first scopes persisted state to the resolved storefront
-tenant before cart restoration. Cart operations are serialized internally.
+tenant before cart restoration. Cart and checkout operations are serialized
+internally per storefront instance.
 
 On a Stripe return route, follow restoration with payment recovery as shown in
 [Stripe and order completion](./stripe#handle-a-redirected-or-interrupted-payment).
@@ -124,3 +133,8 @@ Cart and order keys grant access; they are not identifiers. The SDK deliberately
 omits them from snapshots and hooks other than the explicit `beforePayment`
 handoff. Avoid reading or copying SDK storage directly. Use `withServerAccess()`
 only for a short same-origin merchant-server request.
+
+## Next steps
+
+- [Server handoff](./server-handoff)
+- [Lifecycle hooks](./hooks)
