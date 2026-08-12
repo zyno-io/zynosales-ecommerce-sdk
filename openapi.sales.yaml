@@ -1,0 +1,1763 @@
+openapi: 3.1.0
+jsonSchemaDialect: https://spec.openapis.org/oas/3.1/dialect/base
+info:
+  title: "@zyno-platform/sales-api-server"
+  version: 0.0.0
+paths:
+  /embedded/sales/ecomm/discount-codes/validate:
+    post:
+      operationId: postSalesDiscountCodesEmbeddedValidate
+      tags:
+        - salesDiscountCodesEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IValidateDiscountCodeResponse"
+      parameters:
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IValidateDiscountCodeRequest"
+  /embedded/sales/ecomm/carts:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedCreateCart
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartCreateInput"
+  /embedded/sales/ecomm/carts/{cartId}:
+    get:
+      operationId: getSalesEcommCheckoutEmbeddedGetCart
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+    delete:
+      operationId: deleteSalesEcommCheckoutEmbeddedAbandonCart
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/carts/{cartId}/items:
+    put:
+      operationId: putSalesEcommCheckoutEmbeddedReplaceItems
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartUpdateItemsInput"
+  /embedded/sales/ecomm/carts/{cartId}/buyer:
+    put:
+      operationId: putSalesEcommCheckoutEmbeddedUpdateBuyer
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommBuyerInput"
+  /embedded/sales/ecomm/carts/{cartId}/address/verify:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedVerifyAddress
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesFulfillmentAddressVerificationResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommAddressVerificationInput"
+  /embedded/sales/ecomm/carts/{cartId}/shipping/rates:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedCalculateShippingRates
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommShippingRatesResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartShippingRatesInput"
+  /embedded/sales/ecomm/carts/{cartId}/shipping/selection-quote:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedQuoteShippingSelection
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommShippingSelectionQuoteResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommShippingSelectionQuoteInput"
+  /embedded/sales/ecomm/carts/{cartId}/fulfillment:
+    put:
+      operationId: putSalesEcommCheckoutEmbeddedUpdateFulfillment
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartFulfillmentInput"
+    delete:
+      operationId: deleteSalesEcommCheckoutEmbeddedRemoveFulfillment
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/carts/{cartId}/discount-code:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedApplyDiscountCode
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartDiscountCodeInput"
+    delete:
+      operationId: deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/carts/{cartId}/payments/setup-cc:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedSetupCardPayment
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartPaymentSetupResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartPaymentSetupInput"
+  /embedded/sales/ecomm/carts/{cartId}/payments/{attemptId}:
+    get:
+      operationId: getSalesEcommCheckoutEmbeddedGetPaymentAttempt
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommPaymentAttemptResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+    delete:
+      operationId: deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/carts/{cartId}/payments/confirm-payment-intent:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedConfirmCardPayment
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommOrderResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartConfirmPaymentInput"
+  /embedded/sales/ecomm/carts/{cartId}/finalize:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/orders/{orderId}:
+    get:
+      operationId: getSalesEcommOrdersEmbeddedGet
+      tags:
+        - salesEcommOrdersEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommOrderResponse"
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-order-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/config:
+    get:
+      operationId: getSalesEcommStorefrontConfigEmbeddedGet
+      tags:
+        - salesEcommStorefrontConfigEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommStorefrontConfigResponse"
+      parameters:
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/products:
+    get:
+      operationId: getSalesEcommProductsEmbeddedIndex
+      tags:
+        - salesEcommProductsEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ISalesEcommStoreProduct"
+      parameters:
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+  /embedded/sales/ecomm/products/{slug}:
+    get:
+      operationId: getSalesEcommProductsEmbeddedShow
+      tags:
+        - salesEcommProductsEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommStoreProduct"
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+components:
+  schemas:
+    IValidateDiscountCodeResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        name:
+          type: string
+        type:
+          enum:
+            - flat
+            - percentage
+            - override
+            - null
+          type:
+            - string
+            - "null"
+        amount:
+          type:
+            - number
+            - "null"
+          minimum: 0
+        scope:
+          $ref: "#/components/schemas/SalesPredefinedDiscountScope"
+        itemQtyToDiscount:
+          type:
+            - number
+            - "null"
+        itemRepeatable:
+          type: boolean
+      required:
+        - id
+        - name
+        - scope
+        - itemQtyToDiscount
+        - itemRepeatable
+    IValidateDiscountCodeRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        tabId:
+          type: string
+      required:
+        - code
+        - tabId
+    ISalesEcommCartResponse:
+      type: object
+      properties:
+        cartId:
+          type: string
+        cartKey:
+          type: string
+        orderKey:
+          type: string
+        cart:
+          $ref: "#/components/schemas/ISalesEcommPublicCart"
+      required:
+        - cartId
+        - cart
+    ISalesEcommCartCreateInput:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommCartItemInput"
+      required:
+        - items
+    ISalesEcommCartUpdateItemsInput:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommCartItemInput"
+      required:
+        - items
+    ISalesEcommBuyerInput:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type:
+            - string
+            - "null"
+      required:
+        - name
+        - email
+    ISalesFulfillmentAddressVerificationResponse:
+      oneOf:
+        - type: object
+          properties:
+            valid:
+              type: boolean
+              enum:
+                - false
+            issues:
+              type: array
+              items:
+                type: string
+          required:
+            - valid
+            - issues
+        - type: object
+          properties:
+            valid:
+              type: boolean
+              enum:
+                - true
+            address:
+              $ref: "#/components/schemas/ISalesFulfillmentVerifiedAddress"
+          required:
+            - valid
+            - address
+    ISalesEcommAddressVerificationInput:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/ISalesFullfillmentAddress"
+      required:
+        - address
+    ISalesEcommShippingRatesResponse:
+      oneOf:
+        - $ref: "#/components/schemas/ISalesEcommPublicShippingPlan"
+        - type: object
+          properties:
+            notApplicable:
+              type: boolean
+              enum:
+                - true
+          required:
+            - notApplicable
+    ISalesEcommCartShippingRatesInput:
+      type: object
+      properties:
+        existingId:
+          type: string
+        locationId:
+          type: string
+        address:
+          oneOf:
+            - $ref: "#/components/schemas/ISalesFulfillmentShippingCalculateRequestAddressDet\
+                ail"
+            - type: object
+              properties:
+                verificationId:
+                  type: string
+                country:
+                  type: string
+              required:
+                - verificationId
+    ISalesEcommShippingSelectionQuoteResponse:
+      type: object
+      properties:
+        shippingPlanId:
+          type: string
+        packageRates:
+          type: array
+          items:
+            type: object
+            properties:
+              carrier:
+                type: string
+              service:
+                type: string
+              deliveryDays:
+                type:
+                  - number
+                  - "null"
+              rateId:
+                type: string
+              packageId:
+                type: string
+            required:
+              - carrier
+              - service
+              - deliveryDays
+              - rateId
+              - packageId
+        shippingPrice:
+          type: number
+      required:
+        - shippingPlanId
+        - packageRates
+        - shippingPrice
+    ISalesEcommShippingSelectionQuoteInput:
+      type: object
+      properties:
+        shippingPlanId:
+          type: string
+        packageRates:
+          type: array
+          items:
+            type: object
+            properties:
+              packageId:
+                type: string
+              rateId:
+                type: string
+            required:
+              - packageId
+              - rateId
+      required:
+        - shippingPlanId
+        - packageRates
+    ISalesEcommCartFulfillmentInput:
+      type: object
+      properties:
+        recipient:
+          $ref: "#/components/schemas/SalesFulfillmentOrderRecipient"
+        shippingPlanId:
+          type:
+            - string
+            - "null"
+        packageRates:
+          type: array
+          items:
+            type: object
+            properties:
+              packageId:
+                type: string
+              rateId:
+                type: string
+            required:
+              - packageId
+              - rateId
+        notes:
+          type:
+            - string
+            - "null"
+      required:
+        - recipient
+    ISalesEcommCartDiscountCodeInput:
+      type: object
+      properties:
+        code:
+          type: string
+      required:
+        - code
+    ISalesEcommCartPaymentSetupResponse:
+      type: object
+      properties:
+        cartId:
+          type: string
+        cartKey:
+          type: string
+        orderKey:
+          type: string
+        cart:
+          $ref: "#/components/schemas/ISalesEcommPublicCart"
+        paymentAttemptId:
+          type: string
+        paymentIntentId:
+          type: string
+        clientSecret:
+          type: string
+        amount:
+          type: number
+      required:
+        - cartId
+        - cart
+        - paymentAttemptId
+        - paymentIntentId
+        - clientSecret
+        - amount
+    ISalesEcommCartPaymentSetupInput:
+      type: object
+      properties:
+        idempotencyKey:
+          type: string
+      required:
+        - idempotencyKey
+    ISalesEcommPaymentAttemptResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        amount:
+          type: number
+          minimum: 0
+        status:
+          $ref: "#/components/schemas/SalesEcommPaymentAttemptStatus"
+        failureCode:
+          type:
+            - string
+            - "null"
+        updatedAt:
+          type: string
+          format: date-time
+        paymentIntentId:
+          type:
+            - string
+            - "null"
+      required:
+        - id
+        - amount
+        - status
+        - failureCode
+        - updatedAt
+        - paymentIntentId
+    ISalesEcommOrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        saleNumber:
+          type: string
+        status:
+          enum:
+            - open
+            - payment_pending
+            - paid
+            - voided
+          type: string
+        buyer:
+          type:
+            - object
+            - "null"
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            phone:
+              type:
+                - string
+                - "null"
+          required:
+            - name
+            - email
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommOrderItem"
+        fulfillment:
+          type: object
+          properties:
+            status:
+              enum:
+                - pending
+                - processing
+                - shipped
+                - delivered
+                - exception
+                - canceled
+                - null
+              type:
+                - string
+                - "null"
+            recipient:
+              $ref: "#/components/schemas/SalesFulfillmentOrderRecipient"
+            shippingPrice:
+              type:
+                - number
+                - "null"
+          required:
+            - status
+            - recipient
+            - shippingPrice
+        priceDiscounted:
+          type: number
+        priceBase:
+          type: number
+        priceTax:
+          type: number
+        priceTotal:
+          type: number
+        pricePaid:
+          type: number
+        priceDue:
+          type: number
+        taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesTabTaxLine"
+        payment:
+          type: object
+          properties:
+            status:
+              enum:
+                - pending
+                - authorized
+                - captured
+                - failed
+                - canceled
+              type: string
+            brand:
+              type:
+                - string
+                - "null"
+            last4:
+              type:
+                - string
+                - "null"
+          required:
+            - status
+        createdAt:
+          type: string
+          format: date-time
+        closedAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+      required:
+        - id
+        - saleNumber
+        - status
+        - buyer
+        - items
+        - priceDiscounted
+        - priceBase
+        - priceTax
+        - priceTotal
+        - pricePaid
+        - priceDue
+        - taxes
+        - createdAt
+        - closedAt
+    ISalesEcommCartConfirmPaymentInput:
+      type: object
+      properties:
+        paymentAttemptId:
+          type: string
+        paymentIntentId:
+          type: string
+      required:
+        - paymentAttemptId
+        - paymentIntentId
+    ISalesEcommStorefrontConfigResponse:
+      type: object
+      properties:
+        tenantId:
+          type: string
+        currency:
+          type: string
+          enum:
+            - usd
+        payments:
+          type: object
+          properties:
+            cardEnabled:
+              type: boolean
+            stripeEnvironment:
+              $ref: "#/components/schemas/StripeEnvironment"
+            stripePublishableKey:
+              type:
+                - string
+                - "null"
+            stripeConnectedAccountId:
+              type:
+                - string
+                - "null"
+          required:
+            - cardEnabled
+            - stripeEnvironment
+            - stripePublishableKey
+            - stripeConnectedAccountId
+        capabilities:
+          type: object
+          properties:
+            addressVerification:
+              type: boolean
+            shipping:
+              type: boolean
+            discountCodes:
+              type: boolean
+          required:
+            - addressVerification
+            - shipping
+            - discountCodes
+      required:
+        - tenantId
+        - currency
+        - payments
+        - capabilities
+    ISalesEcommStoreProduct:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        type:
+          enum:
+            - standard
+            - variant
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommProductImage"
+        shippingMeta:
+          $ref: "#/components/schemas/ISalesFulfillmentProductShippingMeta"
+        variant:
+          type: object
+          properties:
+            groupId:
+              type: string
+            groupSlug:
+              type: string
+            groupName:
+              type: string
+            options:
+              type: array
+              items:
+                $ref: "#/components/schemas/ISalesEcommVariantOptionDefinition"
+            values:
+              $ref: "#/components/schemas/Record_4"
+          required:
+            - groupId
+            - groupSlug
+            - groupName
+            - options
+            - values
+      required:
+        - id
+        - name
+        - price
+        - type
+        - slug
+        - description
+        - images
+    SalesPredefinedDiscountScope:
+      enum:
+        - item
+        - tab
+        - shipping
+      type: string
+    ISalesEcommPublicCart:
+      type: object
+      properties:
+        id:
+          type: string
+        saleNumber:
+          type: string
+        status:
+          enum:
+            - open
+            - closed
+            - voided
+            - saved
+            - archived
+            - deleted
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommPublicCartItem"
+        fulfillment:
+          type: object
+          properties:
+            recipient:
+              $ref: "#/components/schemas/SalesFulfillmentOrderRecipient"
+            shippingPlanId:
+              type:
+                - string
+                - "null"
+              format: uuid
+              pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+            shippingPrice:
+              type:
+                - number
+                - "null"
+              minimum: 0
+            shippingPlan:
+              $ref: "#/components/schemas/ISalesEcommPublicShippingPlan"
+          required:
+            - recipient
+            - shippingPlanId
+            - shippingPrice
+        appliedDiscount:
+          $ref: "#/components/schemas/ISalesEcommAppliedDiscount"
+        priceOverride:
+          $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
+        priceDiscounted:
+          type: number
+        priceBase:
+          type: number
+        priceTax:
+          type: number
+        priceTotal:
+          type: number
+        priceDue:
+          type: number
+        taxes:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesTabTaxLine"
+        taxStatus:
+          enum:
+            - ok
+            - unresolved
+            - failed
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        closedAt:
+          type:
+            - string
+            - "null"
+          format: date-time
+      required:
+        - id
+        - saleNumber
+        - status
+        - items
+        - priceDiscounted
+        - priceBase
+        - priceTax
+        - priceTotal
+        - priceDue
+        - taxes
+        - taxStatus
+        - createdAt
+        - updatedAt
+        - closedAt
+    ISalesEcommCartItemInput:
+      type: object
+      properties:
+        productId:
+          type: string
+        qty:
+          type: number
+        notes:
+          type:
+            - string
+            - "null"
+      required:
+        - productId
+        - qty
+    ISalesFulfillmentVerifiedAddress:
+      type: object
+      properties:
+        name:
+          type: string
+        company:
+          type: string
+        street1:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        id:
+          type: string
+      required:
+        - street1
+        - city
+        - state
+        - zip
+        - country
+        - id
+    ISalesFullfillmentAddress:
+      type: object
+      properties:
+        id:
+          type:
+            - string
+            - "null"
+        name:
+          type: string
+        company:
+          type: string
+        street1:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+      required:
+        - street1
+        - city
+        - state
+        - zip
+        - country
+    ISalesEcommPublicShippingPlan:
+      type: object
+      properties:
+        id:
+          type: string
+        packages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommPublicShippingPackage"
+      required:
+        - id
+        - packages
+    ISalesFulfillmentShippingCalculateRequestAddressDetail:
+      type: object
+      properties:
+        name:
+          type: string
+        company:
+          type: string
+        street1:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+      required:
+        - street1
+        - city
+        - state
+        - zip
+    SalesFulfillmentOrderRecipient:
+      type: object
+      properties:
+        name:
+          type: string
+        company:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        street1:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+        isVerified:
+          type: boolean
+      required:
+        - name
+        - phone
+        - street1
+        - city
+        - state
+        - zip
+    SalesEcommPaymentAttemptStatus:
+      enum:
+        - creating
+        - requires_payment_method
+        - authorized
+        - canceling
+        - recorded
+        - canceled
+        - failed
+      type: string
+    ISalesEcommOrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+        qty:
+          type: number
+        effectivePrice:
+          type: number
+        notes:
+          type:
+            - string
+            - "null"
+        priceBase:
+          type: number
+        priceTax:
+          type: number
+        priceTotal:
+          type: number
+        priceOverride:
+          $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
+        product:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            price:
+              type: number
+            type:
+              type: string
+          required:
+            - id
+            - name
+            - price
+            - type
+      required:
+        - id
+        - qty
+        - effectivePrice
+        - notes
+        - priceBase
+        - priceTax
+        - priceTotal
+        - product
+    ISalesTabTaxLine:
+      type: object
+      properties:
+        taxTypeId:
+          type: string
+        name:
+          type: string
+        rate:
+          type: number
+        taxableBase:
+          type: number
+        amount:
+          type: number
+      required:
+        - taxTypeId
+        - name
+        - rate
+        - taxableBase
+        - amount
+    StripeEnvironment:
+      enum:
+        - live
+        - sandbox
+      type: string
+    ISalesEcommProductImage:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+        contentType:
+          type: string
+      required:
+        - id
+        - url
+        - contentType
+    ISalesFulfillmentProductShippingMeta:
+      type: object
+      properties:
+        weightOz:
+          type: number
+        widthIn:
+          type: number
+        heightIn:
+          type: number
+        lengthIn:
+          type: number
+        flatRateAmount:
+          type: number
+        intl:
+          $ref: "#/components/schemas/ISalesFulfillmentProductShippingMetaIntl"
+      required:
+        - weightOz
+        - widthIn
+        - heightIn
+        - lengthIn
+    ISalesEcommVariantOptionDefinition:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        values:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - name
+        - values
+    Record_4:
+      type: object
+      properties: {}
+      additionalProperties:
+        type: string
+    ISalesEcommPublicCartItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        qty:
+          type: number
+        effectivePrice:
+          type: number
+          minimum: 0
+        notes:
+          type:
+            - string
+            - "null"
+        priceBase:
+          type: number
+        priceTax:
+          type: number
+        priceTotal:
+          type: number
+        priceOverride:
+          $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
+        product:
+          $ref: "#/components/schemas/PickISalesTabItemProduct"
+      required:
+        - id
+        - qty
+        - effectivePrice
+        - notes
+        - priceBase
+        - priceTax
+        - priceTotal
+        - product
+    ISalesEcommAppliedDiscount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        name:
+          type: string
+        scope:
+          $ref: "#/components/schemas/SalesPredefinedDiscountScope"
+        itemQtyToDiscount:
+          type:
+            - number
+            - "null"
+        itemRepeatable:
+          type: boolean
+        code:
+          type: string
+        type:
+          enum:
+            - flat
+            - percentage
+            - override
+          type: string
+        amount:
+          type: number
+          minimum: 0
+      required:
+        - id
+        - name
+        - scope
+        - itemQtyToDiscount
+        - itemRepeatable
+        - code
+        - type
+        - amount
+    ISalesEcommPublicPriceOverride:
+      type: object
+      properties:
+        applyTo:
+          enum:
+            - product
+            - subscription
+          type: string
+        prePrice:
+          type: number
+          minimum: 0
+        postPrice:
+          type: number
+          minimum: 0
+        qtyToDiscount:
+          type:
+            - number
+            - "null"
+        type:
+          enum:
+            - flat
+            - percentage
+            - override
+          type: string
+        amount:
+          type: number
+          minimum: 0
+        reason:
+          type:
+            - string
+            - "null"
+      required:
+        - applyTo
+        - prePrice
+        - postPrice
+        - qtyToDiscount
+        - type
+        - amount
+        - reason
+    ISalesEcommPublicShippingPackage:
+      type: object
+      properties:
+        id:
+          type: string
+        rateOptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommPublicPackageRate"
+        selectedRate:
+          anyOf:
+            - anyOf:
+                - $ref: "#/components/schemas/ISalesEcommPublicPackageRate"
+                - type: "null"
+            - type: "null"
+        rateExpired:
+          type: boolean
+      required:
+        - id
+        - rateExpired
+    ISalesFulfillmentProductShippingMetaIntl:
+      type: object
+      properties:
+        description:
+          type: string
+        htsNumber:
+          type: string
+        exportControlClassificationNumber:
+          type: string
+        printedCommodityIdentifier:
+          type: string
+        countryOfOrigin:
+          type: string
+      required:
+        - description
+        - htsNumber
+        - countryOfOrigin
+    PickISalesTabItemProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        type:
+          $ref: "#/components/schemas/SalesProductType"
+        name:
+          type: string
+        price:
+          type: number
+          minimum: 0
+      required:
+        - id
+        - type
+        - name
+        - price
+    ISalesEcommPublicPackageRate:
+      type: object
+      properties:
+        carrier:
+          type: string
+        service:
+          type: string
+        deliveryDays:
+          type:
+            - number
+            - "null"
+        deliveryDaysGuaranteed:
+          type: boolean
+        rateId:
+          type: string
+        price:
+          type: number
+      required:
+        - carrier
+        - service
+        - deliveryDays
+        - deliveryDaysGuaranteed
+        - rateId
+    SalesProductType:
+      enum:
+        - standard
+        - variantParent
+        - variant
+        - bookable
+        - membership
+        - giftCard
+        - shipping
+        - package
+      type: string

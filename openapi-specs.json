@@ -1,0 +1,30 @@
+{
+  "./openapi.sales.yaml": {
+    "path": "./src/generated/sales",
+    "prefix": "Sales",
+    "operations": [
+      "getSalesEcommStorefrontConfigEmbeddedGet",
+      "getSalesEcommProductsEmbeddedIndex",
+      "getSalesEcommProductsEmbeddedShow",
+      "postSalesEcommCheckoutEmbeddedCreateCart",
+      "getSalesEcommCheckoutEmbeddedGetCart",
+      "deleteSalesEcommCheckoutEmbeddedAbandonCart",
+      "putSalesEcommCheckoutEmbeddedReplaceItems",
+      "putSalesEcommCheckoutEmbeddedUpdateBuyer",
+      "postSalesEcommCheckoutEmbeddedVerifyAddress",
+      "postSalesEcommCheckoutEmbeddedCalculateShippingRates",
+      "postSalesEcommCheckoutEmbeddedQuoteShippingSelection",
+      "putSalesEcommCheckoutEmbeddedUpdateFulfillment",
+      "deleteSalesEcommCheckoutEmbeddedRemoveFulfillment",
+      "postSalesDiscountCodesEmbeddedValidate",
+      "postSalesEcommCheckoutEmbeddedApplyDiscountCode",
+      "deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode",
+      "postSalesEcommCheckoutEmbeddedSetupCardPayment",
+      "getSalesEcommCheckoutEmbeddedGetPaymentAttempt",
+      "deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt",
+      "postSalesEcommCheckoutEmbeddedConfirmCardPayment",
+      "postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart",
+      "getSalesEcommOrdersEmbeddedGet"
+    ]
+  }
+}

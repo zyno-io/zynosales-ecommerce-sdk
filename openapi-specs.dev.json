@@ -1,0 +1,29 @@
+{
+  "./openapi.sales.yaml": {
+    "src": "../zynosales-api-server/openapi.yaml",
+    "operations": [
+      "getSalesEcommStorefrontConfigEmbeddedGet",
+      "getSalesEcommProductsEmbeddedIndex",
+      "getSalesEcommProductsEmbeddedShow",
+      "postSalesEcommCheckoutEmbeddedCreateCart",
+      "getSalesEcommCheckoutEmbeddedGetCart",
+      "deleteSalesEcommCheckoutEmbeddedAbandonCart",
+      "putSalesEcommCheckoutEmbeddedReplaceItems",
+      "putSalesEcommCheckoutEmbeddedUpdateBuyer",
+      "postSalesEcommCheckoutEmbeddedVerifyAddress",
+      "postSalesEcommCheckoutEmbeddedCalculateShippingRates",
+      "postSalesEcommCheckoutEmbeddedQuoteShippingSelection",
+      "putSalesEcommCheckoutEmbeddedUpdateFulfillment",
+      "deleteSalesEcommCheckoutEmbeddedRemoveFulfillment",
+      "postSalesDiscountCodesEmbeddedValidate",
+      "postSalesEcommCheckoutEmbeddedApplyDiscountCode",
+      "deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode",
+      "postSalesEcommCheckoutEmbeddedSetupCardPayment",
+      "getSalesEcommCheckoutEmbeddedGetPaymentAttempt",
+      "deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt",
+      "postSalesEcommCheckoutEmbeddedConfirmCardPayment",
+      "postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart",
+      "getSalesEcommOrdersEmbeddedGet"
+    ]
+  }
+}

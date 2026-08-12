@@ -1,0 +1,48 @@
+{
+  "name": "@zyno-io/zynosales-ecommerce-sdk",
+  "version": "0.1.0",
+  "description": "Framework-neutral browser SDK for ZynoSales embedded ecommerce storefronts.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "check": "npm run typecheck && npm run test && npm run docs:build",
+    "docs:api": "node scripts/generate-api-docs.mjs",
+    "docs:build": "npm run docs:api && vitepress build docs",
+    "docs:dev": "npm run docs:api && vitepress dev docs",
+    "openapi:generate": "generate-openapi-client",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@zyno-io/openapi-client-codegen": "^2.10.0",
+    "tsup": "^8.5.1",
+    "typedoc": "^0.28.17",
+    "typedoc-plugin-markdown": "^4.8.1",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
