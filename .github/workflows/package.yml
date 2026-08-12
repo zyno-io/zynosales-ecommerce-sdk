@@ -71,26 +71,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          registry-url: https://npm.s24.dev/
-          scope: '@zyno-io'
-          always-auth: true
-
       - name: Download package archive
         uses: actions/download-artifact@v4
         with:
           name: npm-package-${{ github.sha }}
           path: package
 
-      - name: Publish package
-        run: npm publish ./package/*.tgz --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" package/*.tgz --verify-tag --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" ./package/*.tgz --verify-tag --generate-notes
