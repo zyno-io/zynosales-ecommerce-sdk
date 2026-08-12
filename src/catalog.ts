@@ -36,9 +36,11 @@ function projectProduct(product: ISalesEcommStoreProduct): StoreProduct {
         id: product.id,
         name: product.name,
         price: product.price,
+        type: product.type,
         slug: product.slug,
         description: product.description,
         images: product.images,
-        ...(product.shippingMeta === undefined ? {} : { shippingMeta: product.shippingMeta })
+        ...(product.shippingMeta === undefined ? {} : { shippingMeta: product.shippingMeta }),
+        ...(product.variant === undefined ? {} : { variant: product.variant })
     };
 }

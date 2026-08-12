@@ -11,7 +11,10 @@ import type {
 import type { PublicError } from './errors';
 
 /** Public product fields currently supported by the embedded storefront contract. */
-export type StoreProduct = Pick<ISalesEcommStoreProduct, 'id' | 'name' | 'price' | 'slug' | 'description' | 'images' | 'shippingMeta'>;
+export type StoreProduct = Pick<
+    ISalesEcommStoreProduct,
+    'id' | 'name' | 'price' | 'type' | 'slug' | 'description' | 'images' | 'shippingMeta' | 'variant'
+>;
 
 /** Generated cart item input from the Sales browser contract. */
 export type CartItemInput = ISalesEcommCartItemInput;
