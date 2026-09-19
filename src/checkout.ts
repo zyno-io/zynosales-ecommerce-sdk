@@ -80,7 +80,10 @@ export class CheckoutCoordinator {
         return () => this.listeners.delete(listener);
     }
 
-    /** Updates buyer identity on the active cart. */
+    /**
+     * Updates the purchaser’s CRM identity on the active cart. Send original typed values here;
+     * fulfillment data can be carrier-normalized before an order closes.
+     */
     public setBuyer(input: ISalesEcommBuyerInput): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
@@ -114,7 +117,7 @@ export class CheckoutCoordinator {
         });
     }
 
-    /** Applies fulfillment details and selected shipping rates to the active cart. */
+    /** Applies fulfillment details and selected shipping rates to the active cart. Use `crmAddressId` to reuse a selected CRM address. */
     public setFulfillment(input: ISalesEcommCartFulfillmentInput): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();

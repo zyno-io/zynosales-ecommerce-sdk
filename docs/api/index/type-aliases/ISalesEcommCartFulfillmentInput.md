@@ -6,6 +6,12 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
 
+### crmAddressId?
+
+> `optional` **crmAddressId?**: `string` \| `null`
+
+***
+
 ### notes?
 
 > `optional` **notes?**: `string` \| `null`

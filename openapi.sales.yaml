@@ -732,6 +732,10 @@ components:
       properties:
         name:
           type: string
+        company:
+          type:
+            - string
+            - "null"
         email:
           type: string
         phone:
@@ -863,6 +867,8 @@ components:
       properties:
         recipient:
           $ref: "#/components/schemas/SalesFulfillmentOrderRecipient"
+        crmAddressId:
+          type: [string, 'null']
         shippingPlanId:
           type:
             - string

@@ -49,13 +49,17 @@ subscribers stay in sync.
 ```ts
 const cart = await storefront.checkout.setBuyer({
     name: 'Ada Lovelace',
+    company: 'Analytical Engines Ltd.',
     email: 'ada@example.com',
     phone: '+1 555 010 1000'
 });
 ```
 
-`phone` is optional. The returned cart is authoritative and is also accepted
-into `storefront.cart`, so cart subscribers receive the update.
+`company` and `phone` are optional. This is the purchaser’s CRM identity:
+send the buyer’s original typed name and company here, rather than a
+carrier-normalized recipient. Sales adds the fulfillment address to that CRM
+profile when the sale closes. The returned cart is authoritative and is also
+accepted into `storefront.cart`, so cart subscribers receive the update.
 
 ## Verify an address
 
@@ -144,6 +148,8 @@ authoritative shipping price. Do not total the individual rate prices yourself.
 const verified = verification.address;
 
 const cart = await storefront.checkout.setFulfillment({
+    // Pass the CRM address selected by a returning customer, when there is one.
+    crmAddressId: selectedSavedAddress?.id,
     recipient: {
         name: verified.name ?? 'Ada Lovelace',
         company: verified.company,
@@ -166,6 +172,11 @@ const cart = await storefront.checkout.setFulfillment({
 The cart now contains the selected fulfillment and recalculated server totals.
 To change delivery, calculate and quote a new selection before calling
 `setFulfillment()` again.
+
+When the checkout offers a saved CRM address, pass its `crmAddressId` unchanged
+on every `setFulfillment()` call. Sales verifies that the address belongs to the
+resolved buyer and reuses it instead of adding an address from carrier-formatted
+fulfillment data.
 
 Remove delivery from the cart with:
 

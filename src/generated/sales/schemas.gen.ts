@@ -126,6 +126,12 @@ export const ISalesEcommBuyerInputSchema = {
         name: {
             type: 'string'
         },
+        company: {
+            type: [
+                'string',
+                'null'
+            ]
+        },
         email: {
             type: 'string'
         },
@@ -339,6 +345,12 @@ export const ISalesEcommCartFulfillmentInputSchema = {
     properties: {
         recipient: {
             $ref: '#/components/schemas/SalesFulfillmentOrderRecipient'
+        },
+        crmAddressId: {
+            type: [
+                'string',
+                'null'
+            ]
         },
         shippingPlanId: {
             type: [

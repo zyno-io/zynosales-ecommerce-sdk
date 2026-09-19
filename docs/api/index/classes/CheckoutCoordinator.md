@@ -223,7 +223,8 @@ Removes fulfillment from the active cart.
 
 > **setBuyer**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
 
-Updates buyer identity on the active cart.
+Updates the purchaser’s CRM identity on the active cart. Send original typed values here;
+fulfillment data can be carrier-normalized before an order closes.
 
 #### Parameters
 
@@ -241,7 +242,7 @@ Updates buyer identity on the active cart.
 
 > **setFulfillment**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
 
-Applies fulfillment details and selected shipping rates to the active cart.
+Applies fulfillment details and selected shipping rates to the active cart. Use `crmAddressId` to reuse a selected CRM address.
 
 #### Parameters
 

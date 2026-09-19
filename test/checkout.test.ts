@@ -100,6 +100,45 @@ function checkoutFixture(client: ZynoSalesClient, storage = new TestStorage(), p
 }
 
 describe('CheckoutCoordinator', () => {
+    it('forwards typed buyer company to the active cart', async () => {
+        const response = cartResponse();
+        const updateBuyer = vi.fn(async () => response);
+        const client = { updateBuyer } as unknown as ZynoSalesClient;
+        const { cart, checkout } = checkoutFixture(client);
+        cart.accept(response);
+        const buyer = { name: 'Ada Lovelace', company: 'Analytical Engines', email: 'ada@example.com', phone: '+12125550100' };
+
+        const updatedCart = await checkout.setBuyer(buyer);
+
+        expect(updatedCart).toEqual(response.cart);
+        expect(updateBuyer).toHaveBeenCalledWith('cart-1', 'cart-1-secret', buyer);
+    });
+
+    it('forwards a selected CRM address when applying fulfillment', async () => {
+        const response = cartResponse();
+        const updateFulfillment = vi.fn(async () => response);
+        const client = { updateFulfillment } as unknown as ZynoSalesClient;
+        const { cart, checkout } = checkoutFixture(client);
+        cart.accept(response);
+        const fulfillment = {
+            crmAddressId: '4fa20852-80d1-4dd9-b8fd-51d17d478ed5',
+            recipient: {
+                name: 'Ada Lovelace',
+                phone: '+12125550100',
+                street1: '185 Surrey Park Drive',
+                city: 'Fayetteville',
+                state: 'GA',
+                zip: '30215',
+                country: 'US'
+            }
+        };
+
+        const updatedCart = await checkout.setFulfillment(fulfillment);
+
+        expect(updatedCart).toEqual(response.cart);
+        expect(updateFulfillment).toHaveBeenCalledWith('cart-1', 'cart-1-secret', fulfillment);
+    });
+
     it('reuses a pending setup idempotency key after a timeout', async () => {
         const response = cartResponse();
         const setup = paymentSetup(response);

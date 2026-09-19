@@ -36,6 +36,7 @@ export type ISalesEcommCartUpdateItemsInput = {
 
 export type ISalesEcommBuyerInput = {
     name: string;
+    company?: string | null;
     email: string;
     phone?: string | null;
 };
@@ -87,6 +88,7 @@ export type ISalesEcommShippingSelectionQuoteInput = {
 
 export type ISalesEcommCartFulfillmentInput = {
     recipient: SalesFulfillmentOrderRecipient;
+    crmAddressId?: string | null;
     shippingPlanId?: string | null;
     packageRates?: Array<{
         packageId: string;
