@@ -112,3 +112,26 @@ existing line input.
 
 - [Create and manage a cart](./cart)
 - [Buyer, delivery, and discounts](./checkout)
+
+## Membership products
+
+When `product.membership` is present, render its server-provided `pricingTiers`
+and `defaultPricingTierId`. Each option contains `initialPrice`, `renewalPrice`,
+`subscriptionPeriod`, `subscriptionRecurs`, and fixed validity where applicable.
+Only offer the options returned by the catalog; Sales validates them again before
+payment.
+
+```ts
+const product = await storefront.catalog.getProduct(productSlug);
+const tierId = product.membership?.defaultPricingTierId;
+await storefront.cart.add({
+    productId: product.id,
+    qty: 1,
+    ...(product.membership ? { membership: { pricingTierId: tierId } } : {})
+});
+```
+
+Memberships can share a cart with ordinary products. Each membership has quantity
+one and belongs to the buyer. Compatible different membership types can be bought
+together; duplicate purchases of the same type are rejected by Sales. Use
+`config.capabilities.memberships` to determine storefront support.

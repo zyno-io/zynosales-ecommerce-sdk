@@ -38,6 +38,26 @@ Coordinates framework-agnostic checkout transitions for the active cart.
 
 ## Methods
 
+### acceptMembershipTerms()
+
+> **acceptMembershipTerms**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
+
+Records the shopper's explicit acceptance of the current server-provided membership terms hash.
+
+#### Parameters
+
+##### input
+
+###### termsHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
+
+***
+
 ### applyDiscount()
 
 > **applyDiscount**(`input`): `Promise`\<[`ISalesEcommPublicCart`](../type-aliases/ISalesEcommPublicCart.md)\>
@@ -58,14 +78,14 @@ Applies a discount code and returns the authoritative cart.
 
 ### beginCardPayment()
 
-> **beginCardPayment**(): `Promise`\<[`ISalesEcommCartPaymentSetupResponse`](../type-aliases/ISalesEcommCartPaymentSetupResponse.md) \| `null`\>
+> **beginCardPayment**(): `Promise`\<[`CardCheckoutSetup`](../type-aliases/CardCheckoutSetup.md) \| `null`\>
 
 Runs the final policy hook and opens a card-payment attempt.
-For a zero-due cart it finalizes the order and returns `null`.
+For a zero-due recurring cart it returns a SetupIntent; other zero-due carts finalize and return `null`.
 
 #### Returns
 
-`Promise`\<[`ISalesEcommCartPaymentSetupResponse`](../type-aliases/ISalesEcommCartPaymentSetupResponse.md) \| `null`\>
+`Promise`\<[`CardCheckoutSetup`](../type-aliases/CardCheckoutSetup.md) \| `null`\>
 
 ***
 
@@ -98,6 +118,24 @@ Records an authorized Stripe PaymentIntent with Sales.
 ##### input
 
 `Pick`\<[`CardPaymentSetup`](../type-aliases/CardPaymentSetup.md), `"paymentAttemptId"` \| `"paymentIntentId"`\>
+
+#### Returns
+
+`Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+
+***
+
+### completeMembershipCardSetup()
+
+> **completeMembershipCardSetup**(`input`): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+
+Completes a zero-due membership purchase after Stripe confirms its SetupIntent.
+
+#### Parameters
+
+##### input
+
+`Pick`\<[`MembershipCardSetup`](../type-aliases/MembershipCardSetup.md), `"paymentAttemptId"` \| `"setupIntentId"`\>
 
 #### Returns
 

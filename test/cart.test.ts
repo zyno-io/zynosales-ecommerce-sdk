@@ -165,3 +165,32 @@ describe('CartSession', () => {
         expect(storage.getItem('provisional')).toBeNull();
     });
 });
+
+it('preserves the selected membership tier while changing an ordinary product in a mixed cart', async () => {
+    const { membershipTerms } = await import('./membership-fixtures');
+    const mixed: CartResponse = { ...firstCart, cart: { ...firstCart.cart, items: [firstCart.cart.items[0]!, {
+        ...firstCart.cart.items[0]!, id: 'membership-line', qty: 1, product: { id: 'membership-product', type: 'membership', name: 'Membership', price: 0 },
+        membership: membershipTerms
+    }] } };
+    const replaceItems = vi.fn(async () => mixed);
+    const cart = new CartSession({ client: { replaceItems } as unknown as ZynoSalesClient, storage: new TestStorage(), storageKey: 'cart' });
+    cart.accept(mixed);
+    await cart.setQuantity({ cartItemId: 'line-1', qty: 3 });
+    expect(replaceItems).toHaveBeenCalledWith('cart-1', 'cart-secret', { items: [
+        { productId: 'product-1', qty: 3, notes: null },
+        { productId: 'membership-product', qty: 1, notes: null, membership: { pricingTierId: 'tier-monthly' } }
+    ] });
+});
+
+it('does not increment membership quantity or discard its selected tier when adding it again', async () => {
+    const { membershipTerms } = await import('./membership-fixtures');
+    const response: CartResponse = { ...firstCart, cart: { ...firstCart.cart, items: [{ ...firstCart.cart.items[0]!,
+        product: { id: 'membership-product', type: 'membership', name: 'Membership', price: 0 }, membership: membershipTerms }] } };
+    const replaceItems = vi.fn(async () => response);
+    const cart = new CartSession({ client: { replaceItems } as unknown as ZynoSalesClient, storage: new TestStorage(), storageKey: 'cart' });
+    cart.accept(response);
+    await cart.add({ productId: 'membership-product', qty: 1 });
+    expect(replaceItems).toHaveBeenCalledWith('cart-1', 'cart-secret', { items: [
+        { productId: 'membership-product', qty: 1, notes: null, membership: { pricingTierId: 'tier-monthly' } }
+    ] });
+});

@@ -16,6 +16,24 @@
 
 ***
 
+### membership?
+
+> `optional` **membership?**: `object`
+
+#### id
+
+> **id**: `string` \| `null`
+
+#### status
+
+> **status**: `"pending"` \| `"active"` \| `"paused"` \| `"suspended"` \| `"terminated"`
+
+#### terms
+
+> **terms**: [`ISalesMembershipCheckoutTerms`](../../../index/type-aliases/ISalesMembershipCheckoutTerms.md)
+
+***
+
 ### notes
 
 > **notes**: `string` \| `null`

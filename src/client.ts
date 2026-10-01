@@ -120,6 +120,24 @@ export class ZynoSalesClient {
         }));
     }
 
+    public acceptMembershipTerms(cartId: string, cartKey: string, input: { termsHash: string }): Promise<ISalesEcommCartResponse> {
+        return unwrap(SalesSalesEcommCheckoutEmbeddedApi.putSalesEcommCheckoutEmbeddedAcceptMembershipTerms({
+            client: this.client, path: { cartId }, headers: this.cartHeaders(cartKey), body: input, throwOnError: true
+        }));
+    }
+
+    public setupMembershipCard(cartId: string, cartKey: string, input: ISalesEcommCartPaymentSetupInput) {
+        return unwrap(SalesSalesEcommCheckoutEmbeddedApi.postSalesEcommCheckoutEmbeddedSetupMembershipCard({
+            client: this.client, path: { cartId }, headers: this.cartHeaders(cartKey), body: input, throwOnError: true
+        }));
+    }
+
+    public confirmMembershipCard(cartId: string, cartKey: string, input: { paymentAttemptId: string; setupIntentId: string }): Promise<ISalesEcommOrderResponse> {
+        return unwrap(SalesSalesEcommCheckoutEmbeddedApi.postSalesEcommCheckoutEmbeddedConfirmMembershipCard({
+            client: this.client, path: { cartId }, headers: this.cartHeaders(cartKey), body: input, throwOnError: true
+        }));
+    }
+
     public verifyAddress(cartId: string, cartKey: string, input: ISalesEcommAddressVerificationInput): Promise<ISalesFulfillmentAddressVerificationResponse> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.postSalesEcommCheckoutEmbeddedVerifyAddress({
             client: this.client,

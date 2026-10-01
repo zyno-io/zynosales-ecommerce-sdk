@@ -210,6 +210,28 @@
 
 ***
 
+### postSalesEcommCheckoutEmbeddedConfirmMembershipCard()
+
+> `static` **postSalesEcommCheckoutEmbeddedConfirmMembershipCard**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses.md), `unknown`, `ThrowOnError`\>
+
+#### Type Parameters
+
+##### ThrowOnError
+
+`ThrowOnError` *extends* `boolean` = `false`
+
+#### Parameters
+
+##### options
+
+[`Options`](../type-aliases/Options.md)\<[`PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData`](../type-aliases/PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData.md), `ThrowOnError`\>
+
+#### Returns
+
+`RequestResult`\<[`PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses.md), `unknown`, `ThrowOnError`\>
+
+***
+
 ### postSalesEcommCheckoutEmbeddedCreateCart()
 
 > `static` **postSalesEcommCheckoutEmbeddedCreateCart**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedCreateCartResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedCreateCartResponses.md), `unknown`, `ThrowOnError`\>
@@ -298,6 +320,28 @@
 
 ***
 
+### postSalesEcommCheckoutEmbeddedSetupMembershipCard()
+
+> `static` **postSalesEcommCheckoutEmbeddedSetupMembershipCard**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses.md), `unknown`, `ThrowOnError`\>
+
+#### Type Parameters
+
+##### ThrowOnError
+
+`ThrowOnError` *extends* `boolean` = `false`
+
+#### Parameters
+
+##### options
+
+[`Options`](../type-aliases/Options.md)\<[`PostSalesEcommCheckoutEmbeddedSetupMembershipCardData`](../type-aliases/PostSalesEcommCheckoutEmbeddedSetupMembershipCardData.md), `ThrowOnError`\>
+
+#### Returns
+
+`RequestResult`\<[`PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses.md), `unknown`, `ThrowOnError`\>
+
+***
+
 ### postSalesEcommCheckoutEmbeddedVerifyAddress()
 
 > `static` **postSalesEcommCheckoutEmbeddedVerifyAddress**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedVerifyAddressResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedVerifyAddressResponses.md), `unknown`, `ThrowOnError`\>
@@ -317,6 +361,28 @@
 #### Returns
 
 `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedVerifyAddressResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedVerifyAddressResponses.md), `unknown`, `ThrowOnError`\>
+
+***
+
+### putSalesEcommCheckoutEmbeddedAcceptMembershipTerms()
+
+> `static` **putSalesEcommCheckoutEmbeddedAcceptMembershipTerms**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses`](../type-aliases/PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses.md), `unknown`, `ThrowOnError`\>
+
+#### Type Parameters
+
+##### ThrowOnError
+
+`ThrowOnError` *extends* `boolean` = `false`
+
+#### Parameters
+
+##### options
+
+[`Options`](../type-aliases/Options.md)\<[`PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData`](../type-aliases/PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData.md), `ThrowOnError`\>
+
+#### Returns
+
+`RequestResult`\<[`PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses`](../type-aliases/PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses.md), `unknown`, `ThrowOnError`\>
 
 ***
 

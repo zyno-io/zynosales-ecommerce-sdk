@@ -1,6 +1,7 @@
 import type {
     ISalesEcommCartItemInput,
     ISalesEcommCartPaymentSetupResponse,
+    ISalesEcommCartMembershipCardSetupResponse,
     ISalesEcommCartResponse,
     ISalesEcommOrderResponse,
     ISalesEcommPublicCart,
@@ -13,7 +14,7 @@ import type { PublicError } from './errors';
 /** Public product fields currently supported by the embedded storefront contract. */
 export type StoreProduct = Pick<
     ISalesEcommStoreProduct,
-    'id' | 'name' | 'price' | 'type' | 'slug' | 'description' | 'images' | 'shippingMeta' | 'variant'
+    'id' | 'name' | 'price' | 'type' | 'slug' | 'description' | 'images' | 'shippingMeta' | 'variant' | 'membership'
 >;
 
 /** Generated cart item input from the Sales browser contract. */
@@ -27,6 +28,12 @@ export type CartResponse = ISalesEcommCartResponse;
 
 /** Card setup response. Its client secret must not be put into render state or logs. */
 export type CardPaymentSetup = ISalesEcommCartPaymentSetupResponse;
+
+/** Saved-card setup for a zero-due recurring cart. Confirm it with Stripe confirmSetup. */
+export type MembershipCardSetup = ISalesEcommCartMembershipCardSetupResponse;
+
+/** Use `setupIntentId in setup` to select Stripe SetupIntent or PaymentIntent confirmation. */
+export type CardCheckoutSetup = CardPaymentSetup | MembershipCardSetup;
 
 /** Completed Sales order. */
 export type Order = ISalesEcommOrderResponse;

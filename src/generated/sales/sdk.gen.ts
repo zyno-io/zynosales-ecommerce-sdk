@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteSalesEcommCheckoutEmbeddedAbandonCartData, DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptData, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeData, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentData, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses, GetSalesEcommCheckoutEmbeddedGetCartData, GetSalesEcommCheckoutEmbeddedGetCartResponses, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptData, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses, GetSalesEcommOrdersEmbeddedGetData, GetSalesEcommOrdersEmbeddedGetResponses, GetSalesEcommProductsEmbeddedIndexData, GetSalesEcommProductsEmbeddedIndexResponses, GetSalesEcommProductsEmbeddedShowData, GetSalesEcommProductsEmbeddedShowResponses, GetSalesEcommStorefrontConfigEmbeddedGetData, GetSalesEcommStorefrontConfigEmbeddedGetResponses, PostSalesDiscountCodesEmbeddedValidateData, PostSalesDiscountCodesEmbeddedValidateResponses, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeData, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesData, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses, PostSalesEcommCheckoutEmbeddedCreateCartData, PostSalesEcommCheckoutEmbeddedCreateCartResponses, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionData, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses, PostSalesEcommCheckoutEmbeddedSetupCardPaymentData, PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses, PostSalesEcommCheckoutEmbeddedVerifyAddressData, PostSalesEcommCheckoutEmbeddedVerifyAddressResponses, PutSalesEcommCheckoutEmbeddedReplaceItemsData, PutSalesEcommCheckoutEmbeddedReplaceItemsResponses, PutSalesEcommCheckoutEmbeddedUpdateBuyerData, PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentData, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses } from './types.gen';
+import type { DeleteSalesEcommCheckoutEmbeddedAbandonCartData, DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptData, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeData, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentData, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses, GetSalesEcommCheckoutEmbeddedGetCartData, GetSalesEcommCheckoutEmbeddedGetCartResponses, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptData, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses, GetSalesEcommOrdersEmbeddedGetData, GetSalesEcommOrdersEmbeddedGetResponses, GetSalesEcommProductsEmbeddedIndexData, GetSalesEcommProductsEmbeddedIndexResponses, GetSalesEcommProductsEmbeddedShowData, GetSalesEcommProductsEmbeddedShowResponses, GetSalesEcommStorefrontConfigEmbeddedGetData, GetSalesEcommStorefrontConfigEmbeddedGetResponses, PostSalesDiscountCodesEmbeddedValidateData, PostSalesDiscountCodesEmbeddedValidateResponses, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeData, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesData, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses, PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData, PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses, PostSalesEcommCheckoutEmbeddedCreateCartData, PostSalesEcommCheckoutEmbeddedCreateCartResponses, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionData, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses, PostSalesEcommCheckoutEmbeddedSetupCardPaymentData, PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses, PostSalesEcommCheckoutEmbeddedSetupMembershipCardData, PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses, PostSalesEcommCheckoutEmbeddedVerifyAddressData, PostSalesEcommCheckoutEmbeddedVerifyAddressResponses, PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData, PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses, PutSalesEcommCheckoutEmbeddedReplaceItemsData, PutSalesEcommCheckoutEmbeddedReplaceItemsResponses, PutSalesEcommCheckoutEmbeddedUpdateBuyerData, PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentData, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -42,15 +42,15 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static deleteSalesEcommCheckoutEmbeddedAbandonCart<ThrowOnError extends boolean = false>(options: Options<DeleteSalesEcommCheckoutEmbeddedAbandonCartData, ThrowOnError>): RequestResult<DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses, unknown, ThrowOnError> {
         return (options.client ?? client).delete<DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}', ...options });
     }
-    
+
     public static getSalesEcommCheckoutEmbeddedGetCart<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommCheckoutEmbeddedGetCartData, ThrowOnError>): RequestResult<GetSalesEcommCheckoutEmbeddedGetCartResponses, unknown, ThrowOnError> {
         return (options.client ?? client).get<GetSalesEcommCheckoutEmbeddedGetCartResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}', ...options });
     }
-    
+
     public static putSalesEcommCheckoutEmbeddedReplaceItems<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCheckoutEmbeddedReplaceItemsData, ThrowOnError>): RequestResult<PutSalesEcommCheckoutEmbeddedReplaceItemsResponses, unknown, ThrowOnError> {
         return (options.client ?? client).put<PutSalesEcommCheckoutEmbeddedReplaceItemsResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/items',
@@ -61,7 +61,7 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static putSalesEcommCheckoutEmbeddedUpdateBuyer<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCheckoutEmbeddedUpdateBuyerData, ThrowOnError>): RequestResult<PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses, unknown, ThrowOnError> {
         return (options.client ?? client).put<PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/buyer',
@@ -72,7 +72,18 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
+    public static putSalesEcommCheckoutEmbeddedAcceptMembershipTerms<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData, ThrowOnError>): RequestResult<PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).put<PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/carts/{cartId}/membership-terms',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
     public static postSalesEcommCheckoutEmbeddedVerifyAddress<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedVerifyAddressData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedVerifyAddressResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedVerifyAddressResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/address/verify',
@@ -83,7 +94,7 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static postSalesEcommCheckoutEmbeddedCalculateShippingRates<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedCalculateShippingRatesData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/shipping/rates',
@@ -94,7 +105,7 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static postSalesEcommCheckoutEmbeddedQuoteShippingSelection<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/shipping/selection-quote',
@@ -105,11 +116,11 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static deleteSalesEcommCheckoutEmbeddedRemoveFulfillment<ThrowOnError extends boolean = false>(options: Options<DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentData, ThrowOnError>): RequestResult<DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses, unknown, ThrowOnError> {
         return (options.client ?? client).delete<DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}/fulfillment', ...options });
     }
-    
+
     public static putSalesEcommCheckoutEmbeddedUpdateFulfillment<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCheckoutEmbeddedUpdateFulfillmentData, ThrowOnError>): RequestResult<PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses, unknown, ThrowOnError> {
         return (options.client ?? client).put<PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/fulfillment',
@@ -120,11 +131,11 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode<ThrowOnError extends boolean = false>(options: Options<DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeData, ThrowOnError>): RequestResult<DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses, unknown, ThrowOnError> {
         return (options.client ?? client).delete<DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}/discount-code', ...options });
     }
-    
+
     public static postSalesEcommCheckoutEmbeddedApplyDiscountCode<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedApplyDiscountCodeData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/discount-code',
@@ -135,7 +146,7 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static postSalesEcommCheckoutEmbeddedSetupCardPayment<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedSetupCardPaymentData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/payments/setup-cc',
@@ -146,15 +157,37 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
+    public static postSalesEcommCheckoutEmbeddedSetupMembershipCard<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedSetupMembershipCardData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/carts/{cartId}/payments/setup-membership-card',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCheckoutEmbeddedConfirmMembershipCard<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/carts/{cartId}/payments/confirm-setup-intent',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
     public static deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt<ThrowOnError extends boolean = false>(options: Options<DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptData, ThrowOnError>): RequestResult<DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses, unknown, ThrowOnError> {
         return (options.client ?? client).delete<DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}/payments/{attemptId}', ...options });
     }
-    
+
     public static getSalesEcommCheckoutEmbeddedGetPaymentAttempt<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommCheckoutEmbeddedGetPaymentAttemptData, ThrowOnError>): RequestResult<GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses, unknown, ThrowOnError> {
         return (options.client ?? client).get<GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}/payments/{attemptId}', ...options });
     }
-    
+
     public static postSalesEcommCheckoutEmbeddedConfirmCardPayment<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses, unknown, ThrowOnError>({
             url: '/embedded/sales/ecomm/carts/{cartId}/payments/confirm-payment-intent',
@@ -165,7 +198,7 @@ export class SalesSalesEcommCheckoutEmbeddedApi {
             }
         });
     }
-    
+
     public static postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData, ThrowOnError>): RequestResult<PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses, unknown, ThrowOnError> {
         return (options.client ?? client).post<PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}/finalize', ...options });
     }
@@ -187,7 +220,7 @@ export class SalesSalesEcommProductsEmbeddedApi {
     public static getSalesEcommProductsEmbeddedIndex<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommProductsEmbeddedIndexData, ThrowOnError>): RequestResult<GetSalesEcommProductsEmbeddedIndexResponses, unknown, ThrowOnError> {
         return (options.client ?? client).get<GetSalesEcommProductsEmbeddedIndexResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/products', ...options });
     }
-    
+
     public static getSalesEcommProductsEmbeddedShow<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommProductsEmbeddedShowData, ThrowOnError>): RequestResult<GetSalesEcommProductsEmbeddedShowResponses, unknown, ThrowOnError> {
         return (options.client ?? client).get<GetSalesEcommProductsEmbeddedShowResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/products/{slug}', ...options });
     }

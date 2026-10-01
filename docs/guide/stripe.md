@@ -54,11 +54,16 @@ const setup = await storefront.checkout.beginCardPayment();
 2. runs `beforePayment` before a **new** attempt and refreshes the cart afterward
 3. creates an idempotent Sales/Stripe payment setup for the current amount
 
-It returns a `CardPaymentSetup` with `clientSecret`, `paymentAttemptId`,
-`paymentIntentId`, `amount`, and the current cart response.
+It returns `CardCheckoutSetup`: a PaymentIntent setup for a positive balance,
+or a `MembershipCardSetup` with `setupIntentId` for a recurring membership with
+nothing due today. Both include `clientSecret`, `paymentAttemptId`, `amount`,
+and the current cart response. Branch on `'setupIntentId' in setup`.
 
-If `setup` is `null`, the cart had nothing due and Sales finalized it without a
-card. Read the completed order from the checkout snapshot:
+This widens the previous `CardPaymentSetup | null` return type. Applications
+that read `paymentIntentId` must first narrow the returned setup as shown below.
+
+If `setup` is `null`, the cart had nothing due and required no reusable card, so
+Sales finalized it. Read the completed order from the checkout snapshot:
 
 ```ts
 if (!setup) {
@@ -88,29 +93,43 @@ state, or your own server response. Keep it within the payment view.
 ## Confirm with Stripe, then record with Sales
 
 ```ts
-const stripeResult = await stripe.confirmPayment({
-    elements,
-    confirmParams: {
-        return_url: `${window.location.origin}/checkout/complete`
-    },
-    redirect: 'if_required'
-});
-
-if (stripeResult.error) {
-    showPaymentError(stripeResult.error.message ?? 'Payment could not be authorized.');
-    return;
+if ('setupIntentId' in setup) {
+    const result = await stripe.confirmSetup({
+        elements,
+        confirmParams: { return_url: `${window.location.origin}/checkout/complete` },
+        redirect: 'if_required'
+    });
+    if (result.error) {
+        showPaymentError(result.error.message ?? 'Card setup could not be completed.');
+        return;
+    }
+    const order = await storefront.checkout.completeMembershipCardSetup({
+        paymentAttemptId: setup.paymentAttemptId,
+        setupIntentId: setup.setupIntentId
+    });
+    showReceipt(order);
+} else {
+    const result = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: `${window.location.origin}/checkout/complete` },
+        redirect: 'if_required'
+    });
+    if (result.error) {
+        showPaymentError(result.error.message ?? 'Payment could not be authorized.');
+        return;
+    }
+    const order = await storefront.checkout.completeCardPayment({
+        paymentAttemptId: setup.paymentAttemptId,
+        paymentIntentId: setup.paymentIntentId
+    });
+    showReceipt(order);
 }
-
-const order = await storefront.checkout.completeCardPayment({
-    paymentAttemptId: setup.paymentAttemptId,
-    paymentIntentId: setup.paymentIntentId
-});
-
-showReceipt(order);
 ```
 
 Call `completeCardPayment()` only after Stripe has authorized the PaymentIntent.
-Sales verifies the attempt and returns the completed order. On completion, the
+Call `completeMembershipCardSetup()` after Stripe confirms the SetupIntent.
+Sales verifies the purchaser, accepted terms, and provider result before activating
+the memberships and returning the order. On completion, the
 SDK:
 
 - clears the finished cart
@@ -140,7 +159,7 @@ try {
 ```
 
 Recovery checks for an already-paid order, then checks a persisted payment
-attempt. Authorized or recorded attempts are confirmed with Sales. Failed or
+attempt, including SetupIntent references. Authorized or recorded attempts are confirmed with Sales. Failed or
 canceled attempt state is cleared. Repeated recovery is safe and does not rerun
 the completion hook for the same stored order.
 

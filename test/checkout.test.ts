@@ -278,3 +278,60 @@ describe('CheckoutCoordinator', () => {
         expect(storage.getItem('scoped:completed')).toContain('order-0');
     });
 });
+
+function recurringFreeCart(): CartResponse {
+    const response = cartResponse('cart-free-membership', 0);
+    response.cart.membershipRequirements = { buyerRequired: false, billingAddressRequired: false, recurringConsentRequired: false,
+        paymentMethodSetupRequired: true, termsHash: 'server-terms', acceptedTermsHash: 'server-terms' };
+    return response;
+}
+
+it('uses SetupIntent confirmation for a free introductory membership and keeps its client secret transient', async () => {
+    const response = recurringFreeCart();
+    const setup = { ...response, paymentAttemptId: 'setup-attempt', setupIntentId: 'seti_membership', clientSecret: 'seti_private_secret', amount: 0 };
+    const setupMembershipCard = vi.fn(async () => setup);
+    const confirmMembershipCard = vi.fn(async () => paidOrder(response.cartId));
+    const finalizeZeroDueCart = vi.fn();
+    const client = { getOrder: vi.fn(async () => ({ ...paidOrder(response.cartId), status: 'open' })), setupMembershipCard,
+        confirmMembershipCard, finalizeZeroDueCart } as unknown as ZynoSalesClient;
+    const { cart, checkout, storage } = checkoutFixture(client);
+    cart.accept(response);
+    const result = await checkout.beginCardPayment();
+    expect(result).toEqual(setup);
+    expect(finalizeZeroDueCart).not.toHaveBeenCalled();
+    expect(JSON.stringify(checkout.getSnapshot())).not.toContain('seti_private_secret');
+    expect(JSON.stringify([...storage.values.values()])).not.toContain('seti_private_secret');
+    expect(JSON.parse(storage.getItem('payment')!)).toMatchObject({ kind: 'setup', setupIntentId: 'seti_membership' });
+    const order = await checkout.completeMembershipCardSetup({ paymentAttemptId: 'setup-attempt', setupIntentId: 'seti_membership' });
+    expect(order.status).toBe('paid');
+    expect(confirmMembershipCard).toHaveBeenCalledWith(response.cartId, `${response.cartId}-secret`, { paymentAttemptId: 'setup-attempt', setupIntentId: 'seti_membership' });
+    expect(storage.getItem('payment')).toBeNull();
+});
+
+it('recovers a confirmed membership SetupIntent after a reload', async () => {
+    const response = recurringFreeCart();
+    const storage = new TestStorage();
+    storage.setItem('payment', JSON.stringify({ cartId: response.cartId, kind: 'setup', idempotencyKey: 'stable-key', paymentAttemptId: 'setup-attempt', setupIntentId: 'seti_membership' }));
+    const confirmMembershipCard = vi.fn(async () => paidOrder(response.cartId));
+    const confirmCardPayment = vi.fn();
+    const client = { getOrder: vi.fn(async () => ({ ...paidOrder(response.cartId), status: 'open' })),
+        getPaymentAttempt: vi.fn(async () => ({ id: 'setup-attempt', status: 'authorized', kind: 'setup', setupIntentId: 'seti_membership' })),
+        confirmMembershipCard, confirmCardPayment } as unknown as ZynoSalesClient;
+    const { cart, checkout } = checkoutFixture(client, storage);
+    cart.accept(response);
+    const order = await checkout.recoverPayment();
+    expect(order?.status).toBe('paid');
+    expect(confirmMembershipCard).toHaveBeenCalledOnce();
+    expect(confirmCardPayment).not.toHaveBeenCalled();
+});
+
+it('forwards explicit server terms acceptance and clears stale local payment recovery', async () => {
+    const response = recurringFreeCart();
+    const acceptMembershipTerms = vi.fn(async () => response);
+    const { cart, checkout, storage } = checkoutFixture({ acceptMembershipTerms } as unknown as ZynoSalesClient);
+    cart.accept(response);
+    storage.setItem('payment', JSON.stringify({ cartId: response.cartId, idempotencyKey: 'old-key' }));
+    await checkout.acceptMembershipTerms({ termsHash: 'server-terms' });
+    expect(acceptMembershipTerms).toHaveBeenCalledWith(response.cartId, `${response.cartId}-secret`, { termsHash: 'server-terms' });
+    expect(storage.getItem('payment')).toBeNull();
+});

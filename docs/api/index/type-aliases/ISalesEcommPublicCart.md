@@ -58,6 +58,36 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### membershipRequirements?
+
+> `optional` **membershipRequirements?**: `object`
+
+#### acceptedTermsHash
+
+> **acceptedTermsHash**: `string` \| `null`
+
+#### billingAddressRequired
+
+> **billingAddressRequired**: `boolean`
+
+#### buyerRequired
+
+> **buyerRequired**: `boolean`
+
+#### paymentMethodSetupRequired
+
+> **paymentMethodSetupRequired**: `boolean`
+
+#### recurringConsentRequired
+
+> **recurringConsentRequired**: `boolean`
+
+#### termsHash
+
+> **termsHash**: `string`
+
+***
+
 ### priceBase
 
 > **priceBase**: `number`

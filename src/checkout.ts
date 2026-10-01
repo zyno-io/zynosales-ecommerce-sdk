@@ -4,6 +4,8 @@ import { toPublicError, type PublicError, ZynoSalesError } from './errors';
 import type { ZynoSalesStorage } from './storage';
 import type {
     CardPaymentSetup,
+    MembershipCardSetup,
+    CardCheckoutSetup,
     Cart,
     CheckoutSnapshot,
     Order,
@@ -23,6 +25,8 @@ type PendingPayment = {
     idempotencyKey: string;
     paymentAttemptId?: string;
     paymentIntentId?: string;
+    setupIntentId?: string;
+    kind?: 'payment' | 'setup';
 };
 
 type CompletedOrderReference = {
@@ -165,11 +169,21 @@ export class CheckoutCoordinator {
         });
     }
 
+    /** Records the shopper's explicit acceptance of the current server-provided membership terms hash. */
+    public acceptMembershipTerms(input: { termsHash: string }): Promise<Cart> {
+        return this.runCartMutation(async () => {
+            const reference = this.cartSession.requireReference();
+            const response = await this.client.acceptMembershipTerms(reference.cartId, reference.cartKey, input);
+            this.cartSession.accept(response);
+            return response.cart;
+        });
+    }
+
     /**
      * Runs the final policy hook and opens a card-payment attempt.
-     * For a zero-due cart it finalizes the order and returns `null`.
+     * For a zero-due recurring cart it returns a SetupIntent; other zero-due carts finalize and return `null`.
      */
-    public beginCardPayment(): Promise<CardPaymentSetup | null> {
+    public beginCardPayment(): Promise<CardCheckoutSetup | null> {
         return this.run(async () => {
             await this.recoverPaymentInternal();
             if (this.order) return null;
@@ -191,20 +205,24 @@ export class CheckoutCoordinator {
 
                 reference = this.cartSession.requireReference();
                 const cart = this.requireCart();
-                if (cart.priceDue === 0) {
+                if (cart.priceDue === 0 && !cart.membershipRequirements?.paymentMethodSetupRequired) {
                     await this.finalizeZeroDueCartInternal(reference.cartId, reference.cartKey, reference.orderKey);
                     return null;
                 }
             }
 
             const idempotencyKey = pending?.idempotencyKey ?? createIdempotencyKey();
+            const kind = pending?.kind ?? (this.requireCart().membershipRequirements?.paymentMethodSetupRequired ? 'setup' : 'payment');
             this.writePending({
                 cartId: reference.cartId,
-                idempotencyKey,
+                idempotencyKey, kind,
+                ...(pending?.setupIntentId ? { setupIntentId: pending.setupIntentId } : {}),
                 ...(pending?.paymentAttemptId ? { paymentAttemptId: pending.paymentAttemptId } : {}),
                 ...(pending?.paymentIntentId ? { paymentIntentId: pending.paymentIntentId } : {})
             });
-            const setup = await this.client.setupCardPayment(reference.cartId, reference.cartKey, { idempotencyKey });
+            const setup = kind === 'setup'
+                ? await this.client.setupMembershipCard(reference.cartId, reference.cartKey, { idempotencyKey })
+                : await this.client.setupCardPayment(reference.cartId, reference.cartKey, { idempotencyKey });
             this.cartSession.accept(setup);
             this.paymentAttemptId = setup.paymentAttemptId;
             this.paymentAttemptStatus = 'creating';
@@ -212,7 +230,8 @@ export class CheckoutCoordinator {
                 cartId: setup.cartId,
                 idempotencyKey,
                 paymentAttemptId: setup.paymentAttemptId,
-                paymentIntentId: setup.paymentIntentId
+                kind,
+                ...('setupIntentId' in setup ? { setupIntentId: setup.setupIntentId } : { paymentIntentId: setup.paymentIntentId })
             });
             this.emit();
             return setup;
@@ -224,6 +243,16 @@ export class CheckoutCoordinator {
         return this.run(async () => {
             const reference = this.cartSession.requireReference();
             const order = await this.client.confirmCardPayment(reference.cartId, reference.cartKey, input);
+            await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
+            return order;
+        });
+    }
+
+    /** Completes a zero-due membership purchase after Stripe confirms its SetupIntent. */
+    public completeMembershipCardSetup(input: Pick<MembershipCardSetup, 'paymentAttemptId' | 'setupIntentId'>): Promise<Order> {
+        return this.run(async () => {
+            const reference = this.cartSession.requireReference();
+            const order = await this.client.confirmMembershipCard(reference.cartId, reference.cartKey, input);
             await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
             return order;
         });
@@ -339,7 +368,7 @@ export class CheckoutCoordinator {
         }
 
         const pending = this.readPending();
-        if (!pending || pending.cartId !== reference.cartId || !pending.paymentAttemptId || !pending.paymentIntentId) return null;
+        if (!pending || pending.cartId !== reference.cartId || !pending.paymentAttemptId || (!pending.paymentIntentId && !pending.setupIntentId)) return null;
 
         const attempt = await this.client.getPaymentAttempt(reference.cartId, reference.cartKey, pending.paymentAttemptId);
         this.paymentAttemptId = attempt.id;
@@ -347,10 +376,9 @@ export class CheckoutCoordinator {
         this.emit();
 
         if (attempt.status === 'authorized' || attempt.status === 'recorded') {
-            const order = await this.client.confirmCardPayment(reference.cartId, reference.cartKey, {
-                paymentAttemptId: pending.paymentAttemptId,
-                paymentIntentId: pending.paymentIntentId
-            });
+            const order = pending.setupIntentId
+                ? await this.client.confirmMembershipCard(reference.cartId, reference.cartKey, { paymentAttemptId: pending.paymentAttemptId, setupIntentId: pending.setupIntentId })
+                : await this.client.confirmCardPayment(reference.cartId, reference.cartKey, { paymentAttemptId: pending.paymentAttemptId, paymentIntentId: pending.paymentIntentId! });
             await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
             return order;
         }
@@ -428,7 +456,9 @@ export class CheckoutCoordinator {
                 cartId: parsed.cartId,
                 idempotencyKey: parsed.idempotencyKey,
                 ...(typeof parsed.paymentAttemptId === 'string' ? { paymentAttemptId: parsed.paymentAttemptId } : {}),
-                ...(typeof parsed.paymentIntentId === 'string' ? { paymentIntentId: parsed.paymentIntentId } : {})
+                ...(typeof parsed.paymentIntentId === 'string' ? { paymentIntentId: parsed.paymentIntentId } : {}),
+                ...(typeof parsed.setupIntentId === 'string' ? { setupIntentId: parsed.setupIntentId } : {}),
+                ...(parsed.kind === 'setup' || parsed.kind === 'payment' ? { kind: parsed.kind } : {})
             };
         } catch {
             return null;

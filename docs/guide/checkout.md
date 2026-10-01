@@ -51,14 +51,18 @@ const cart = await storefront.checkout.setBuyer({
     name: 'Ada Lovelace',
     company: 'Analytical Engines Ltd.',
     email: 'ada@example.com',
-    phone: '+1 555 010 1000'
+    phone: '+1 555 010 1000',
+    billingAddress: {
+        street1: '123 Main Street', city: 'New York', state: 'NY', zip: '10001', country: 'US'
+    }
 });
 ```
 
 `company` and `phone` are optional. This is the purchaser’s CRM identity:
 send the buyer’s original typed name and company here, rather than a
-carrier-normalized recipient. Sales adds the fulfillment address to that CRM
-profile when the sale closes. The returned cart is authoritative and is also
+carrier-normalized recipient. For membership carts, provide the purchaser’s billing address when
+`cart.membershipRequirements.billingAddressRequired` is true, even when nothing
+ships. Every membership belongs to the purchaser; the shipping recipient may differ. The returned cart is authoritative and is also
 accepted into `storefront.cart`, so cart subscribers receive the update.
 
 ## Verify an address
@@ -219,12 +223,33 @@ Always render `cart.appliedDiscount` and the recalculated totals returned by
 Sales. A successful validation is not an applied discount. Only offer this UI
 when `config.capabilities.discountCodes` is enabled.
 
+## Accept recurring membership terms
+
+After finishing buyer, item, discount, and delivery changes, render the server’s
+terms from each membership line. Show the initial charge, renewal amount and
+interval, and applicable validity. Obtain explicit consent to renewals and saving
+the card before recording acceptance:
+
+```ts
+const cart = storefront.cart.getSnapshot().cart;
+const requirements = cart?.membershipRequirements;
+if (requirements?.recurringConsentRequired && buyerAcceptedRecurringTerms) {
+    await storefront.checkout.acceptMembershipTerms(requirements.termsHash);
+}
+```
+
+Any cart mutation clears acceptance. A changed catalog price or tier can also
+reject payment setup; refresh the selection and obtain fresh consent. Ordinary
+item and shipping discounts remain available in mixed carts. Membership coupons
+and tab-wide discounts affecting membership charges are unavailable.
+
 ## Ready for payment
 
 Before payment, verify that:
 
 - the cart is loaded (`snapshot.hasCart` and `snapshot.cart`) and still open
-- required buyer fields have been saved
+- required buyer and billing address fields have been saved
+- recurring terms have been explicitly accepted for the current cart
 - every shippable package has a quoted and applied rate (when shipping applies)
 - `cart.taxStatus` is acceptable for your UI (typically `ok`)
 - no cart or checkout mutation is still busy

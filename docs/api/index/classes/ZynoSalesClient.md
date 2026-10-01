@@ -50,6 +50,32 @@ Low-level generated-contract client. It does not persist cart capabilities.
 
 ***
 
+### acceptMembershipTerms()
+
+> **acceptMembershipTerms**(`cartId`, `cartKey`, `input`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+
+#### Parameters
+
+##### cartId
+
+`string`
+
+##### cartKey
+
+`string`
+
+##### input
+
+###### termsHash
+
+`string`
+
+#### Returns
+
+`Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+
+***
+
 ### applyDiscount()
 
 > **applyDiscount**(`cartId`, `cartKey`, `input`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
@@ -139,6 +165,36 @@ Low-level generated-contract client. It does not persist cart capabilities.
 ##### input
 
 [`ISalesEcommCartConfirmPaymentInput`](../../generated/sales/type-aliases/ISalesEcommCartConfirmPaymentInput.md)
+
+#### Returns
+
+`Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+
+***
+
+### confirmMembershipCard()
+
+> **confirmMembershipCard**(`cartId`, `cartKey`, `input`): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+
+#### Parameters
+
+##### cartId
+
+`string`
+
+##### cartKey
+
+`string`
+
+##### input
+
+###### paymentAttemptId
+
+`string`
+
+###### setupIntentId
+
+`string`
 
 #### Returns
 
@@ -391,6 +447,30 @@ Low-level generated-contract client. It does not persist cart capabilities.
 #### Returns
 
 `Promise`\<[`ISalesEcommCartPaymentSetupResponse`](../type-aliases/ISalesEcommCartPaymentSetupResponse.md)\>
+
+***
+
+### setupMembershipCard()
+
+> **setupMembershipCard**(`cartId`, `cartKey`, `input`): `Promise`\<[`ISalesEcommCartMembershipCardSetupResponse`](../type-aliases/ISalesEcommCartMembershipCardSetupResponse.md)\>
+
+#### Parameters
+
+##### cartId
+
+`string`
+
+##### cartKey
+
+`string`
+
+##### input
+
+[`ISalesEcommCartPaymentSetupInput`](../../generated/sales/type-aliases/ISalesEcommCartPaymentSetupInput.md)
+
+#### Returns
+
+`Promise`\<[`ISalesEcommCartMembershipCardSetupResponse`](../type-aliases/ISalesEcommCartMembershipCardSetupResponse.md)\>
 
 ***
 

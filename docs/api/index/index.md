@@ -17,6 +17,7 @@ The SDK owns API workflows and state; the website owns all UI.
 
 ## Type Aliases
 
+- [CardCheckoutSetup](type-aliases/CardCheckoutSetup.md)
 - [CardPaymentSetup](type-aliases/CardPaymentSetup.md)
 - [Cart](type-aliases/Cart.md)
 - [CartItemInput](type-aliases/CartItemInput.md)
@@ -29,6 +30,7 @@ The SDK owns API workflows and state; the website owns all UI.
 - [ISalesEcommCartDiscountCodeInput](type-aliases/ISalesEcommCartDiscountCodeInput.md)
 - [ISalesEcommCartFulfillmentInput](type-aliases/ISalesEcommCartFulfillmentInput.md)
 - [ISalesEcommCartItemInput](type-aliases/ISalesEcommCartItemInput.md)
+- [ISalesEcommCartMembershipCardSetupResponse](type-aliases/ISalesEcommCartMembershipCardSetupResponse.md)
 - [ISalesEcommCartPaymentSetupResponse](type-aliases/ISalesEcommCartPaymentSetupResponse.md)
 - [ISalesEcommCartResponse](type-aliases/ISalesEcommCartResponse.md)
 - [ISalesEcommCartShippingRatesInput](type-aliases/ISalesEcommCartShippingRatesInput.md)
@@ -44,7 +46,10 @@ The SDK owns API workflows and state; the website owns all UI.
 - [ISalesFulfillmentShippingCalculateRequestAddressDetail](type-aliases/ISalesFulfillmentShippingCalculateRequestAddressDetail.md)
 - [ISalesFulfillmentVerifiedAddress](type-aliases/ISalesFulfillmentVerifiedAddress.md)
 - [ISalesFullfillmentAddress](type-aliases/ISalesFullfillmentAddress.md)
+- [ISalesMembershipCheckoutCatalog](type-aliases/ISalesMembershipCheckoutCatalog.md)
+- [ISalesMembershipCheckoutTerms](type-aliases/ISalesMembershipCheckoutTerms.md)
 - [IValidateDiscountCodeResponse](type-aliases/IValidateDiscountCodeResponse.md)
+- [MembershipCardSetup](type-aliases/MembershipCardSetup.md)
 - [Order](type-aliases/Order.md)
 - [PublicError](type-aliases/PublicError.md)
 - [SalesFulfillmentOrderRecipient](type-aliases/SalesFulfillmentOrderRecipient.md)

@@ -176,3 +176,11 @@ complete.
 
 - [Collect buyer details, delivery, and discounts](./checkout)
 - [State, recovery, and errors](./state-and-errors)
+
+## Membership selections in mixed carts
+
+Membership inputs accept `membership: { pricingTierId }`. Cart updates preserve
+the server-selected tier while you change quantities or remove ordinary products.
+Membership quantities remain one; choose a tier through a replacement input when
+changing the membership selection. Read `cart.membershipRequirements` for buyer,
+billing address, recurring consent, and reusable-card requirements.

@@ -176,6 +176,45 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ISalesEcommBuyerInput"
+  /embedded/sales/ecomm/carts/{cartId}/membership-terms:
+    put:
+      operationId: putSalesEcommCheckoutEmbeddedAcceptMembershipTerms
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                termsHash:
+                  type: string
+              required:
+                - termsHash
   /embedded/sales/ecomm/carts/{cartId}/address/verify:
     post:
       operationId: postSalesEcommCheckoutEmbeddedVerifyAddress
@@ -434,6 +473,82 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ISalesEcommCartPaymentSetupInput"
+  /embedded/sales/ecomm/carts/{cartId}/payments/setup-membership-card:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedSetupMembershipCard
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartMembershipCardSetupResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommCartPaymentSetupInput"
+  /embedded/sales/ecomm/carts/{cartId}/payments/confirm-setup-intent:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedConfirmMembershipCard
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommOrderResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                paymentAttemptId:
+                  type: string
+                setupIntentId:
+                  type: string
+              required:
+                - paymentAttemptId
+                - setupIntentId
   /embedded/sales/ecomm/carts/{cartId}/payments/{attemptId}:
     get:
       operationId: getSalesEcommCheckoutEmbeddedGetPaymentAttempt
@@ -742,6 +857,10 @@ components:
           type:
             - string
             - "null"
+        billingAddress:
+          anyOf:
+            - $ref: "#/components/schemas/ISalesFullfillmentAddress"
+            - type: "null"
       required:
         - name
         - email
@@ -868,7 +987,9 @@ components:
         recipient:
           $ref: "#/components/schemas/SalesFulfillmentOrderRecipient"
         crmAddressId:
-          type: [string, 'null']
+          type:
+            - string
+            - "null"
         shippingPlanId:
           type:
             - string
@@ -931,36 +1052,32 @@ components:
           type: string
       required:
         - idempotencyKey
-    ISalesEcommPaymentAttemptResponse:
+    ISalesEcommCartMembershipCardSetupResponse:
       type: object
       properties:
-        id:
+        cartId:
           type: string
-          format: uuid
-          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        cartKey:
+          type: string
+        orderKey:
+          type: string
+        cart:
+          $ref: "#/components/schemas/ISalesEcommPublicCart"
+        paymentAttemptId:
+          type: string
+        setupIntentId:
+          type: string
+        clientSecret:
+          type: string
         amount:
           type: number
-          minimum: 0
-        status:
-          $ref: "#/components/schemas/SalesEcommPaymentAttemptStatus"
-        failureCode:
-          type:
-            - string
-            - "null"
-        updatedAt:
-          type: string
-          format: date-time
-        paymentIntentId:
-          type:
-            - string
-            - "null"
       required:
-        - id
+        - cartId
+        - cart
+        - paymentAttemptId
+        - setupIntentId
+        - clientSecret
         - amount
-        - status
-        - failureCode
-        - updatedAt
-        - paymentIntentId
     ISalesEcommOrderResponse:
       type: object
       properties:
@@ -1080,6 +1197,47 @@ components:
         - taxes
         - createdAt
         - closedAt
+    ISalesEcommPaymentAttemptResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
+        amount:
+          type: number
+          minimum: 0
+        status:
+          $ref: "#/components/schemas/SalesEcommPaymentAttemptStatus"
+        failureCode:
+          type:
+            - string
+            - "null"
+        updatedAt:
+          type: string
+          format: date-time
+        paymentIntentId:
+          type:
+            - string
+            - "null"
+        setupIntentId:
+          type:
+            - string
+            - "null"
+        kind:
+          enum:
+            - payment
+            - setup
+          type: string
+      required:
+        - id
+        - amount
+        - status
+        - failureCode
+        - updatedAt
+        - paymentIntentId
+        - setupIntentId
+        - kind
     ISalesEcommCartConfirmPaymentInput:
       type: object
       properties:
@@ -1128,6 +1286,19 @@ components:
               type: boolean
             discountCodes:
               type: boolean
+            memberships:
+              type: object
+              properties:
+                oneTime:
+                  type: boolean
+                recurring:
+                  type: boolean
+                mixedCart:
+                  type: boolean
+              required:
+                - oneTime
+                - recurring
+                - mixedCart
           required:
             - addressVerification
             - shipping
@@ -1150,7 +1321,10 @@ components:
           enum:
             - standard
             - variant
+            - membership
           type: string
+        membership:
+          $ref: "#/components/schemas/ISalesMembershipCheckoutCatalog"
         slug:
           type: string
         description:
@@ -1216,6 +1390,30 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ISalesEcommPublicCartItem"
+        membershipRequirements:
+          type: object
+          properties:
+            buyerRequired:
+              type: boolean
+            billingAddressRequired:
+              type: boolean
+            recurringConsentRequired:
+              type: boolean
+            paymentMethodSetupRequired:
+              type: boolean
+            termsHash:
+              type: string
+            acceptedTermsHash:
+              type:
+                - string
+                - "null"
+          required:
+            - buyerRequired
+            - billingAddressRequired
+            - recurringConsentRequired
+            - paymentMethodSetupRequired
+            - termsHash
+            - acceptedTermsHash
         fulfillment:
           type: object
           properties:
@@ -1299,39 +1497,16 @@ components:
           type:
             - string
             - "null"
+        membership:
+          type: object
+          properties:
+            pricingTierId:
+              type:
+                - string
+                - "null"
       required:
         - productId
         - qty
-    ISalesFulfillmentVerifiedAddress:
-      type: object
-      properties:
-        name:
-          type: string
-        company:
-          type: string
-        street1:
-          type: string
-        street2:
-          type: string
-        city:
-          type: string
-        state:
-          type: string
-        zip:
-          type: string
-        country:
-          type: string
-        phone:
-          type: string
-        id:
-          type: string
-      required:
-        - street1
-        - city
-        - state
-        - zip
-        - country
-        - id
     ISalesFullfillmentAddress:
       type: object
       properties:
@@ -1363,6 +1538,36 @@ components:
         - state
         - zip
         - country
+    ISalesFulfillmentVerifiedAddress:
+      type: object
+      properties:
+        name:
+          type: string
+        company:
+          type: string
+        street1:
+          type: string
+        street2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        country:
+          type: string
+        phone:
+          type: string
+        id:
+          type: string
+      required:
+        - street1
+        - city
+        - state
+        - zip
+        - country
+        - id
     ISalesEcommPublicShippingPlan:
       type: object
       properties:
@@ -1433,16 +1638,6 @@ components:
         - city
         - state
         - zip
-    SalesEcommPaymentAttemptStatus:
-      enum:
-        - creating
-        - requires_payment_method
-        - authorized
-        - canceling
-        - recorded
-        - canceled
-        - failed
-      type: string
     ISalesEcommOrderItem:
       type: object
       properties:
@@ -1462,6 +1657,27 @@ components:
           type: number
         priceTotal:
           type: number
+        membership:
+          type: object
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            status:
+              enum:
+                - pending
+                - active
+                - paused
+                - suspended
+                - terminated
+              type: string
+            terms:
+              $ref: "#/components/schemas/ISalesMembershipCheckoutTerms"
+          required:
+            - id
+            - status
+            - terms
         priceOverride:
           $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
         product:
@@ -1508,11 +1724,41 @@ components:
         - rate
         - taxableBase
         - amount
+    SalesEcommPaymentAttemptStatus:
+      enum:
+        - creating
+        - requires_payment_method
+        - authorized
+        - canceling
+        - recorded
+        - canceled
+        - failed
+      type: string
     StripeEnvironment:
       enum:
         - live
         - sandbox
       type: string
+    ISalesMembershipCheckoutCatalog:
+      type: object
+      properties:
+        membershipTypeId:
+          type: string
+        name:
+          type: string
+        defaultPricingTierId:
+          type:
+            - string
+            - "null"
+        pricingTiers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesMembershipCheckoutTerms"
+      required:
+        - membershipTypeId
+        - name
+        - defaultPricingTierId
+        - pricingTiers
     ISalesEcommProductImage:
       type: object
       properties:
@@ -1588,6 +1834,8 @@ components:
           type: number
         priceTotal:
           type: number
+        membership:
+          $ref: "#/components/schemas/ISalesMembershipCheckoutTerms"
         priceOverride:
           $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
         product:
@@ -1697,6 +1945,60 @@ components:
       required:
         - id
         - rateExpired
+    ISalesMembershipCheckoutTerms:
+      type: object
+      properties:
+        membershipTypeId:
+          type: string
+        pricingTierId:
+          type:
+            - string
+            - "null"
+        name:
+          type: string
+        initialPrice:
+          type: number
+        renewalPrice:
+          type:
+            - number
+            - "null"
+        subscriptionPeriod:
+          enum:
+            - day
+            - month
+            - year
+            - null
+          type:
+            - string
+            - "null"
+        subscriptionRecurs:
+          type: boolean
+        validityValue:
+          type:
+            - number
+            - "null"
+        validityUnits:
+          enum:
+            - day
+            - month
+            - year
+            - null
+          type:
+            - string
+            - "null"
+        termsHash:
+          type: string
+      required:
+        - membershipTypeId
+        - pricingTierId
+        - name
+        - initialPrice
+        - renewalPrice
+        - subscriptionPeriod
+        - subscriptionRecurs
+        - validityValue
+        - validityUnits
+        - termsHash
     ISalesFulfillmentProductShippingMetaIntl:
       type: object
       properties:

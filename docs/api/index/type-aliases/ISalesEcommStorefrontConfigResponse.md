@@ -18,6 +18,22 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 > **discountCodes**: `boolean`
 
+#### memberships?
+
+> `optional` **memberships?**: `object`
+
+##### memberships.mixedCart
+
+> **mixedCart**: `boolean`
+
+##### memberships.oneTime
+
+> **oneTime**: `boolean`
+
+##### memberships.recurring
+
+> **recurring**: `boolean`
+
 #### shipping
 
 > **shipping**: `boolean`

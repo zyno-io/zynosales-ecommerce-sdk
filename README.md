@@ -49,6 +49,13 @@ storefront.cart.subscribe(snapshot => {
 
 It does **not** ship UI components, CSS, routing, Stripe.js, or checkout markup.
 
+Membership products support tier selection, mixed carts, purchaser billing details,
+recurring-term acceptance, and reusable card setup for free introductory periods.
+`beginCardPayment()` returns `CardCheckoutSetup | null`; branch on `setupIntentId`
+to choose Stripe's SetupIntent or PaymentIntent confirmation flow. See the
+[checkout guide](https://zyno-io.github.io/zynosales-ecommerce-sdk/guide/checkout)
+and [Stripe guide](https://zyno-io.github.io/zynosales-ecommerce-sdk/guide/stripe).
+
 ## Documentation
 
 - [Get started](https://zyno-io.github.io/zynosales-ecommerce-sdk/guide/)

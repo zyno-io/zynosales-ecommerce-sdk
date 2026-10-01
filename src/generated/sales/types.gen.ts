@@ -39,6 +39,7 @@ export type ISalesEcommBuyerInput = {
     company?: string | null;
     email: string;
     phone?: string | null;
+    billingAddress?: ISalesFullfillmentAddress | null;
 };
 
 export type ISalesFulfillmentAddressVerificationResponse = {
@@ -116,13 +117,15 @@ export type ISalesEcommCartPaymentSetupInput = {
     idempotencyKey: string;
 };
 
-export type ISalesEcommPaymentAttemptResponse = {
-    id: string;
+export type ISalesEcommCartMembershipCardSetupResponse = {
+    cartId: string;
+    cartKey?: string;
+    orderKey?: string;
+    cart: ISalesEcommPublicCart;
+    paymentAttemptId: string;
+    setupIntentId: string;
+    clientSecret: string;
     amount: number;
-    status: SalesEcommPaymentAttemptStatus;
-    failureCode: string | null;
-    updatedAt: string;
-    paymentIntentId: string | null;
 };
 
 export type ISalesEcommOrderResponse = {
@@ -156,6 +159,17 @@ export type ISalesEcommOrderResponse = {
     closedAt: string | null;
 };
 
+export type ISalesEcommPaymentAttemptResponse = {
+    id: string;
+    amount: number;
+    status: SalesEcommPaymentAttemptStatus;
+    failureCode: string | null;
+    updatedAt: string;
+    paymentIntentId: string | null;
+    setupIntentId: string | null;
+    kind: 'payment' | 'setup';
+};
+
 export type ISalesEcommCartConfirmPaymentInput = {
     paymentAttemptId: string;
     paymentIntentId: string;
@@ -174,6 +188,11 @@ export type ISalesEcommStorefrontConfigResponse = {
         addressVerification: boolean;
         shipping: boolean;
         discountCodes: boolean;
+        memberships?: {
+            oneTime: boolean;
+            recurring: boolean;
+            mixedCart: boolean;
+        };
     };
 };
 
@@ -181,7 +200,8 @@ export type ISalesEcommStoreProduct = {
     id: string;
     name: string;
     price: number;
-    type: 'standard' | 'variant';
+    type: 'standard' | 'variant' | 'membership';
+    membership?: ISalesMembershipCheckoutCatalog;
     slug: string;
     description: string;
     images: Array<ISalesEcommProductImage>;
@@ -202,6 +222,14 @@ export type ISalesEcommPublicCart = {
     saleNumber: string;
     status: 'open' | 'closed' | 'voided' | 'saved' | 'archived' | 'deleted';
     items: Array<ISalesEcommPublicCartItem>;
+    membershipRequirements?: {
+        buyerRequired: boolean;
+        billingAddressRequired: boolean;
+        recurringConsentRequired: boolean;
+        paymentMethodSetupRequired: boolean;
+        termsHash: string;
+        acceptedTermsHash: string | null;
+    };
     fulfillment?: {
         recipient: SalesFulfillmentOrderRecipient;
         shippingPlanId: string | null;
@@ -226,19 +254,9 @@ export type ISalesEcommCartItemInput = {
     productId: string;
     qty: number;
     notes?: string | null;
-};
-
-export type ISalesFulfillmentVerifiedAddress = {
-    name?: string;
-    company?: string;
-    street1: string;
-    street2?: string;
-    city: string;
-    state: string;
-    zip: string;
-    country: string;
-    phone?: string;
-    id: string;
+    membership?: {
+        pricingTierId?: string | null;
+    };
 };
 
 export type ISalesFullfillmentAddress = {
@@ -252,6 +270,19 @@ export type ISalesFullfillmentAddress = {
     zip: string;
     country: string;
     phone?: string;
+};
+
+export type ISalesFulfillmentVerifiedAddress = {
+    name?: string;
+    company?: string;
+    street1: string;
+    street2?: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+    phone?: string;
+    id: string;
 };
 
 export type ISalesEcommPublicShippingPlan = {
@@ -285,8 +316,6 @@ export type SalesFulfillmentOrderRecipient = {
     isVerified?: boolean;
 };
 
-export type SalesEcommPaymentAttemptStatus = 'creating' | 'requires_payment_method' | 'authorized' | 'canceling' | 'recorded' | 'canceled' | 'failed';
-
 export type ISalesEcommOrderItem = {
     id: string;
     qty: number;
@@ -295,6 +324,11 @@ export type ISalesEcommOrderItem = {
     priceBase: number;
     priceTax: number;
     priceTotal: number;
+    membership?: {
+        id: string | null;
+        status: 'pending' | 'active' | 'paused' | 'suspended' | 'terminated';
+        terms: ISalesMembershipCheckoutTerms;
+    };
     priceOverride?: ISalesEcommPublicPriceOverride;
     product: {
         id: string;
@@ -312,7 +346,16 @@ export type ISalesTabTaxLine = {
     amount: number;
 };
 
+export type SalesEcommPaymentAttemptStatus = 'creating' | 'requires_payment_method' | 'authorized' | 'canceling' | 'recorded' | 'canceled' | 'failed';
+
 export type StripeEnvironment = 'live' | 'sandbox';
+
+export type ISalesMembershipCheckoutCatalog = {
+    membershipTypeId: string;
+    name: string;
+    defaultPricingTierId: string | null;
+    pricingTiers: Array<ISalesMembershipCheckoutTerms>;
+};
 
 export type ISalesEcommProductImage = {
     id: string;
@@ -347,6 +390,7 @@ export type ISalesEcommPublicCartItem = {
     priceBase: number;
     priceTax: number;
     priceTotal: number;
+    membership?: ISalesMembershipCheckoutTerms;
     priceOverride?: ISalesEcommPublicPriceOverride;
     product: PickISalesTabItemProduct;
 };
@@ -377,6 +421,19 @@ export type ISalesEcommPublicShippingPackage = {
     rateOptions?: Array<ISalesEcommPublicPackageRate>;
     selectedRate?: ISalesEcommPublicPackageRate | null | null;
     rateExpired: boolean;
+};
+
+export type ISalesMembershipCheckoutTerms = {
+    membershipTypeId: string;
+    pricingTierId: string | null;
+    name: string;
+    initialPrice: number;
+    renewalPrice: number | null;
+    subscriptionPeriod: 'day' | 'month' | 'year' | null;
+    subscriptionRecurs: boolean;
+    validityValue: number | null;
+    validityUnits: 'day' | 'month' | 'year' | null;
+    termsHash: string;
 };
 
 export type ISalesFulfillmentProductShippingMetaIntl = {
@@ -529,6 +586,30 @@ export type PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses = {
 };
 
 export type PutSalesEcommCheckoutEmbeddedUpdateBuyerResponse = PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses[keyof PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses];
+
+export type PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData = {
+    body: {
+        termsHash: string;
+    };
+    headers: {
+        'x-zs-cart-key': string;
+        'x-zs-publishable-key': string;
+    };
+    path: {
+        cartId: string;
+    };
+    query?: never;
+    url: '/embedded/sales/ecomm/carts/{cartId}/membership-terms';
+};
+
+export type PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCartResponse;
+};
+
+export type PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponse = PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses[keyof PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses];
 
 export type PostSalesEcommCheckoutEmbeddedVerifyAddressData = {
     body: ISalesEcommAddressVerificationInput;
@@ -705,6 +786,53 @@ export type PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses = {
 };
 
 export type PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponse = PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses[keyof PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses];
+
+export type PostSalesEcommCheckoutEmbeddedSetupMembershipCardData = {
+    body: ISalesEcommCartPaymentSetupInput;
+    headers: {
+        'x-zs-cart-key': string;
+        'x-zs-publishable-key': string;
+    };
+    path: {
+        cartId: string;
+    };
+    query?: never;
+    url: '/embedded/sales/ecomm/carts/{cartId}/payments/setup-membership-card';
+};
+
+export type PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCartMembershipCardSetupResponse;
+};
+
+export type PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponse = PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses[keyof PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses];
+
+export type PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData = {
+    body: {
+        paymentAttemptId: string;
+        setupIntentId: string;
+    };
+    headers: {
+        'x-zs-cart-key': string;
+        'x-zs-publishable-key': string;
+    };
+    path: {
+        cartId: string;
+    };
+    query?: never;
+    url: '/embedded/sales/ecomm/carts/{cartId}/payments/confirm-setup-intent';
+};
+
+export type PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommOrderResponse;
+};
+
+export type PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponse = PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses[keyof PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses];
 
 export type DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptData = {
     body?: never;

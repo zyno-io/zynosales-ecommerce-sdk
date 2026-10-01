@@ -21,6 +21,8 @@ export {
 } from './storefront';
 export type {
     CardPaymentSetup,
+    CardCheckoutSetup,
+    MembershipCardSetup,
     Cart,
     CartItemInput,
     CartResponse,
@@ -41,6 +43,9 @@ export type {
     ISalesEcommBuyerInput,
     ISalesEcommCartItemInput,
     ISalesEcommCartPaymentSetupResponse,
+    ISalesEcommCartMembershipCardSetupResponse,
+    ISalesMembershipCheckoutTerms,
+    ISalesMembershipCheckoutCatalog,
     ISalesEcommCartResponse,
     ISalesEcommCartDiscountCodeInput,
     ISalesEcommCartFulfillmentInput,

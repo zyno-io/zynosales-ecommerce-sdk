@@ -6,6 +6,12 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ## Properties
 
+### billingAddress?
+
+> `optional` **billingAddress?**: [`ISalesFullfillmentAddress`](ISalesFullfillmentAddress.md) \| `null`
+
+***
+
 ### company?
 
 > `optional` **company?**: `string` \| `null`

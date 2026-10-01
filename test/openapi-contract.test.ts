@@ -24,7 +24,10 @@ const expectedOperationIds = [
     'deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt',
     'postSalesEcommCheckoutEmbeddedConfirmCardPayment',
     'postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart',
-    'getSalesEcommOrdersEmbeddedGet'
+    'getSalesEcommOrdersEmbeddedGet',
+    'putSalesEcommCheckoutEmbeddedAcceptMembershipTerms',
+    'postSalesEcommCheckoutEmbeddedSetupMembershipCard',
+    'postSalesEcommCheckoutEmbeddedConfirmMembershipCard'
 ];
 
 describe('filtered OpenAPI contract', () => {

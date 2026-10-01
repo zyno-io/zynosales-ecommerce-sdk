@@ -138,3 +138,15 @@ only for a short same-origin merchant-server request.
 
 - [Server handoff](./server-handoff)
 - [Lifecycle hooks](./hooks)
+
+## Membership fulfillment
+
+A public order’s membership lines include `membership.id`, `membership.status`,
+and the accepted `membership.terms`. Render the returned status for membership
+activation. `afterOrderCompleted` remains an order-completion hook; it does not
+create memberships. Refresh the order when fulfillment is pending.
+
+Payment recovery stores the intent kind and its identifier, including SetupIntent
+references for free recurring starts. It never persists the Stripe client secret.
+A confirmed payment whose local settlement is interrupted is retried through the
+same durable attempt. Recover that attempt before starting another payment.

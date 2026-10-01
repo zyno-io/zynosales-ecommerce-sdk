@@ -70,9 +70,12 @@ export class CartSession {
             const current = this.cart ? this.toItemInputs() : [];
             const existing = current.find(
                 candidate => candidate.productId === item.productId && (candidate.notes ?? null) === (item.notes ?? null)
+                    && (!item.membership || (candidate.membership?.pricingTierId ?? null) === (item.membership.pricingTierId ?? null))
             );
             if (existing) {
-                existing.qty += item.qty;
+                if (existing.membership || item.membership) {
+                    current[current.indexOf(existing)] = { ...existing, ...item, membership: item.membership ?? existing.membership };
+                } else existing.qty += item.qty;
             } else {
                 current.push({ ...item });
             }
@@ -247,7 +250,8 @@ export class CartSession {
         return this.cart.items.flatMap(item => {
             const quantity = item.id === targetId ? targetQuantity : item.qty;
             if (!quantity || quantity < 1) return [];
-            return [{ productId: item.product.id, qty: quantity, notes: item.notes }];
+            return [{ productId: item.product.id, qty: quantity, notes: item.notes,
+                ...(item.membership ? { membership: { pricingTierId: item.membership.pricingTierId } } : {}) }];
         });
     }
 

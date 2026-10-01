@@ -16,6 +16,12 @@
 
 ***
 
+### membership?
+
+> `optional` **membership?**: [`ISalesMembershipCheckoutTerms`](../../../index/type-aliases/ISalesMembershipCheckoutTerms.md)
+
+***
+
 ### notes
 
 > **notes**: `string` \| `null`

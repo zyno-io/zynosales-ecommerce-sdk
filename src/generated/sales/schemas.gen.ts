@@ -140,6 +140,16 @@ export const ISalesEcommBuyerInputSchema = {
                 'string',
                 'null'
             ]
+        },
+        billingAddress: {
+            anyOf: [
+                {
+                    $ref: '#/components/schemas/ISalesFullfillmentAddress'
+                },
+                {
+                    type: 'null'
+                }
+            ]
         }
     },
     required: [
@@ -450,45 +460,41 @@ export const ISalesEcommCartPaymentSetupInputSchema = {
     ]
 } as const;
 
-export const ISalesEcommPaymentAttemptResponseSchema = {
+export const ISalesEcommCartMembershipCardSetupResponseSchema = {
     type: 'object',
     properties: {
-        id: {
-            type: 'string',
-            format: 'uuid',
-            pattern: '^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$'
+        cartId: {
+            type: 'string'
+        },
+        cartKey: {
+            type: 'string'
+        },
+        orderKey: {
+            type: 'string'
+        },
+        cart: {
+            $ref: '#/components/schemas/ISalesEcommPublicCart'
+        },
+        paymentAttemptId: {
+            type: 'string'
+        },
+        setupIntentId: {
+            type: 'string'
+        },
+        clientSecret: {
+            type: 'string'
         },
         amount: {
-            type: 'number',
-            minimum: 0
-        },
-        status: {
-            $ref: '#/components/schemas/SalesEcommPaymentAttemptStatus'
-        },
-        failureCode: {
-            type: [
-                'string',
-                'null'
-            ]
-        },
-        updatedAt: {
-            type: 'string',
-            format: 'date-time'
-        },
-        paymentIntentId: {
-            type: [
-                'string',
-                'null'
-            ]
+            type: 'number'
         }
     },
     required: [
-        'id',
-        'amount',
-        'status',
-        'failureCode',
-        'updatedAt',
-        'paymentIntentId'
+        'cartId',
+        'cart',
+        'paymentAttemptId',
+        'setupIntentId',
+        'clientSecret',
+        'amount'
     ]
 } as const;
 
@@ -658,6 +664,63 @@ export const ISalesEcommOrderResponseSchema = {
     ]
 } as const;
 
+export const ISalesEcommPaymentAttemptResponseSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            pattern: '^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$'
+        },
+        amount: {
+            type: 'number',
+            minimum: 0
+        },
+        status: {
+            $ref: '#/components/schemas/SalesEcommPaymentAttemptStatus'
+        },
+        failureCode: {
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time'
+        },
+        paymentIntentId: {
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        setupIntentId: {
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        kind: {
+            enum: [
+                'payment',
+                'setup'
+            ],
+            type: 'string'
+        }
+    },
+    required: [
+        'id',
+        'amount',
+        'status',
+        'failureCode',
+        'updatedAt',
+        'paymentIntentId',
+        'setupIntentId',
+        'kind'
+    ]
+} as const;
+
 export const ISalesEcommCartConfirmPaymentInputSchema = {
     type: 'object',
     properties: {
@@ -726,6 +789,25 @@ export const ISalesEcommStorefrontConfigResponseSchema = {
                 },
                 discountCodes: {
                     type: 'boolean'
+                },
+                memberships: {
+                    type: 'object',
+                    properties: {
+                        oneTime: {
+                            type: 'boolean'
+                        },
+                        recurring: {
+                            type: 'boolean'
+                        },
+                        mixedCart: {
+                            type: 'boolean'
+                        }
+                    },
+                    required: [
+                        'oneTime',
+                        'recurring',
+                        'mixedCart'
+                    ]
                 }
             },
             required: [
@@ -758,9 +840,13 @@ export const ISalesEcommStoreProductSchema = {
         type: {
             enum: [
                 'standard',
-                'variant'
+                'variant',
+                'membership'
             ],
             type: 'string'
+        },
+        membership: {
+            $ref: '#/components/schemas/ISalesMembershipCheckoutCatalog'
         },
         slug: {
             type: 'string'
@@ -853,6 +939,40 @@ export const ISalesEcommPublicCartSchema = {
             items: {
                 $ref: '#/components/schemas/ISalesEcommPublicCartItem'
             }
+        },
+        membershipRequirements: {
+            type: 'object',
+            properties: {
+                buyerRequired: {
+                    type: 'boolean'
+                },
+                billingAddressRequired: {
+                    type: 'boolean'
+                },
+                recurringConsentRequired: {
+                    type: 'boolean'
+                },
+                paymentMethodSetupRequired: {
+                    type: 'boolean'
+                },
+                termsHash: {
+                    type: 'string'
+                },
+                acceptedTermsHash: {
+                    type: [
+                        'string',
+                        'null'
+                    ]
+                }
+            },
+            required: [
+                'buyerRequired',
+                'billingAddressRequired',
+                'recurringConsentRequired',
+                'paymentMethodSetupRequired',
+                'termsHash',
+                'acceptedTermsHash'
+            ]
         },
         fulfillment: {
             type: 'object',
@@ -968,55 +1088,22 @@ export const ISalesEcommCartItemInputSchema = {
                 'string',
                 'null'
             ]
+        },
+        membership: {
+            type: 'object',
+            properties: {
+                pricingTierId: {
+                    type: [
+                        'string',
+                        'null'
+                    ]
+                }
+            }
         }
     },
     required: [
         'productId',
         'qty'
-    ]
-} as const;
-
-export const ISalesFulfillmentVerifiedAddressSchema = {
-    type: 'object',
-    properties: {
-        name: {
-            type: 'string'
-        },
-        company: {
-            type: 'string'
-        },
-        street1: {
-            type: 'string'
-        },
-        street2: {
-            type: 'string'
-        },
-        city: {
-            type: 'string'
-        },
-        state: {
-            type: 'string'
-        },
-        zip: {
-            type: 'string'
-        },
-        country: {
-            type: 'string'
-        },
-        phone: {
-            type: 'string'
-        },
-        id: {
-            type: 'string'
-        }
-    },
-    required: [
-        'street1',
-        'city',
-        'state',
-        'zip',
-        'country',
-        'id'
     ]
 } as const;
 
@@ -1063,6 +1150,50 @@ export const ISalesFullfillmentAddressSchema = {
         'state',
         'zip',
         'country'
+    ]
+} as const;
+
+export const ISalesFulfillmentVerifiedAddressSchema = {
+    type: 'object',
+    properties: {
+        name: {
+            type: 'string'
+        },
+        company: {
+            type: 'string'
+        },
+        street1: {
+            type: 'string'
+        },
+        street2: {
+            type: 'string'
+        },
+        city: {
+            type: 'string'
+        },
+        state: {
+            type: 'string'
+        },
+        zip: {
+            type: 'string'
+        },
+        country: {
+            type: 'string'
+        },
+        phone: {
+            type: 'string'
+        },
+        id: {
+            type: 'string'
+        }
+    },
+    required: [
+        'street1',
+        'city',
+        'state',
+        'zip',
+        'country',
+        'id'
     ]
 } as const;
 
@@ -1171,19 +1302,6 @@ export const SalesFulfillmentOrderRecipientSchema = {
     ]
 } as const;
 
-export const SalesEcommPaymentAttemptStatusSchema = {
-    enum: [
-        'creating',
-        'requires_payment_method',
-        'authorized',
-        'canceling',
-        'recorded',
-        'canceled',
-        'failed'
-    ],
-    type: 'string'
-} as const;
-
 export const ISalesEcommOrderItemSchema = {
     type: 'object',
     properties: {
@@ -1210,6 +1328,35 @@ export const ISalesEcommOrderItemSchema = {
         },
         priceTotal: {
             type: 'number'
+        },
+        membership: {
+            type: 'object',
+            properties: {
+                id: {
+                    type: [
+                        'string',
+                        'null'
+                    ]
+                },
+                status: {
+                    enum: [
+                        'pending',
+                        'active',
+                        'paused',
+                        'suspended',
+                        'terminated'
+                    ],
+                    type: 'string'
+                },
+                terms: {
+                    $ref: '#/components/schemas/ISalesMembershipCheckoutTerms'
+                }
+            },
+            required: [
+                'id',
+                'status',
+                'terms'
+            ]
         },
         priceOverride: {
             $ref: '#/components/schemas/ISalesEcommPublicPriceOverride'
@@ -1278,12 +1425,55 @@ export const ISalesTabTaxLineSchema = {
     ]
 } as const;
 
+export const SalesEcommPaymentAttemptStatusSchema = {
+    enum: [
+        'creating',
+        'requires_payment_method',
+        'authorized',
+        'canceling',
+        'recorded',
+        'canceled',
+        'failed'
+    ],
+    type: 'string'
+} as const;
+
 export const StripeEnvironmentSchema = {
     enum: [
         'live',
         'sandbox'
     ],
     type: 'string'
+} as const;
+
+export const ISalesMembershipCheckoutCatalogSchema = {
+    type: 'object',
+    properties: {
+        membershipTypeId: {
+            type: 'string'
+        },
+        name: {
+            type: 'string'
+        },
+        defaultPricingTierId: {
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        pricingTiers: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ISalesMembershipCheckoutTerms'
+            }
+        }
+    },
+    required: [
+        'membershipTypeId',
+        'name',
+        'defaultPricingTierId',
+        'pricingTiers'
+    ]
 } as const;
 
 export const ISalesEcommProductImageSchema = {
@@ -1396,6 +1586,9 @@ export const ISalesEcommPublicCartItemSchema = {
         },
         priceTotal: {
             type: 'number'
+        },
+        membership: {
+            $ref: '#/components/schemas/ISalesMembershipCheckoutTerms'
         },
         priceOverride: {
             $ref: '#/components/schemas/ISalesEcommPublicPriceOverride'
@@ -1557,6 +1750,81 @@ export const ISalesEcommPublicShippingPackageSchema = {
     required: [
         'id',
         'rateExpired'
+    ]
+} as const;
+
+export const ISalesMembershipCheckoutTermsSchema = {
+    type: 'object',
+    properties: {
+        membershipTypeId: {
+            type: 'string'
+        },
+        pricingTierId: {
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        name: {
+            type: 'string'
+        },
+        initialPrice: {
+            type: 'number'
+        },
+        renewalPrice: {
+            type: [
+                'number',
+                'null'
+            ]
+        },
+        subscriptionPeriod: {
+            enum: [
+                'day',
+                'month',
+                'year',
+                null
+            ],
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        subscriptionRecurs: {
+            type: 'boolean'
+        },
+        validityValue: {
+            type: [
+                'number',
+                'null'
+            ]
+        },
+        validityUnits: {
+            enum: [
+                'day',
+                'month',
+                'year',
+                null
+            ],
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        termsHash: {
+            type: 'string'
+        }
+    },
+    required: [
+        'membershipTypeId',
+        'pricingTierId',
+        'name',
+        'initialPrice',
+        'renewalPrice',
+        'subscriptionPeriod',
+        'subscriptionRecurs',
+        'validityValue',
+        'validityUnits',
+        'termsHash'
     ]
 } as const;
 

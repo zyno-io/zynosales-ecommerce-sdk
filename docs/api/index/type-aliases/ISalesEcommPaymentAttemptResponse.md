@@ -24,9 +24,21 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### kind
+
+> **kind**: `"payment"` \| `"setup"`
+
+***
+
 ### paymentIntentId
 
 > **paymentIntentId**: `string` \| `null`
+
+***
+
+### setupIntentId
+
+> **setupIntentId**: `string` \| `null`
 
 ***
 

@@ -24,7 +24,10 @@
       "deleteSalesEcommCheckoutEmbeddedCancelPaymentAttempt",
       "postSalesEcommCheckoutEmbeddedConfirmCardPayment",
       "postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart",
-      "getSalesEcommOrdersEmbeddedGet"
+      "getSalesEcommOrdersEmbeddedGet",
+      "putSalesEcommCheckoutEmbeddedAcceptMembershipTerms",
+      "postSalesEcommCheckoutEmbeddedSetupMembershipCard",
+      "postSalesEcommCheckoutEmbeddedConfirmMembershipCard"
     ]
   }
 }

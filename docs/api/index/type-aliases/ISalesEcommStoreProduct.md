@@ -24,6 +24,12 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### membership?
+
+> `optional` **membership?**: [`ISalesMembershipCheckoutCatalog`](ISalesMembershipCheckoutCatalog.md)
+
+***
+
 ### name
 
 > **name**: `string`
@@ -50,7 +56,7 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ### type
 
-> **type**: `"standard"` \| `"variant"`
+> **type**: `"standard"` \| `"variant"` \| `"membership"`
 
 ***
 

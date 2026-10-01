@@ -70,6 +70,9 @@
 - [PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData](type-aliases/PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData.md)
 - [PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponse](type-aliases/PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponse.md)
 - [PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses](type-aliases/PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses.md)
+- [PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData](type-aliases/PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData.md)
+- [PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponse](type-aliases/PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponse.md)
+- [PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses](type-aliases/PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses.md)
 - [PostSalesEcommCheckoutEmbeddedCreateCartData](type-aliases/PostSalesEcommCheckoutEmbeddedCreateCartData.md)
 - [PostSalesEcommCheckoutEmbeddedCreateCartResponse](type-aliases/PostSalesEcommCheckoutEmbeddedCreateCartResponse.md)
 - [PostSalesEcommCheckoutEmbeddedCreateCartResponses](type-aliases/PostSalesEcommCheckoutEmbeddedCreateCartResponses.md)
@@ -82,9 +85,15 @@
 - [PostSalesEcommCheckoutEmbeddedSetupCardPaymentData](type-aliases/PostSalesEcommCheckoutEmbeddedSetupCardPaymentData.md)
 - [PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponse](type-aliases/PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponse.md)
 - [PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses](type-aliases/PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses.md)
+- [PostSalesEcommCheckoutEmbeddedSetupMembershipCardData](type-aliases/PostSalesEcommCheckoutEmbeddedSetupMembershipCardData.md)
+- [PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponse](type-aliases/PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponse.md)
+- [PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses](type-aliases/PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses.md)
 - [PostSalesEcommCheckoutEmbeddedVerifyAddressData](type-aliases/PostSalesEcommCheckoutEmbeddedVerifyAddressData.md)
 - [PostSalesEcommCheckoutEmbeddedVerifyAddressResponse](type-aliases/PostSalesEcommCheckoutEmbeddedVerifyAddressResponse.md)
 - [PostSalesEcommCheckoutEmbeddedVerifyAddressResponses](type-aliases/PostSalesEcommCheckoutEmbeddedVerifyAddressResponses.md)
+- [PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData](type-aliases/PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData.md)
+- [PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponse](type-aliases/PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponse.md)
+- [PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses](type-aliases/PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses.md)
 - [PutSalesEcommCheckoutEmbeddedReplaceItemsData](type-aliases/PutSalesEcommCheckoutEmbeddedReplaceItemsData.md)
 - [PutSalesEcommCheckoutEmbeddedReplaceItemsResponse](type-aliases/PutSalesEcommCheckoutEmbeddedReplaceItemsResponse.md)
 - [PutSalesEcommCheckoutEmbeddedReplaceItemsResponses](type-aliases/PutSalesEcommCheckoutEmbeddedReplaceItemsResponses.md)
@@ -128,6 +137,12 @@ Re-exports [ISalesEcommCartFulfillmentInput](../../index/type-aliases/ISalesEcom
 ### ISalesEcommCartItemInput
 
 Re-exports [ISalesEcommCartItemInput](../../index/type-aliases/ISalesEcommCartItemInput.md)
+
+***
+
+### ISalesEcommCartMembershipCardSetupResponse
+
+Re-exports [ISalesEcommCartMembershipCardSetupResponse](../../index/type-aliases/ISalesEcommCartMembershipCardSetupResponse.md)
 
 ***
 
@@ -218,6 +233,18 @@ Re-exports [ISalesFulfillmentVerifiedAddress](../../index/type-aliases/ISalesFul
 ### ISalesFullfillmentAddress
 
 Re-exports [ISalesFullfillmentAddress](../../index/type-aliases/ISalesFullfillmentAddress.md)
+
+***
+
+### ISalesMembershipCheckoutCatalog
+
+Re-exports [ISalesMembershipCheckoutCatalog](../../index/type-aliases/ISalesMembershipCheckoutCatalog.md)
+
+***
+
+### ISalesMembershipCheckoutTerms
+
+Re-exports [ISalesMembershipCheckoutTerms](../../index/type-aliases/ISalesMembershipCheckoutTerms.md)
 
 ***
 

@@ -41,6 +41,7 @@ function projectProduct(product: ISalesEcommStoreProduct): StoreProduct {
         description: product.description,
         images: product.images,
         ...(product.shippingMeta === undefined ? {} : { shippingMeta: product.shippingMeta }),
+        ...(product.membership === undefined ? {} : { membership: product.membership }),
         ...(product.variant === undefined ? {} : { variant: product.variant })
     };
 }
