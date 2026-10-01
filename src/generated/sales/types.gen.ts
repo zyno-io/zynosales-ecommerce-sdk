@@ -188,6 +188,7 @@ export type ISalesEcommStorefrontConfigResponse = {
         addressVerification: boolean;
         shipping: boolean;
         discountCodes: boolean;
+        pinnedBuyer: boolean;
         memberships?: {
             oneTime: boolean;
             recurring: boolean;
@@ -220,6 +221,7 @@ export type SalesPredefinedDiscountScope = 'item' | 'tab' | 'shipping';
 export type ISalesEcommPublicCart = {
     id: string;
     saleNumber: string;
+    buyerContactPinned: boolean;
     status: 'open' | 'closed' | 'voided' | 'saved' | 'archived' | 'deleted';
     items: Array<ISalesEcommPublicCartItem>;
     membershipRequirements?: {

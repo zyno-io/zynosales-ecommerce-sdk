@@ -34,6 +34,10 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 > **recurring**: `boolean`
 
+#### pinnedBuyer
+
+> **pinnedBuyer**: `boolean`
+
 #### shipping
 
 > **shipping**: `boolean`

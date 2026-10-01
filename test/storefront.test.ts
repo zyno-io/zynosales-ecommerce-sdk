@@ -46,7 +46,7 @@ describe('createZynoSales storage', () => {
                 stripePublishableKey: null,
                 stripeConnectedAccountId: null
             },
-            capabilities: { addressVerification: true, shipping: true, discountCodes: true }
+            capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true }
         });
 
         const first = createZynoSales({ apiBase, publishableKey: 'publishable-1', storage, sessionStorage, fetch });

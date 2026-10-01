@@ -33,6 +33,56 @@ const storefront = createZynoSales({
 The SDK refreshes the cart after the hook, then uses the refreshed `priceDue`
 for zero-due finalization or card setup.
 
+## Signed-in buyers
+
+When `config.capabilities.pinnedBuyer` is true, your merchant server can pin a
+signed-in shopper's CRM contact as the cart buyer. In `beforePayment`, send
+`cartAccess` to an authenticated same-origin route as in the example above.
+For guests, keep the ordinary buyer-details flow.
+
+Your route authenticates its application session, reads the CRM contact ID from
+its own account records, and creates or links the contact if needed. It then
+calls Sales through the authenticated API gateway using its tenant API key
+with HTTP Basic authentication (username `api`, password the API key):
+
+```http
+PUT /sales/ecomm/carts/:cartId/buyer-contact
+Content-Type: application/json
+Authorization: Basic <base64 of api:tenant-api-key>
+
+{
+    "cartKey": "<cart capability>",
+    "crmContactId": "<active CRM contact id>"
+}
+```
+
+Accept only `cartId` and `cartKey` from the browser; decide the contact on your
+server. Both the API key and cart key are required. Knowing a cart ID alone must
+not allow someone to attach their own membership to a purchase paid for by
+another shopper. Keep both credentials transient and out of logs, and return
+only success or a display-safe error from the merchant route.
+
+The SDK refreshes the cart after `beforePayment`. The refreshed
+`cart.buyerContactPinned` flag lets your UI lock or hide the email field. The
+contact ID is never included in the public cart. Buyer name, email, and phone
+remain receipt details, and membership checkout still requires name and email.
+The pin survives `checkout.setBuyer()` and item edits.
+
+Changing the pin clears membership terms acceptance and prepared billing. For
+recurring memberships, use `cart.withServerAccess()` to pin the buyer before
+showing consent, then refresh the cart. Reassert the same pin in `beforePayment`;
+an unchanged pin preserves acceptance. If the pin changes during that hook,
+show the refreshed terms and collect consent again before retrying payment.
+Send `crmContactId: null` to remove a pin, such as when your application handles
+sign-out.
+
+A wrong cart key returns `403`. A cart that is closed or has payment in progress
+returns `409`; the endpoint does not cancel an active payment. Missing, inactive,
+or merged contacts are rejected with `400`. If the contact changes after
+pinning, payment preparation returns `409` asking you to re-pin. Repair your
+account's CRM link and explicitly pin the chosen contact again; Sales does not
+silently follow a merge.
+
 ## Explicit one-call access
 
 For an earlier trusted-server action, scope capability access to a callback:

@@ -12,6 +12,12 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### buyerContactPinned
+
+> **buyerContactPinned**: `boolean`
+
+***
+
 ### closedAt
 
 > **closedAt**: `string` \| `null`

@@ -17,7 +17,7 @@ describe('ZynoSalesClient', () => {
                     stripePublishableKey: null,
                     stripeConnectedAccountId: null
                 },
-                capabilities: { addressVerification: true, shipping: true, discountCodes: true }
+                capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true }
             });
         });
         const client = new ZynoSalesClient({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_123', fetch });

@@ -1286,6 +1286,8 @@ components:
               type: boolean
             discountCodes:
               type: boolean
+            pinnedBuyer:
+              type: boolean
             memberships:
               type: object
               properties:
@@ -1303,6 +1305,7 @@ components:
             - addressVerification
             - shipping
             - discountCodes
+            - pinnedBuyer
       required:
         - tenantId
         - currency
@@ -1377,6 +1380,8 @@ components:
           type: string
         saleNumber:
           type: string
+        buyerContactPinned:
+          type: boolean
         status:
           enum:
             - open
@@ -1474,6 +1479,7 @@ components:
       required:
         - id
         - saleNumber
+        - buyerContactPinned
         - status
         - items
         - priceDiscounted

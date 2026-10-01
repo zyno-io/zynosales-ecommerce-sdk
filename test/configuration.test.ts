@@ -24,7 +24,7 @@ describe('endpoint and Stripe configuration', () => {
                 stripePublishableKey: 'pk_test_123',
                 stripeConnectedAccountId: 'acct_123'
             },
-            capabilities: { addressVerification: true, shipping: true, discountCodes: true }
+            capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true }
         };
 
         expect(stripeConfiguration(config)).toEqual({ publishableKey: 'pk_test_123', stripeAccount: 'acct_123' });

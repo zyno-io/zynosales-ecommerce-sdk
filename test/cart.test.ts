@@ -28,6 +28,7 @@ const firstCart: CartResponse = {
     cart: {
         id: 'cart-1',
         saleNumber: 'S-1',
+        buyerContactPinned: false,
         status: 'open',
         items: [{
             id: 'line-1',

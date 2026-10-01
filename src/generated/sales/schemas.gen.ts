@@ -790,6 +790,9 @@ export const ISalesEcommStorefrontConfigResponseSchema = {
                 discountCodes: {
                     type: 'boolean'
                 },
+                pinnedBuyer: {
+                    type: 'boolean'
+                },
                 memberships: {
                     type: 'object',
                     properties: {
@@ -813,7 +816,8 @@ export const ISalesEcommStorefrontConfigResponseSchema = {
             required: [
                 'addressVerification',
                 'shipping',
-                'discountCodes'
+                'discountCodes',
+                'pinnedBuyer'
             ]
         }
     },
@@ -922,6 +926,9 @@ export const ISalesEcommPublicCartSchema = {
         },
         saleNumber: {
             type: 'string'
+        },
+        buyerContactPinned: {
+            type: 'boolean'
         },
         status: {
             enum: [
@@ -1059,6 +1066,7 @@ export const ISalesEcommPublicCartSchema = {
     required: [
         'id',
         'saleNumber',
+        'buyerContactPinned',
         'status',
         'items',
         'priceDiscounted',

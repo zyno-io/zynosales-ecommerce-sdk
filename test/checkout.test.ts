@@ -31,6 +31,7 @@ function cartResponse(cartId = 'cart-1', priceDue = 1000): CartResponse {
         cart: {
             id: cartId,
             saleNumber: 'S-1',
+            buyerContactPinned: false,
             status: 'open',
             items: [{
                 id: `${cartId}-line-1`,
@@ -137,6 +138,41 @@ describe('CheckoutCoordinator', () => {
 
         expect(updatedCart).toEqual(response.cart);
         expect(updateFulfillment).toHaveBeenCalledWith('cart-1', 'cart-1-secret', fulfillment);
+    });
+
+    it('refreshes a server-pinned buyer after the payment handoff before creating payment', async () => {
+        const response = cartResponse();
+        let serverCart = response;
+        const getOrder = vi.fn(async () => {
+            throw new ZynoSalesError('Order is not ready.', { status: 404 });
+        });
+        const getCart = vi.fn(async () => serverCart);
+        const beforePayment = vi.fn(async () => {
+            serverCart = { ...response, cart: { ...response.cart, buyerContactPinned: true } };
+        });
+        const setupCardPayment = vi.fn(async () => {
+            expect(cart.getSnapshot().cart?.buyerContactPinned).toBe(true);
+            return paymentSetup(serverCart);
+        });
+        const client = { getCart, getOrder, setupCardPayment } as unknown as ZynoSalesClient;
+        const cart = new CartSession({ client, storage: new TestStorage(), storageKey: 'cart' });
+        cart.accept(response);
+        const checkout = new CheckoutCoordinator({
+            cartSession: cart,
+            client,
+            storage: new TestStorage(),
+            pendingPaymentKey: 'payment',
+            hooks: { beforePayment }
+        });
+
+        const setup = await checkout.beginCardPayment();
+
+        expect(setup?.cart.buyerContactPinned).toBe(true);
+        expect(beforePayment).toHaveBeenCalledWith({
+            cart: response.cart,
+            cartAccess: { cartId: response.cartId, cartKey: response.cartKey }
+        });
+        expect(setupCardPayment).toHaveBeenCalledOnce();
     });
 
     it('reuses a pending setup idempotency key after a timeout', async () => {
