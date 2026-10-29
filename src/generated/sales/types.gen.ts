@@ -195,6 +195,123 @@ export type ISalesEcommStorefrontConfigResponse = {
             mixedCart: boolean;
         };
     };
+    customerAuth: {
+        enabled: boolean;
+        policyId: string | null;
+        policyRevision: number | null;
+        options: ISalesEcommCustomerAuthOptions | null;
+        passwordRequirements: {
+            minimumLength: number;
+            maximumLength: number;
+            minimumCharacterClasses: number;
+        };
+        orderHistoryScope: 'ecomm' | 'all';
+        orderHistoryConfigRevision: number;
+    };
+};
+
+export type ISalesEcommCustomerSessionGrantResponse = {
+    session: ISalesEcommCustomerSession;
+    sessionSecret: string;
+    rotated: boolean;
+};
+
+export type ISalesEcommCustomerSessionInitInput = {
+    policyId: string;
+    policyRevision: number;
+    options: ISalesEcommCustomerAuthOptions;
+};
+
+export type ISalesEcommCustomerSessionResponse = {
+    session: ISalesEcommCustomerSession;
+    principal: ISalesEcommCustomerPrincipal | null;
+};
+
+export type ISalesEcommCustomerPasswordLoginInput = {
+    email: string;
+    password: string;
+};
+
+export type ISalesEcommCustomerChallengeResponse = {
+    challengeId: string;
+    expiresInSeconds: number;
+    resendAfterSeconds: number;
+};
+
+export type ISalesEcommCustomerEmailInput = {
+    email: string;
+};
+
+export type ISalesEcommCustomerOtpVerifyInput = {
+    challengeId: string;
+    code: string;
+};
+
+export type ISalesEcommCustomerProofResponse = {
+    proof: string;
+    expiresInSeconds: number;
+};
+
+export type ISalesEcommCustomerRegistrationVerifyInput = {
+    challengeId: string;
+    code: string;
+};
+
+export type ISalesEcommCustomerRegistrationCompleteInput = {
+    proof: string;
+    name: string;
+    password?: string;
+};
+
+export type ISalesEcommCustomerResetExchangeInput = {
+    token: string;
+};
+
+export type ISalesEcommCustomerPasswordResetCompleteInput = {
+    newPassword: string;
+};
+
+export type ISalesEcommCustomerPasswordProofVerifyInput = {
+    challengeId: string;
+    code: string;
+};
+
+export type ISalesEcommCustomerPasswordChangeInput = {
+    newPassword: string;
+    currentPassword?: string;
+};
+
+export type ISalesEcommCustomerRestrictedExchangeInput = {
+    token: string;
+};
+
+export type ISalesEcommCustomerInvitationCompleteInput = {
+    password?: string;
+};
+
+export type ISalesEcommCustomerOrderListResponse = {
+    items: Array<ISalesEcommCustomerOrderResponse>;
+    nextCursor: string | null;
+};
+
+export type ISalesEcommCustomerOrderResponse = {
+    id: string;
+    source: 'salespoint' | 'subscription' | 'ecomm' | 'stripeCheckout' | 'billing' | 'external';
+    saleNumber: string;
+    status: 'open' | 'payment_pending' | 'paid' | 'voided';
+    createdAt: string;
+    closedAt: string | null;
+    items: Array<ISalesEcommCustomerOrderItem>;
+    totals: {
+        discounted: number;
+        base: number;
+        tax: number;
+        total: number;
+        paid: number;
+        due: number;
+    };
+    paymentStatus: 'pending' | 'authorized' | 'captured' | 'failed' | 'canceled' | null;
+    fulfillmentStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'exception' | 'canceled' | null;
 };
 
 export type ISalesEcommStoreProduct = {
@@ -222,6 +339,12 @@ export type ISalesEcommPublicCart = {
     id: string;
     saleNumber: string;
     buyerContactPinned: boolean;
+    customer: {
+        bound: boolean;
+        policyId: string | null;
+        policyRevision: number | null;
+        orderHistoryScope: 'ecomm' | 'all' | null;
+    };
     status: 'open' | 'closed' | 'voided' | 'saved' | 'archived' | 'deleted';
     items: Array<ISalesEcommPublicCartItem>;
     membershipRequirements?: {
@@ -352,6 +475,47 @@ export type SalesEcommPaymentAttemptStatus = 'creating' | 'requires_payment_meth
 
 export type StripeEnvironment = 'live' | 'sandbox';
 
+export type ISalesEcommCustomerAuthOptions = {
+    passwordLogin: boolean;
+    otpLogin: boolean;
+    createAccount: boolean;
+    createPassword: boolean;
+    changePasswordWithCurrent: boolean;
+    setPasswordWithoutCurrent: boolean;
+    passwordRecovery: boolean;
+};
+
+export type ISalesEcommCustomerSession = {
+    tenantId: string;
+    sessionId: string;
+    phase: 'anonymous' | 'authenticated' | 'enrollment' | 'loginEmailVerification' | 'recovery';
+    expiresAt: string;
+    idleExpiresAt: string;
+    policy: ISalesEcommCustomerPolicySnapshot;
+    principal: ISalesEcommCustomerPrincipal | null;
+    targetCartId: string | null;
+};
+
+export type ISalesEcommCustomerPrincipal = {
+    method: 'password' | 'otp';
+    authenticatedAt: string;
+};
+
+export type ISalesEcommCustomerOrderItem = {
+    id: string;
+    qty: number;
+    effectivePrice: number;
+    priceBase: number;
+    priceTax: number;
+    priceTotal: number;
+    product: {
+        id: string;
+        name: string;
+        price: number;
+        type: string;
+    };
+};
+
 export type ISalesMembershipCheckoutCatalog = {
     membershipTypeId: string;
     name: string;
@@ -436,6 +600,15 @@ export type ISalesMembershipCheckoutTerms = {
     validityValue: number | null;
     validityUnits: 'day' | 'month' | 'year' | null;
     termsHash: string;
+};
+
+export type ISalesEcommCustomerPolicySnapshot = {
+    policyId: string;
+    policyRevision: number;
+    options: ISalesEcommCustomerAuthOptions;
+    orderHistoryScope: 'ecomm' | 'all';
+    orderHistoryConfigRevision: number;
+    digest: string;
 };
 
 export type ISalesFulfillmentProductShippingMetaIntl = {
@@ -964,6 +1137,469 @@ export type GetSalesEcommStorefrontConfigEmbeddedGetResponses = {
 };
 
 export type GetSalesEcommStorefrontConfigEmbeddedGetResponse = GetSalesEcommStorefrontConfigEmbeddedGetResponses[keyof GetSalesEcommStorefrontConfigEmbeddedGetResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedInitializeData = {
+    body: ISalesEcommCustomerSessionInitInput;
+    headers: {
+        'x-zs-publishable-key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/sessions';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedInitializeResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedInitializeResponse = PostSalesEcommCustomerAuthEmbeddedInitializeResponses[keyof PostSalesEcommCustomerAuthEmbeddedInitializeResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedResumeCartData = {
+    body: {
+        cartId: string;
+    };
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-cart-key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/sessions/resume-cart';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedResumeCartResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedResumeCartResponse = PostSalesEcommCustomerAuthEmbeddedResumeCartResponses[keyof PostSalesEcommCustomerAuthEmbeddedResumeCartResponses];
+
+export type DeleteSalesEcommCustomerAuthEmbeddedLogoutData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/sessions/current';
+};
+
+export type DeleteSalesEcommCustomerAuthEmbeddedLogoutResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCurrentData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/sessions/current';
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCurrentResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionResponse;
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCurrentResponse = GetSalesEcommCustomerAuthEmbeddedCurrentResponses[keyof GetSalesEcommCustomerAuthEmbeddedCurrentResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedPasswordLoginData = {
+    body: ISalesEcommCustomerPasswordLoginInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/password';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponse = PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses[keyof PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestOtpData = {
+    body: ISalesEcommCustomerEmailInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/otp';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestOtpResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerChallengeResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestOtpResponse = PostSalesEcommCustomerAuthEmbeddedRequestOtpResponses[keyof PostSalesEcommCustomerAuthEmbeddedRequestOtpResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyOtpData = {
+    body: ISalesEcommCustomerOtpVerifyInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/otp/verify';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponses = {
+    /**
+     * OK
+     */
+    200: {
+        purpose: 'login';
+        session: ISalesEcommCustomerSessionGrantResponse;
+    };
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponse = PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponses[keyof PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestRegistrationData = {
+    body: ISalesEcommCustomerEmailInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/registration';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerChallengeResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponse = PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponses[keyof PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationData = {
+    body: ISalesEcommCustomerRegistrationVerifyInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/registration/verify';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerProofResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponse = PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses[keyof PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationData = {
+    body: ISalesEcommCustomerRegistrationCompleteInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/registration/complete';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponse = PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses[keyof PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetData = {
+    body: ISalesEcommCustomerEmailInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/password-reset';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponses = {
+    /**
+     * OK
+     */
+    200: {
+        accepted: true;
+    };
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponse = PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponses[keyof PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetData = {
+    body: ISalesEcommCustomerResetExchangeInput;
+    headers: {
+        'x-zs-publishable-key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/password-reset/exchange';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponse = PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponses[keyof PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponses];
+
+export type PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetData = {
+    body: ISalesEcommCustomerPasswordResetCompleteInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/password-reset/complete';
+};
+
+export type PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/customer/password-proof';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerChallengeResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponse = PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponses[keyof PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofData = {
+    body: ISalesEcommCustomerPasswordProofVerifyInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/customer/password-proof/verify';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponses = {
+    /**
+     * OK
+     */
+    200: {
+        expiresInSeconds: number;
+    };
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponse = PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponses[keyof PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponses];
+
+export type PutSalesEcommCustomerAuthEmbeddedReplacePasswordData = {
+    body: ISalesEcommCustomerPasswordChangeInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/customer/password';
+};
+
+export type PutSalesEcommCustomerAuthEmbeddedReplacePasswordResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentData = {
+    body: ISalesEcommCustomerRestrictedExchangeInput;
+    headers: {
+        'x-zs-publishable-key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/enrollment/exchange';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponse = PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponses[keyof PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponses];
+
+export type PostSalesEcommCustomerAuthEmbeddedCompleteInvitationData = {
+    body: ISalesEcommCustomerInvitationCompleteInput;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/enrollment/complete';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedCompleteInvitationResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailData = {
+    body: ISalesEcommCustomerRestrictedExchangeInput;
+    headers: {
+        'x-zs-publishable-key': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/login-email/exchange';
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerSessionGrantResponse;
+};
+
+export type PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponse = PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponses[keyof PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponses];
+
+export type PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: never;
+    url: '/embedded/sales/ecomm/auth/login-email/complete';
+};
+
+export type PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type PutSalesEcommCustomerAuthEmbeddedBindCartData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+        'x-zs-cart-key': string;
+    };
+    path: {
+        cartId: string;
+    };
+    query?: never;
+    url: '/embedded/sales/ecomm/carts/{cartId}/customer';
+};
+
+export type PutSalesEcommCustomerAuthEmbeddedBindCartResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCartResponse;
+};
+
+export type PutSalesEcommCustomerAuthEmbeddedBindCartResponse = PutSalesEcommCustomerAuthEmbeddedBindCartResponses[keyof PutSalesEcommCustomerAuthEmbeddedBindCartResponses];
+
+export type GetSalesEcommCustomerAuthEmbeddedCustomerOrdersData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path?: never;
+    query?: {
+        cursor?: string;
+        limit?: number;
+    };
+    url: '/embedded/sales/ecomm/customer/orders';
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerOrderListResponse;
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponse = GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponses[keyof GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponses];
+
+export type GetSalesEcommCustomerAuthEmbeddedCustomerOrderData = {
+    body?: never;
+    headers: {
+        'x-zs-publishable-key': string;
+        'x-zs-customer-session': string;
+    };
+    path: {
+        orderId: string;
+    };
+    query?: never;
+    url: '/embedded/sales/ecomm/customer/orders/{orderId}';
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCustomerOrderResponse;
+};
+
+export type GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponse = GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses[keyof GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses];
 
 export type GetSalesEcommProductsEmbeddedIndexData = {
     body?: never;

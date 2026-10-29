@@ -6,6 +6,26 @@ Common storefront configuration shared by environment and explicit-base setup.
 
 ## Properties
 
+### customer?
+
+> `optional` **customer?**: `object`
+
+Customer flows the SDK may offer for this instance. The server policy can only narrow this subset.
+
+#### options?
+
+> `optional` **options?**: [`CustomerInitializationOptions`](CustomerInitializationOptions.md)
+
+***
+
+### customerStorage?
+
+> `optional` **customerStorage?**: [`ZynoSalesStorage`](../interfaces/ZynoSalesStorage.md)
+
+Private customer-session storage. Defaults to `sessionStorage`; pass `localStorage` for longer continuity.
+
+***
+
 ### fetch?
 
 > `optional` **fetch?**: *typeof* `fetch`

@@ -27,7 +27,30 @@ const expectedOperationIds = [
     'getSalesEcommOrdersEmbeddedGet',
     'putSalesEcommCheckoutEmbeddedAcceptMembershipTerms',
     'postSalesEcommCheckoutEmbeddedSetupMembershipCard',
-    'postSalesEcommCheckoutEmbeddedConfirmMembershipCard'
+    'postSalesEcommCheckoutEmbeddedConfirmMembershipCard',
+    'postSalesEcommCustomerAuthEmbeddedInitialize',
+    'postSalesEcommCustomerAuthEmbeddedResumeCart',
+    'getSalesEcommCustomerAuthEmbeddedCurrent',
+    'deleteSalesEcommCustomerAuthEmbeddedLogout',
+    'postSalesEcommCustomerAuthEmbeddedPasswordLogin',
+    'postSalesEcommCustomerAuthEmbeddedRequestOtp',
+    'postSalesEcommCustomerAuthEmbeddedVerifyOtp',
+    'postSalesEcommCustomerAuthEmbeddedRequestRegistration',
+    'postSalesEcommCustomerAuthEmbeddedVerifyRegistration',
+    'postSalesEcommCustomerAuthEmbeddedCompleteRegistration',
+    'postSalesEcommCustomerAuthEmbeddedRequestPasswordReset',
+    'postSalesEcommCustomerAuthEmbeddedExchangePasswordReset',
+    'putSalesEcommCustomerAuthEmbeddedCompletePasswordReset',
+    'postSalesEcommCustomerAuthEmbeddedRequestPasswordProof',
+    'postSalesEcommCustomerAuthEmbeddedVerifyPasswordProof',
+    'putSalesEcommCustomerAuthEmbeddedReplacePassword',
+    'postSalesEcommCustomerAuthEmbeddedExchangeEnrollment',
+    'postSalesEcommCustomerAuthEmbeddedCompleteInvitation',
+    'postSalesEcommCustomerAuthEmbeddedExchangeLoginEmail',
+    'putSalesEcommCustomerAuthEmbeddedCompleteLoginEmail',
+    'putSalesEcommCustomerAuthEmbeddedBindCart',
+    'getSalesEcommCustomerAuthEmbeddedCustomerOrders',
+    'getSalesEcommCustomerAuthEmbeddedCustomerOrder'
 ];
 
 describe('filtered OpenAPI contract', () => {

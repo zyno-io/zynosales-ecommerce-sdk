@@ -4,7 +4,8 @@ import {
     SalesSalesEcommCheckoutEmbeddedApi,
     SalesSalesEcommOrdersEmbeddedApi,
     SalesSalesEcommProductsEmbeddedApi,
-    SalesSalesEcommStorefrontConfigEmbeddedApi
+    SalesSalesEcommStorefrontConfigEmbeddedApi,
+    SalesSalesEcommCustomerAuthEmbeddedApi
 } from './generated/sales';
 import type {
     ISalesEcommAddressVerificationInput,
@@ -24,16 +25,36 @@ import type {
     ISalesEcommShippingSelectionQuoteResponse,
     ISalesEcommStoreProduct,
     ISalesEcommStorefrontConfigResponse,
+    ISalesEcommCustomerAuthOptions,
+    ISalesEcommCustomerSessionGrantResponse,
+    ISalesEcommCustomerSessionResponse,
+    ISalesEcommCustomerPasswordLoginInput,
+    ISalesEcommCustomerEmailInput,
+    ISalesEcommCustomerOtpVerifyInput,
+    ISalesEcommCustomerRegistrationVerifyInput,
+    ISalesEcommCustomerChallengeResponse,
+    ISalesEcommCustomerRegistrationCompleteInput,
+    ISalesEcommCustomerProofResponse,
+    ISalesEcommCustomerResetExchangeInput,
+    ISalesEcommCustomerPasswordResetCompleteInput,
+    ISalesEcommCustomerPasswordProofVerifyInput,
+    ISalesEcommCustomerPasswordChangeInput,
+    ISalesEcommCustomerRestrictedExchangeInput,
+    ISalesEcommCustomerInvitationCompleteInput,
+    ISalesEcommCustomerOrderListResponse,
+    ISalesEcommCustomerOrderResponse,
     ISalesFulfillmentAddressVerificationResponse,
     IValidateDiscountCodeRequest,
     IValidateDiscountCodeResponse
 } from './generated/sales';
-import { toZynoSalesError } from './errors';
+import { toZynoSalesError, ZynoSalesError } from './errors';
 
 /** Low-level generated-contract client. It does not persist cart capabilities. */
 export class ZynoSalesClient {
     private readonly client;
     private readonly publishableKey: string;
+    private customerSessionSecret: string | null = null;
+    private customerSessionInvalidListener?: (error: ZynoSalesError) => void;
 
     public constructor(options: { apiBase: string; publishableKey: string; fetch?: typeof fetch }) {
         if (!options.publishableKey) throw new Error('A ZynoSales publishableKey is required.');
@@ -45,7 +66,25 @@ export class ZynoSalesClient {
             ...(options.fetch ? { fetch: options.fetch } : {})
         });
 
-        this.client.interceptors.error.use((error, response) => toZynoSalesError(error, response?.status));
+        this.client.interceptors.error.use((error, response) => {
+            const normalized = toZynoSalesError(error, response?.status);
+            if (normalized.code === 'REAUTHENTICATION_REQUIRED'
+                || normalized.code === 'AUTH_POLICY_MISMATCH'
+                || normalized.code === 'STOREFRONT_CONFIG_CHANGED') {
+                this.customerSessionInvalidListener?.(normalized);
+            }
+            return normalized;
+        });
+    }
+
+    /** @internal Installs the opaque customer capability for protected Sales operations. */
+    public setCustomerSessionSecret(secret: string | null): void {
+        this.customerSessionSecret = secret;
+    }
+
+    /** @internal Clears SDK customer state when a protected request rejects its session. */
+    public setCustomerSessionInvalidListener(listener: ((error: ZynoSalesError) => void) | undefined): void {
+        this.customerSessionInvalidListener = listener;
     }
 
     public getConfig(): Promise<ISalesEcommStorefrontConfigResponse> {
@@ -272,16 +311,176 @@ export class ZynoSalesClient {
         }));
     }
 
+    public initializeCustomerSession(input: { policyId: string; policyRevision: number; options: ISalesEcommCustomerAuthOptions }): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedInitialize({
+            client: this.client, headers: this.publicHeaders(), body: input, throwOnError: true
+        }));
+    }
+
+    public resumeCustomerCartSession(cartId: string, cartKey: string): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedResumeCart({
+            client: this.client,
+            headers: { ...this.publicHeaders(), 'x-zs-cart-key': cartKey },
+            body: { cartId },
+            throwOnError: true
+        }));
+    }
+
+    public getCustomerSession(secret: string): Promise<ISalesEcommCustomerSessionResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.getSalesEcommCustomerAuthEmbeddedCurrent({
+            client: this.client, headers: this.customerHeaders(secret), throwOnError: true
+        }));
+    }
+
+    public async logoutCustomerSession(secret: string): Promise<void> {
+        const result = await SalesSalesEcommCustomerAuthEmbeddedApi.deleteSalesEcommCustomerAuthEmbeddedLogout({
+            client: this.client, headers: this.customerHeaders(secret), throwOnError: true
+        });
+        void result;
+    }
+
+    public passwordLogin(secret: string, input: ISalesEcommCustomerPasswordLoginInput): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedPasswordLogin({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public requestCustomerOtp(secret: string, input: ISalesEcommCustomerEmailInput): Promise<ISalesEcommCustomerChallengeResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedRequestOtp({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public verifyCustomerOtp(secret: string, input: ISalesEcommCustomerOtpVerifyInput): Promise<{ purpose: 'login'; session: ISalesEcommCustomerSessionGrantResponse }> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedVerifyOtp({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public requestCustomerRegistration(secret: string, input: ISalesEcommCustomerEmailInput): Promise<ISalesEcommCustomerChallengeResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedRequestRegistration({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public verifyCustomerRegistration(secret: string, input: ISalesEcommCustomerRegistrationVerifyInput): Promise<ISalesEcommCustomerProofResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedVerifyRegistration({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public completeCustomerRegistration(secret: string, input: ISalesEcommCustomerRegistrationCompleteInput): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedCompleteRegistration({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public requestCustomerPasswordReset(secret: string, input: ISalesEcommCustomerEmailInput): Promise<{ accepted: true }> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedRequestPasswordReset({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        }));
+    }
+
+    public exchangeCustomerPasswordReset(input: ISalesEcommCustomerResetExchangeInput): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedExchangePasswordReset({
+            client: this.client, headers: this.publicHeaders(), body: input, throwOnError: true
+        }));
+    }
+
+    public async completeCustomerPasswordReset(secret: string, input: ISalesEcommCustomerPasswordResetCompleteInput): Promise<void> {
+        const result = await SalesSalesEcommCustomerAuthEmbeddedApi.putSalesEcommCustomerAuthEmbeddedCompletePasswordReset({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        });
+        void result;
+    }
+
+    public requestCustomerPasswordProof(secret: string): Promise<ISalesEcommCustomerChallengeResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedRequestPasswordProof({
+            client: this.client, headers: this.customerHeaders(secret), throwOnError: true
+        }));
+    }
+
+    public async verifyCustomerPasswordProof(secret: string, input: ISalesEcommCustomerPasswordProofVerifyInput): Promise<void> {
+        const result = await SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedVerifyPasswordProof({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        });
+        void result;
+    }
+
+    public async replaceCustomerPassword(secret: string, input: ISalesEcommCustomerPasswordChangeInput): Promise<void> {
+        const result = await SalesSalesEcommCustomerAuthEmbeddedApi.putSalesEcommCustomerAuthEmbeddedReplacePassword({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        });
+        void result;
+    }
+
+    public exchangeCustomerEnrollment(input: ISalesEcommCustomerRestrictedExchangeInput): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedExchangeEnrollment({
+            client: this.client, headers: this.publicHeaders(), body: input, throwOnError: true
+        }));
+    }
+
+    public async completeCustomerInvitation(secret: string, input: ISalesEcommCustomerInvitationCompleteInput): Promise<void> {
+        const result = await SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedCompleteInvitation({
+            client: this.client, headers: this.customerHeaders(secret), body: input, throwOnError: true
+        });
+        void result;
+    }
+
+    public exchangeCustomerLoginEmail(input: ISalesEcommCustomerRestrictedExchangeInput): Promise<ISalesEcommCustomerSessionGrantResponse> {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.postSalesEcommCustomerAuthEmbeddedExchangeLoginEmail({
+            client: this.client, headers: this.publicHeaders(), body: input, throwOnError: true
+        }));
+    }
+
+    public async completeCustomerLoginEmail(secret: string): Promise<void> {
+        const result = await SalesSalesEcommCustomerAuthEmbeddedApi.putSalesEcommCustomerAuthEmbeddedCompleteLoginEmail({
+            client: this.client, headers: this.customerHeaders(secret), throwOnError: true
+        });
+        void result;
+    }
+
+    public bindCustomerCart(cartId: string, cartKey: string, secret: string) {
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.putSalesEcommCustomerAuthEmbeddedBindCart({
+            client: this.client,
+            path: { cartId },
+            headers: { ...this.cartHeaders(cartKey), 'x-zs-customer-session': secret },
+            throwOnError: true
+        }));
+    }
+
+    public getCustomerOrders(secret: string | undefined = this.customerSessionSecret ?? undefined, query?: { cursor?: string; limit?: number }): Promise<ISalesEcommCustomerOrderListResponse> {
+        if (!secret) throw new ZynoSalesError('A customer session is required to read account orders.');
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.getSalesEcommCustomerAuthEmbeddedCustomerOrders({
+            client: this.client, headers: this.customerHeaders(secret), query, throwOnError: true
+        }));
+    }
+
+    public getCustomerOrder(orderId: string, secret: string | undefined = this.customerSessionSecret ?? undefined): Promise<ISalesEcommCustomerOrderResponse> {
+        if (!secret) throw new ZynoSalesError('A customer session is required to read an account order.');
+        return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.getSalesEcommCustomerAuthEmbeddedCustomerOrder({
+            client: this.client, path: { orderId }, headers: this.customerHeaders(secret), throwOnError: true
+        }));
+    }
+
     private publicHeaders() {
         return { 'x-zs-publishable-key': this.publishableKey } as const;
     }
 
     private cartHeaders(cartKey: string) {
-        return { 'x-zs-publishable-key': this.publishableKey, 'x-zs-cart-key': cartKey } as const;
+        return {
+            'x-zs-publishable-key': this.publishableKey,
+            'x-zs-cart-key': cartKey,
+            ...(this.customerSessionSecret ? { 'x-zs-customer-session': this.customerSessionSecret } : {})
+        } as const;
     }
 
     private orderHeaders(orderKey: string) {
         return { 'x-zs-publishable-key': this.publishableKey, 'x-zs-order-key': orderKey } as const;
+    }
+
+    private customerHeaders(secret: string) {
+        return { 'x-zs-publishable-key': this.publishableKey, 'x-zs-customer-session': secret } as const;
     }
 }
 

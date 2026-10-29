@@ -8,6 +8,7 @@
 export { CatalogApi } from './catalog';
 export { CartSession } from './cart';
 export { CheckoutCoordinator } from './checkout';
+export { CustomerAuth, type CustomerInitializationOptions } from './customer';
 export { ZynoSalesClient } from './client';
 export { SALES_API_BASES, resolveApiBase, type ZynoSalesEnvironment } from './configuration';
 export { ZynoSalesError, type PublicError } from './errors';
@@ -29,6 +30,7 @@ export type {
     CartServerAccess,
     CartSnapshot,
     CheckoutSnapshot,
+    CustomerSnapshot,
     Order,
     StorefrontConfig,
     StoreProduct,
@@ -40,6 +42,25 @@ export type { ZynoSalesStorage } from './storage';
 /** Generated browser-facing Sales contract types for advanced integrations. */
 export type {
     ISalesEcommAddressVerificationInput,
+    ISalesEcommCustomerAuthOptions,
+    ISalesEcommCustomerChallengeResponse,
+    ISalesEcommCustomerEmailInput,
+    ISalesEcommCustomerInvitationCompleteInput,
+    ISalesEcommCustomerOtpVerifyInput,
+    ISalesEcommCustomerPasswordChangeInput,
+    ISalesEcommCustomerPasswordLoginInput,
+    ISalesEcommCustomerPasswordProofVerifyInput,
+    ISalesEcommCustomerPasswordResetCompleteInput,
+    ISalesEcommCustomerOrderListResponse,
+    ISalesEcommCustomerOrderResponse,
+    ISalesEcommCustomerRegistrationCompleteInput,
+    ISalesEcommCustomerRegistrationVerifyInput,
+    ISalesEcommCustomerResetExchangeInput,
+    ISalesEcommCustomerRestrictedExchangeInput,
+    ISalesEcommCustomerSession,
+    ISalesEcommCustomerSessionGrantResponse,
+    ISalesEcommCustomerSessionInitInput,
+    ISalesEcommCustomerSessionResponse,
     ISalesEcommBuyerInput,
     ISalesEcommCartItemInput,
     ISalesEcommCartPaymentSetupResponse,

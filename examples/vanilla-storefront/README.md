@@ -13,11 +13,21 @@ state itself.
 3. Adding the first product to a cart
 4. Subscribing to render-safe `CartSnapshot` updates
 
+The [`customer-auth.html`](./customer-auth.html) page and
+[`customer-auth.ts`](./customer-auth.ts) show password and email-code sign in,
+registration, password recovery requests, account-cart binding, order history,
+and sign out on a static site. They require only the browser bundle, the
+publishable key, and the storefront policy configured in Zyno.
+
 ## Use it
 
 1. Replace `<your-publishable-key>` in `main.ts` with a real publishable key.
 2. Bundle or import `main.ts` from your preferred browser tooling.
 3. Connect `CartSnapshot` values (`cart`, `isBusy`, `lastError`) to your own UI.
+
+For the account example, replace the publishable key in `customer-auth.ts`,
+bundle it to `customer-auth.js`, and serve both files together from an approved
+HTTPS storefront origin. No merchant API key or server-side proxy is used.
 
 ## Not included
 

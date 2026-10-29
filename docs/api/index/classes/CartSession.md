@@ -16,6 +16,10 @@ Persistent, serialized cart state for one storefront instance.
 
 [`ZynoSalesClient`](ZynoSalesClient.md)
 
+###### queue?
+
+`SerialQueue`
+
 ###### storage
 
 [`ZynoSalesStorage`](../interfaces/ZynoSalesStorage.md)

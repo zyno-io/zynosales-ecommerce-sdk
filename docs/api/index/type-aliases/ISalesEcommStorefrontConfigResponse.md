@@ -50,6 +50,52 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### customerAuth
+
+> **customerAuth**: `object`
+
+#### enabled
+
+> **enabled**: `boolean`
+
+#### options
+
+> **options**: [`ISalesEcommCustomerAuthOptions`](ISalesEcommCustomerAuthOptions.md) \| `null`
+
+#### orderHistoryConfigRevision
+
+> **orderHistoryConfigRevision**: `number`
+
+#### orderHistoryScope
+
+> **orderHistoryScope**: `"ecomm"` \| `"all"`
+
+#### passwordRequirements
+
+> **passwordRequirements**: `object`
+
+##### passwordRequirements.maximumLength
+
+> **maximumLength**: `number`
+
+##### passwordRequirements.minimumCharacterClasses
+
+> **minimumCharacterClasses**: `number`
+
+##### passwordRequirements.minimumLength
+
+> **minimumLength**: `number`
+
+#### policyId
+
+> **policyId**: `string` \| `null`
+
+#### policyRevision
+
+> **policyRevision**: `number` \| `null`
+
+***
+
 ### payments
 
 > **payments**: `object`

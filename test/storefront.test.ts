@@ -46,7 +46,16 @@ describe('createZynoSales storage', () => {
                 stripePublishableKey: null,
                 stripeConnectedAccountId: null
             },
-            capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true }
+            capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true },
+            customerAuth: {
+                enabled: false,
+                policyId: null,
+                policyRevision: null,
+                options: null,
+                passwordRequirements: { minimumLength: 10, maximumLength: 128, minimumCharacterClasses: 3 },
+                orderHistoryScope: 'ecomm',
+                orderHistoryConfigRevision: 1
+            }
         });
 
         const first = createZynoSales({ apiBase, publishableKey: 'publishable-1', storage, sessionStorage, fetch });

@@ -28,6 +28,10 @@ Coordinates framework-agnostic checkout transitions for the active cart.
 
 `string`
 
+###### queue?
+
+`SerialQueue`
+
 ###### storage
 
 [`ZynoSalesStorage`](../interfaces/ZynoSalesStorage.md)
@@ -109,7 +113,7 @@ Cancels an unneeded payment attempt.
 
 ### completeCardPayment()
 
-> **completeCardPayment**(`input`): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+> **completeCardPayment**(`input`): `Promise`\<[`Order`](../type-aliases/Order.md)\>
 
 Records an authorized Stripe PaymentIntent with Sales.
 
@@ -121,13 +125,13 @@ Records an authorized Stripe PaymentIntent with Sales.
 
 #### Returns
 
-`Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+`Promise`\<[`Order`](../type-aliases/Order.md)\>
 
 ***
 
 ### completeMembershipCardSetup()
 
-> **completeMembershipCardSetup**(`input`): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+> **completeMembershipCardSetup**(`input`): `Promise`\<[`Order`](../type-aliases/Order.md)\>
 
 Completes a zero-due membership purchase after Stripe confirms its SetupIntent.
 
@@ -139,19 +143,19 @@ Completes a zero-due membership purchase after Stripe confirms its SetupIntent.
 
 #### Returns
 
-`Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+`Promise`\<[`Order`](../type-aliases/Order.md)\>
 
 ***
 
 ### getOrder()
 
-> **getOrder**(): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+> **getOrder**(): `Promise`\<[`Order`](../type-aliases/Order.md)\>
 
 Reads the completed order using the retained order capability.
 
 #### Returns
 
-`Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md)\>
+`Promise`\<[`Order`](../type-aliases/Order.md)\>
 
 ***
 
@@ -223,13 +227,13 @@ Quotes a complete package-rate selection with backend-authoritative pricing.
 
 ### recoverPayment()
 
-> **recoverPayment**(): `Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md) \| `null`\>
+> **recoverPayment**(): `Promise`\<[`Order`](../type-aliases/Order.md) \| `null`\>
 
 Recovers a paid order or a previously authorized payment attempt after a reload.
 
 #### Returns
 
-`Promise`\<[`ISalesEcommOrderResponse`](../type-aliases/ISalesEcommOrderResponse.md) \| `null`\>
+`Promise`\<[`Order`](../type-aliases/Order.md) \| `null`\>
 
 ***
 

@@ -17,7 +17,16 @@ describe('ZynoSalesClient', () => {
                     stripePublishableKey: null,
                     stripeConnectedAccountId: null
                 },
-                capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true }
+                capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true },
+                customerAuth: {
+                    enabled: false,
+                    policyId: null,
+                    policyRevision: null,
+                    options: null,
+                    passwordRequirements: { minimumLength: 10, maximumLength: 128, minimumCharacterClasses: 3 },
+                    orderHistoryScope: 'ecomm',
+                    orderHistoryConfigRevision: 1
+                }
             });
         });
         const client = new ZynoSalesClient({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_123', fetch });
@@ -50,4 +59,20 @@ it('uses embedded membership endpoints and retains the cart capability in header
         { path: '/embedded/sales/ecomm/carts/cart/payments/setup-membership-card', method: 'POST', body: { idempotencyKey: 'stable' } },
         { path: '/embedded/sales/ecomm/carts/cart/payments/confirm-setup-intent', method: 'POST', body: { paymentAttemptId: 'attempt', setupIntentId: 'seti_card' } }
     ]);
+});
+
+it('adds the customer session header to cart operations without putting it in the URL', async () => {
+    const fetch: typeof globalThis.fetch = vi.fn(async input => {
+        const request = new Request(input);
+        expect(request.url).toBe('https://sales.example/embedded/sales/ecomm/carts/cart');
+        expect(request.headers.get('x-zs-publishable-key')).toBe('zs_pk_123');
+        expect(request.headers.get('x-zs-cart-key')).toBe('cart-capability');
+        expect(request.headers.get('x-zs-customer-session')).toBe('opaque-session');
+        expect(request.url).not.toContain('opaque-session');
+        return Response.json({ cartId: 'cart', cart: {} });
+    });
+    const client = new ZynoSalesClient({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_123', fetch });
+    client.setCustomerSessionSecret('opaque-session');
+
+    await client.getCart('cart', 'cart-capability');
 });

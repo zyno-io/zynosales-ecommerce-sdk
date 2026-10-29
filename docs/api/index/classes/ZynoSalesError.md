@@ -24,6 +24,10 @@ A browser-safe error returned by the ZynoSales SDK.
 
 `unknown`
 
+###### code?
+
+`string`
+
 ###### status?
 
 `number`
@@ -45,6 +49,14 @@ A browser-safe error returned by the ZynoSales SDK.
 #### Inherited from
 
 `Error.cause`
+
+***
+
+### code?
+
+> `readonly` `optional` **code?**: `string`
+
+Stable Sales error code when one was returned.
 
 ***
 

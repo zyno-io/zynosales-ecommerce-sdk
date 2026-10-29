@@ -2,6 +2,8 @@ import type { CartSession } from './cart';
 import type { ZynoSalesClient } from './client';
 import { toPublicError, type PublicError, ZynoSalesError } from './errors';
 import type { ZynoSalesStorage } from './storage';
+import { SerialQueue } from './queue';
+import { parseCompletedOrderReference, type AccountCompletedOrderReference, type CompletedOrderReference, type CartReference } from './references';
 import type {
     CardPaymentSetup,
     MembershipCardSetup,
@@ -29,11 +31,15 @@ type PendingPayment = {
     kind?: 'payment' | 'setup';
 };
 
-type CompletedOrderReference = {
-    cartId: string;
-    orderId: string;
-    orderKey: string;
+type OrphanAccountPayment = {
+    version: 1;
+    reference: AccountCompletedOrderReference;
+    pending: PendingPayment;
 };
+
+type OrphanAccountPayments = { version: 1; items: OrphanAccountPayment[] };
+
+const MAX_ORPHAN_ACCOUNT_PAYMENTS = 8;
 
 /** Coordinates framework-agnostic checkout transitions for the active cart. */
 export class CheckoutCoordinator {
@@ -49,7 +55,7 @@ export class CheckoutCoordinator {
     private paymentAttemptStatus: string | null = null;
     private busy = false;
     private lastError: PublicError | null = null;
-    private queue: Promise<void> = Promise.resolve();
+    private readonly queue: SerialQueue;
 
     public constructor(options: {
         cartSession: CartSession;
@@ -57,12 +63,14 @@ export class CheckoutCoordinator {
         storage: ZynoSalesStorage;
         pendingPaymentKey: string;
         hooks: ZynoSalesHooks;
+        queue?: SerialQueue;
     }) {
         this.cartSession = options.cartSession;
         this.client = options.client;
         this.storage = options.storage;
         this.pendingPaymentKey = options.pendingPaymentKey;
         this.hooks = options.hooks;
+        this.queue = options.queue ?? new SerialQueue();
         this.completedOrderReference = this.readCompletedOrder();
     }
 
@@ -75,6 +83,11 @@ export class CheckoutCoordinator {
             isBusy: this.busy,
             lastError: this.lastError
         };
+    }
+
+    /** @internal Runs another SDK layer inside checkout/payment recovery serialization. */
+    public runExclusive<T>(operation: () => Promise<T>): Promise<T> {
+        return this.queue.run(operation);
     }
 
     /** Subscribes to render-safe checkout changes. */
@@ -185,12 +198,17 @@ export class CheckoutCoordinator {
      */
     public beginCardPayment(): Promise<CardCheckoutSetup | null> {
         return this.run(async () => {
-            await this.recoverPaymentInternal();
+            if (this.cartSession.getSnapshot().hasCart) {
+                await this.recoverPaymentInternal(false);
+            }
             if (this.order) return null;
 
             let reference = this.cartSession.requireReference();
             let pending = this.readPending();
             if (pending?.cartId !== reference.cartId) {
+                if (pending && !this.readOrphanAccountPayments().some(orphan => orphan.pending.cartId === pending?.cartId)) {
+                    throw new ZynoSalesError('Recover the earlier payment outcome before replacing its recovery marker.');
+                }
                 this.clearPending();
                 pending = null;
             }
@@ -206,7 +224,7 @@ export class CheckoutCoordinator {
                 reference = this.cartSession.requireReference();
                 const cart = this.requireCart();
                 if (cart.priceDue === 0 && !cart.membershipRequirements?.paymentMethodSetupRequired) {
-                    await this.finalizeZeroDueCartInternal(reference.cartId, reference.cartKey, reference.orderKey);
+                    await this.finalizeZeroDueCartInternal(reference);
                     return null;
                 }
             }
@@ -243,7 +261,7 @@ export class CheckoutCoordinator {
         return this.run(async () => {
             const reference = this.cartSession.requireReference();
             const order = await this.client.confirmCardPayment(reference.cartId, reference.cartKey, input);
-            await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
+            await this.finish(order, completedReference(reference, order.id));
             return order;
         });
     }
@@ -253,7 +271,7 @@ export class CheckoutCoordinator {
         return this.run(async () => {
             const reference = this.cartSession.requireReference();
             const order = await this.client.confirmMembershipCard(reference.cartId, reference.cartKey, input);
-            await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
+            await this.finish(order, completedReference(reference, order.id));
             return order;
         });
     }
@@ -284,7 +302,7 @@ export class CheckoutCoordinator {
 
     /** Recovers a paid order or a previously authorized payment attempt after a reload. */
     public recoverPayment(): Promise<Order | null> {
-        return this.run(() => this.recoverPaymentInternal());
+        return this.run(() => this.recoverPaymentInternal(true));
     }
 
     /** Reads the completed order using the retained order capability. */
@@ -294,11 +312,11 @@ export class CheckoutCoordinator {
                 ? this.cartSession.requireReference()
                 : null;
             const reference = activeReference
-                ? { cartId: activeReference.cartId, orderId: activeReference.cartId, orderKey: activeReference.orderKey }
+                ? completedReference(activeReference, activeReference.cartId)
                 : this.completedOrderReference;
             if (!reference) throw new ZynoSalesError('There is no completed order.');
 
-            const order = await this.client.getOrder(reference.orderId, reference.orderKey);
+            const order = await this.getOrderForReference(reference);
             if (order.status === 'paid') await this.finish(order, reference);
             return order;
         });
@@ -314,6 +332,51 @@ export class CheckoutCoordinator {
         this.emit();
     }
 
+    /** @internal Detaches an account cart on logout while retaining its pending payment outcome reference. */
+    public detachAccountCartForLogout(): void {
+        const snapshot = this.cartSession.getSnapshot();
+        if (!snapshot.hasCart || snapshot.mode !== 'account') return;
+
+        const reference = this.cartSession.requireReference();
+        if (reference.mode !== 'account') return;
+        let pending: PendingPayment | null = null;
+        try {
+            pending = this.readPending();
+            const orphanSaved = pending ? this.saveOrphanAccountPayment(pending, reference) : false;
+            this.clearCompletedOrder();
+            if (pending) {
+                this.completedOrderReference = {
+                    version: 2,
+                    mode: 'account',
+                    cartId: pending.cartId,
+                    orderId: pending.cartId,
+                    scope: reference.scope
+                };
+                this.writeCompletedOrder(this.completedOrderReference);
+                if (orphanSaved) this.clearPending();
+            } else {
+                this.order = null;
+                this.paymentAttemptId = null;
+                this.paymentAttemptStatus = null;
+            }
+        } catch {
+            // Logout must still detach the in-memory cart when browser storage is unavailable.
+            this.completedOrderReference = pending
+                ? completedReference(reference, pending.cartId)
+                : null;
+            this.order = null;
+            this.paymentAttemptId = null;
+            this.paymentAttemptStatus = null;
+        } finally {
+            try {
+                this.cartSession.clear();
+            } catch {
+                // CartSession clears its in-memory capability before attempting storage cleanup.
+            }
+            this.emit();
+        }
+    }
+
     /** @internal Changes the payment storage key once the storefront identity is known. */
     public setStorageKey(pendingPaymentKey: string): void {
         if (this.pendingPaymentKey === pendingPaymentKey) return;
@@ -321,10 +384,13 @@ export class CheckoutCoordinator {
         const oldPendingPaymentKey = this.pendingPaymentKey;
         const oldPending = this.readPending(oldPendingPaymentKey);
         const oldCompleted = this.readCompletedOrder(oldPendingPaymentKey);
+        const oldOrphans = this.readOrphanAccountPayments(oldPendingPaymentKey);
+        const scopedOrphans = this.readOrphanAccountPayments(pendingPaymentKey);
         this.pendingPaymentKey = pendingPaymentKey;
 
         const scopedPending = this.readPending();
         if (!scopedPending && oldPending) this.writePending(oldPending);
+        if (!scopedOrphans.length && oldOrphans.length) this.writeOrphanAccountPayments(oldOrphans, pendingPaymentKey);
 
         const previousCompleted = this.completedOrderReference;
         const scopedCompleted = this.readCompletedOrder();
@@ -334,21 +400,35 @@ export class CheckoutCoordinator {
 
         this.storage.removeItem(oldPendingPaymentKey);
         this.storage.removeItem(completedOrderStorageKey(oldPendingPaymentKey));
+        if (!scopedOrphans.length && oldOrphans.length) this.storage.removeItem(orphanAccountPaymentKey(oldPendingPaymentKey));
         this.emit();
     }
 
-    private async finalizeZeroDueCartInternal(cartId: string, cartKey: string, orderKey: string): Promise<void> {
-        const result = await this.client.finalizeZeroDueCart(cartId, cartKey);
+    private async finalizeZeroDueCartInternal(reference: CartReference): Promise<void> {
+        const result = await this.client.finalizeZeroDueCart(reference.cartId, reference.cartKey);
         this.cartSession.accept(result);
-        const order = await this.client.getOrder(cartId, orderKey);
-        await this.finish(order, { cartId, orderId: order.id, orderKey });
+        const finalReference = this.cartSession.requireReference();
+        const order = finalReference.mode === 'guest'
+            ? await this.client.getOrder(finalReference.cartId, finalReference.orderKey)
+            : await this.client.getCustomerOrder(finalReference.cartId);
+        await this.finish(order, completedReference(finalReference, order.id));
     }
 
-    private async recoverPaymentInternal(): Promise<Order | null> {
+    private async recoverPaymentInternal(allowOrphanRecovery: boolean): Promise<Order | null> {
+        const activeCartId = this.cartSession.getSnapshot().hasCart ? this.cartSession.requireReference().cartId : null;
+        const orphan = allowOrphanRecovery
+            ? this.readOrphanAccountPayments().find(entry => entry.pending.cartId !== activeCartId)
+            : undefined;
+        if (orphan) {
+            const order = await this.getOrderForReference(orphan.reference);
+            if (order.status === 'paid') await this.finish(order, orphan.reference);
+            return order;
+        }
+
         if (!this.cartSession.getSnapshot().hasCart) {
             const completed = this.completedOrderReference;
             if (!completed) throw new ZynoSalesError('There is no active cart.');
-            const order = await this.client.getOrder(completed.orderId, completed.orderKey);
+            const order = await this.getOrderForReference(completed);
             if (order.status === 'paid') {
                 await this.finish(order, completed);
                 return order;
@@ -358,16 +438,18 @@ export class CheckoutCoordinator {
 
         const reference = this.cartSession.requireReference();
         try {
-            const order = await this.client.getOrder(reference.cartId, reference.orderKey);
+            const order = reference.mode === 'guest'
+                ? await this.client.getOrder(reference.cartId, reference.orderKey)
+                : await this.client.getCustomerOrder(reference.cartId);
             if (order.status === 'paid') {
-                await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
+                await this.finish(order, completedReference(reference, order.id));
                 return order;
             }
         } catch (error) {
             if (!(error instanceof ZynoSalesError) || !error.isCapabilityLost) throw error;
         }
 
-        const pending = this.readPending();
+        const pending = this.readPendingForCart(reference.cartId);
         if (!pending || pending.cartId !== reference.cartId || !pending.paymentAttemptId || (!pending.paymentIntentId && !pending.setupIntentId)) return null;
 
         const attempt = await this.client.getPaymentAttempt(reference.cartId, reference.cartKey, pending.paymentAttemptId);
@@ -379,7 +461,7 @@ export class CheckoutCoordinator {
             const order = pending.setupIntentId
                 ? await this.client.confirmMembershipCard(reference.cartId, reference.cartKey, { paymentAttemptId: pending.paymentAttemptId, setupIntentId: pending.setupIntentId })
                 : await this.client.confirmCardPayment(reference.cartId, reference.cartKey, { paymentAttemptId: pending.paymentAttemptId, paymentIntentId: pending.paymentIntentId! });
-            await this.finish(order, { cartId: reference.cartId, orderId: order.id, orderKey: reference.orderKey });
+            await this.finish(order, completedReference(reference, order.id));
             return order;
         }
 
@@ -387,14 +469,14 @@ export class CheckoutCoordinator {
         return null;
     }
 
-    private async finish(order: Order, reference: Pick<CompletedOrderReference, 'cartId' | 'orderId' | 'orderKey'>): Promise<void> {
+    private async finish(order: Order, reference: CompletedOrderReference): Promise<void> {
         const completionRecorded = this.completedOrderReference?.orderId === order.id;
         this.completedOrderReference = { ...reference, orderId: order.id };
         this.writeCompletedOrder(this.completedOrderReference);
         this.order = order;
         this.paymentAttemptId = null;
         this.paymentAttemptStatus = null;
-        this.clearPending();
+        this.clearPendingForCart(reference.cartId);
         if (this.cartSession.getSnapshot().hasCart && this.cartSession.requireReference().cartId === reference.cartId) {
             this.cartSession.clear();
         }
@@ -407,6 +489,12 @@ export class CheckoutCoordinator {
         } catch {
             // The order is complete. Merchant follow-up must not turn it into a checkout failure.
         }
+    }
+
+    private getOrderForReference(reference: CompletedOrderReference): Promise<Order> {
+        return reference.mode === 'guest'
+            ? this.client.getOrder(reference.orderId, reference.orderKey)
+            : this.client.getCustomerOrder(reference.orderId);
     }
 
     private requireCart(): Cart {
@@ -424,7 +512,7 @@ export class CheckoutCoordinator {
     }
 
     private run<T>(operation: () => Promise<T>): Promise<T> {
-        const run = this.queue.then(async () => {
+        return this.queue.run(async () => {
             this.busy = true;
             this.emit();
             try {
@@ -439,11 +527,6 @@ export class CheckoutCoordinator {
                 this.emit();
             }
         });
-        this.queue = run.then(
-            () => undefined,
-            () => undefined
-        );
-        return run;
     }
 
     private readPending(storageKey: string = this.pendingPaymentKey): PendingPayment | null {
@@ -473,24 +556,74 @@ export class CheckoutCoordinator {
         this.storage.removeItem(this.pendingPaymentKey);
     }
 
+    private readPendingForCart(cartId: string): PendingPayment | null {
+        const active = this.readPending();
+        if (active?.cartId === cartId) return active;
+        const orphan = this.readOrphanAccountPayments().find(entry => entry.pending.cartId === cartId);
+        return orphan?.pending ?? null;
+    }
+
+    private clearPendingForCart(cartId: string): void {
+        if (this.readPending()?.cartId === cartId) this.clearPending();
+        const orphans = this.readOrphanAccountPayments();
+        const remaining = orphans.filter(orphan => orphan.pending.cartId !== cartId);
+        if (remaining.length !== orphans.length) this.writeOrphanAccountPayments(remaining);
+    }
+
+    private saveOrphanAccountPayment(pending: PendingPayment, reference: Extract<CartReference, { mode: 'account' }>): boolean {
+        const orphans = this.readOrphanAccountPayments();
+        const existing = orphans.find(orphan => orphan.pending.cartId === pending.cartId);
+        const next: OrphanAccountPayment = {
+            version: 1,
+            reference: completedReference(reference, pending.cartId) as AccountCompletedOrderReference,
+            pending
+        };
+        if (existing) {
+            this.writeOrphanAccountPayments(orphans.map(orphan => orphan.pending.cartId === pending.cartId ? next : orphan));
+            return true;
+        } else if (orphans.length < MAX_ORPHAN_ACCOUNT_PAYMENTS) {
+            this.writeOrphanAccountPayments([...orphans, next]);
+            return true;
+        }
+        return false;
+    }
+
+    private readOrphanAccountPayments(storageKey: string = this.pendingPaymentKey): OrphanAccountPayment[] {
+        const raw = this.storage.getItem(orphanAccountPaymentKey(storageKey));
+        if (!raw) return [];
+        try {
+            const parsed = JSON.parse(raw) as Partial<OrphanAccountPayments> | Partial<OrphanAccountPayment>;
+            const candidates = Array.isArray((parsed as Partial<OrphanAccountPayments>).items)
+                ? (parsed as Partial<OrphanAccountPayments>).items!
+                : [parsed as Partial<OrphanAccountPayment>];
+            if (parsed.version !== 1) return [];
+            return candidates.slice(0, MAX_ORPHAN_ACCOUNT_PAYMENTS).flatMap(candidate => {
+                const reference = parseCompletedOrderReference(JSON.stringify(candidate.reference));
+                const pending = candidate.pending;
+                if (
+                    !reference || reference.mode !== 'account' ||
+                    !pending || typeof pending.cartId !== 'string' ||
+                    typeof pending.idempotencyKey !== 'string' || pending.cartId !== reference.cartId
+                ) return [];
+                return [{ version: 1, reference, pending: { ...pending } }];
+            });
+        } catch {
+            return [];
+        }
+    }
+
+    private writeOrphanAccountPayments(orphans: OrphanAccountPayment[], storageKey: string = this.pendingPaymentKey): void {
+        if (!orphans.length) this.storage.removeItem(orphanAccountPaymentKey(storageKey));
+        else this.storage.setItem(orphanAccountPaymentKey(storageKey), JSON.stringify({ version: 1, items: orphans.slice(0, MAX_ORPHAN_ACCOUNT_PAYMENTS) } satisfies OrphanAccountPayments));
+    }
+
     private readCompletedOrder(pendingPaymentKey: string = this.pendingPaymentKey): CompletedOrderReference | null {
         const raw = this.storage.getItem(completedOrderStorageKey(pendingPaymentKey));
-        if (!raw) return null;
-        try {
-            const parsed = JSON.parse(raw) as Partial<CompletedOrderReference>;
-            if (
-                typeof parsed.cartId !== 'string'
-                || typeof parsed.orderId !== 'string'
-                || typeof parsed.orderKey !== 'string'
-            ) return null;
-            return {
-                cartId: parsed.cartId,
-                orderId: parsed.orderId,
-                orderKey: parsed.orderKey
-            };
-        } catch {
-            return null;
+        const reference = parseCompletedOrderReference(raw);
+        if (reference && raw !== JSON.stringify(reference)) {
+            this.storage.setItem(completedOrderStorageKey(pendingPaymentKey), JSON.stringify(reference));
         }
+        return reference;
     }
 
     private writeCompletedOrder(reference: CompletedOrderReference): void {
@@ -515,4 +648,15 @@ function createIdempotencyKey(): string {
 
 function completedOrderStorageKey(pendingPaymentKey: string): string {
     return `${pendingPaymentKey}:completed`;
+}
+
+function orphanAccountPaymentKey(pendingPaymentKey: string): string {
+    return `${pendingPaymentKey}:orphan-account`;
+}
+
+function completedReference(reference: CartReference, orderId: string): CompletedOrderReference {
+    if (reference.mode === 'guest') {
+        return { version: 1, mode: 'guest', cartId: reference.cartId, orderId, orderKey: reference.orderKey };
+    }
+    return { version: 2, mode: 'account', cartId: reference.cartId, orderId, scope: reference.scope };
 }

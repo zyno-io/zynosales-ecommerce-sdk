@@ -1,0 +1,3 @@
+# Type Alias: GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponse
+
+> **GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponse** = [`GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses`](GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses.md)\[keyof [`GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses`](GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses.md)\]
