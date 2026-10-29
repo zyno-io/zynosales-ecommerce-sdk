@@ -26,7 +26,7 @@ type PersistedCustomerSession = {
 
 export type CustomerInitializationOptions = ISalesEcommCustomerAuthOptions;
 
-/** Framework-neutral customer authentication, account orders, and account-cart binding. */
+/** Sign customers in, remember their sessions, and connect account checkout and order history. */
 export class CustomerAuth {
     private readonly client: ZynoSalesClient;
     private readonly cart: CartSession;
@@ -42,6 +42,7 @@ export class CustomerAuth {
     private namespace: string;
     private record: PersistedCustomerSession | null = null;
     private session: ISalesEcommCustomerSession | null = null;
+    private sessionGeneration = 0;
     private state: CustomerSnapshot['state'] = 'uninitialized';
     private busy = false;
     private lastError: PublicError | null = null;
@@ -75,15 +76,23 @@ export class CustomerAuth {
         this.configuredOptions = options.configuredOptions;
         this.config = options.config;
         this.client.setCustomerSessionInvalidListener(error => {
-            this.clearPersistedRecords();
+            this.sessionGeneration++;
+            const record = this.record;
+            if (record) this.clearPersistedRecords(record);
+            else this.clearActiveRecord();
             this.state = 'expired';
             this.lastError = toPublicError(error);
+            try {
+                this.checkout.detachAccountCartForLogout({ preserveOtherStoredCart: true });
+            } catch {
+                // In-memory session invalidation must not depend on shared storage cleanup.
+            }
             this.emit();
         });
         this.listenForStorageChanges();
     }
 
-    /** Returns render-safe state without the stored bearer secret or customer PII. */
+    /** Returns customer state for your UI, without passwords, session tokens, or personal details. */
     public getSnapshot(): CustomerSnapshot {
         const session = this.session;
         const principal = session?.principal ?? null;
@@ -105,14 +114,14 @@ export class CustomerAuth {
         };
     }
 
-    /** Subscribes to render-safe customer state changes. */
+    /** Keeps your account menu and forms up to date as customer state changes. */
     public subscribe(listener: (snapshot: CustomerSnapshot) => void): () => void {
         this.listeners.add(listener);
         listener(this.getSnapshot());
         return () => this.listeners.delete(listener);
     }
 
-    /** Initializes one anonymous session with an immutable subset of the storefront policy. */
+    /** Starts a customer session using the flows this storefront enables. The browser saves it locally by default. */
     public initialize(options: CustomerInitializationOptions | undefined = this.configuredOptions): Promise<CustomerSnapshot> {
         return this.run(async () => {
             if (!options) throw new ZynoSalesError('Choose customer flows when creating the storefront or calling initialize.');
@@ -121,7 +130,8 @@ export class CustomerAuth {
             if (existing && !isLocallyExpired(existing.session)) {
                 throw new ZynoSalesError('Restore or log out of the existing customer session before initializing another one.');
             }
-            this.clearPersistedRecords();
+            if (existing) this.clearPersistedRecords(existing);
+            else this.clearActiveRecord();
             const customerAuth = config.customerAuth;
             if (!customerAuth.enabled || !customerAuth.policyId || customerAuth.policyRevision === null || !customerAuth.options) {
                 throw new ZynoSalesError('Customer accounts are unavailable for this storefront.');
@@ -137,7 +147,7 @@ export class CustomerAuth {
         });
     }
 
-    /** Restores and verifies a stored opaque session with Sales before exposing its state. */
+    /** Checks a saved session with Sales before returning its state; local data alone never restores sign-in. */
     public restore(): Promise<CustomerSnapshot> {
         return this.run(async () => {
             await this.config();
@@ -148,31 +158,45 @@ export class CustomerAuth {
                 return this.getSnapshot();
             }
             if (isLocallyExpired(record.session)) {
-                this.clearPersistedRecords();
+                this.clearPersistedRecords(record);
                 this.state = 'expired';
                 this.emit();
                 return this.getSnapshot();
             }
             if (!this.matchesCurrentContext(record) || (this.configuredOptions && !sameOptions(record.session.policy.options, this.configuredOptions))) {
-                this.clearPersistedRecords();
+                this.clearPersistedRecords(record);
                 this.state = 'expired';
                 throw policyMismatch();
             }
 
             this.client.setCustomerSessionSecret(null);
+            const generation = this.sessionGeneration;
             let current: Awaited<ReturnType<ZynoSalesClient['getCustomerSession']>>;
             try {
                 current = await this.client.getCustomerSession(record.sessionSecret);
             } catch (error) {
                 const normalized = error instanceof ZynoSalesError ? error : null;
                 if (normalized?.status === 401 || normalized?.status === 409) {
-                    this.clearPersistedRecords();
+                    this.clearPersistedRecords(record);
                     this.state = 'expired';
                 }
                 throw error;
             }
-            if (!samePolicy(current.session, record.session) || current.session.targetCartId !== record.session.targetCartId) {
-                this.clearPersistedRecords();
+            if (generation !== this.sessionGeneration || !this.isCurrentSavedSession(record)) {
+                this.sessionGeneration++;
+                this.clearActiveRecord();
+                this.state = 'expired';
+                try {
+                    this.checkout.detachAccountCartForLogout({ preserveOtherStoredCart: true });
+                } catch {
+                    // The stale response cannot restore authority, even if cleanup storage is unavailable.
+                }
+                throw invalidatedInAnotherTab();
+            }
+            if (current.session.sessionId !== record.session.sessionId
+                || !samePolicy(current.session, record.session)
+                || current.session.targetCartId !== record.session.targetCartId) {
+                this.clearPersistedRecords(record);
                 this.state = 'expired';
                 throw policyMismatch();
             }
@@ -259,7 +283,9 @@ export class CustomerAuth {
     /** Exchanges an emailed recovery token into a restricted, tab-scoped proof session. */
     public exchangePasswordReset(token: string): Promise<CustomerSnapshot> {
         return this.run(async () => {
-            this.clearPersistedRecords();
+            const previous = this.record ?? this.readPersistedRecord();
+            if (previous) this.clearPersistedRecords(previous);
+            else this.clearActiveRecord();
             const grant = await this.client.exchangeCustomerPasswordReset({ token });
             this.acceptGrant(grant, true);
             return this.getSnapshot();
@@ -272,7 +298,7 @@ export class CustomerAuth {
             const record = this.requirePhase('recovery');
             requireOption(record.session.policy.options, 'passwordRecovery');
             await this.client.completeCustomerPasswordReset(record.sessionSecret, { newPassword });
-            this.clearPersistedRecords();
+            this.clearPersistedRecords(record);
             this.state = 'expired';
             return this.getSnapshot();
         });
@@ -306,7 +332,7 @@ export class CustomerAuth {
             const option = input.currentPassword === undefined ? 'setPasswordWithoutCurrent' : 'changePasswordWithCurrent';
             requireOption(record.session.policy.options, option);
             await this.client.replaceCustomerPassword(record.sessionSecret, input);
-            this.clearPersistedRecords();
+            this.clearPersistedRecords(record);
             this.state = 'expired';
             return this.getSnapshot();
         });
@@ -315,7 +341,9 @@ export class CustomerAuth {
     /** Exchanges an invitation token into a restricted tab-scoped enrollment session. */
     public exchangeEnrollment(token: string): Promise<CustomerSnapshot> {
         return this.run(async () => {
-            this.clearPersistedRecords();
+            const previous = this.record ?? this.readPersistedRecord();
+            if (previous) this.clearPersistedRecords(previous);
+            else this.clearActiveRecord();
             const grant = await this.client.exchangeCustomerEnrollment({ token });
             this.acceptGrant(grant, true);
             return this.getSnapshot();
@@ -328,7 +356,7 @@ export class CustomerAuth {
             const record = this.requirePhase('enrollment');
             if (input.password !== undefined) requireOption(record.session.policy.options, 'createPassword');
             await this.client.completeCustomerInvitation(record.sessionSecret, input);
-            this.clearPersistedRecords();
+            this.clearPersistedRecords(record);
             this.state = 'expired';
             return this.getSnapshot();
         });
@@ -337,7 +365,9 @@ export class CustomerAuth {
     /** Exchanges a login-email verification token into a restricted tab-scoped session. */
     public exchangeLoginEmail(token: string): Promise<CustomerSnapshot> {
         return this.run(async () => {
-            this.clearPersistedRecords();
+            const previous = this.record ?? this.readPersistedRecord();
+            if (previous) this.clearPersistedRecords(previous);
+            else this.clearActiveRecord();
             const grant = await this.client.exchangeCustomerLoginEmail({ token });
             this.acceptGrant(grant, true);
             return this.getSnapshot();
@@ -349,13 +379,13 @@ export class CustomerAuth {
         return this.run(async () => {
             const record = this.requirePhase('loginEmailVerification');
             await this.client.completeCustomerLoginEmail(record.sessionSecret);
-            this.clearPersistedRecords();
+            this.clearPersistedRecords(record);
             this.state = 'expired';
             return this.getSnapshot();
         });
     }
 
-    /** Revokes the current server session and clears browser storage even if the request fails. */
+    /** Signs out in this tab, clears its account cart, and asks Sales to revoke the session. */
     public logout(): Promise<CustomerSnapshot> {
         return this.run(async () => {
             let record = this.record;
@@ -367,21 +397,16 @@ export class CustomerAuth {
                 }
             }
             try {
-                this.checkout.detachAccountCartForLogout();
+                this.checkout.detachAccountCartForLogout({ preserveOtherStoredCart: true });
             } catch {
                 // Local logout and server revocation must proceed if cart storage is unavailable.
             }
+            this.sessionGeneration++;
             this.clearActiveRecord();
             this.state = 'expired';
-            try {
-                this.storage.removeItem(this.storageKey);
-            } catch {
-                // The in-memory bearer secret is already cleared.
-            }
-            try {
-                this.restrictedStorage.removeItem(this.storageKey);
-            } catch {
-                // Best-effort cleanup of restricted tab storage.
+            if (record) {
+                this.removeStoredRecordIfSame(this.storage, record);
+                this.removeStoredRecordIfSame(this.restrictedStorage, record);
             }
             try {
                 this.emit();
@@ -528,7 +553,9 @@ export class CustomerAuth {
                 return await operation();
             } catch (error) {
                 if (isTerminalSessionError(error)) {
-                    this.clearPersistedRecords();
+                    const record = this.record;
+                    if (record) this.clearPersistedRecords(record);
+                    else this.clearActiveRecord();
                     this.state = 'expired';
                 }
                 this.lastError = toPublicError(error);
@@ -545,7 +572,7 @@ export class CustomerAuth {
         const record = this.record;
         if (!record || !this.session || !this.matchesCurrentContext(record)) throw new ZynoSalesError('Initialize or restore a customer session first.');
         if (isLocallyExpired(record.session)) {
-            this.clearPersistedRecords();
+            this.clearPersistedRecords(record);
             this.state = 'expired';
             throw new ZynoSalesError('Your customer session has expired.', { status: 401, code: 'REAUTHENTICATION_REQUIRED' });
         }
@@ -608,17 +635,7 @@ export class CustomerAuth {
 
     private readFromStorage(storage: ZynoSalesStorage): PersistedCustomerSession | null {
         const raw = storage.getItem(this.storageKey);
-        if (!raw) return null;
-        try {
-            const parsed = JSON.parse(raw) as Partial<PersistedCustomerSession>;
-            if (parsed.version !== 1 || typeof parsed.sessionSecret !== 'string'
-                || typeof parsed.apiBase !== 'string' || typeof parsed.namespace !== 'string'
-                || typeof parsed.keyIdentity !== 'string'
-                || !parsed.session || typeof parsed.session !== 'object') return null;
-            return parsed as PersistedCustomerSession;
-        } catch {
-            return null;
-        }
+        return raw ? parsePersistedRecord(raw) : null;
     }
 
     private matchesCurrentContext(record: PersistedCustomerSession): boolean {
@@ -626,10 +643,28 @@ export class CustomerAuth {
             && record.keyIdentity === this.keyIdentity && record.origin === currentOrigin();
     }
 
-    private clearPersistedRecords(): void {
-        this.storage.removeItem(this.storageKey);
-        this.restrictedStorage.removeItem(this.storageKey);
+    private clearPersistedRecords(expected: PersistedCustomerSession): void {
+        this.removeStoredRecordIfSame(this.storage, expected);
+        this.removeStoredRecordIfSame(this.restrictedStorage, expected);
         this.clearActiveRecord();
+    }
+
+    private removeStoredRecordIfSame(storage: ZynoSalesStorage, expected: PersistedCustomerSession): void {
+        try {
+            const stored = this.readFromStorage(storage);
+            if (stored && sameSavedSessionSnapshot(stored, expected)) storage.removeItem(this.storageKey);
+        } catch {
+            // A failed read cannot authorize deleting another tab's saved session.
+        }
+    }
+
+    private isCurrentSavedSession(expected: PersistedCustomerSession): boolean {
+        try {
+            const current = this.readPersistedRecord();
+            return !!current && sameSavedSessionIdentity(current, expected);
+        } catch {
+            return false;
+        }
     }
 
     private clearActiveRecord(): void {
@@ -641,9 +676,24 @@ export class CustomerAuth {
     private listenForStorageChanges(): void {
         if (typeof window === 'undefined') return;
         this.storageListener = event => {
-            if (event.key !== this.storageKey) return;
-            this.clearActiveRecord();
+            if (event.storageArea !== (this.storage as Storage) || (event.key !== null && event.key !== this.storageKey)) return;
+            let stored: PersistedCustomerSession | null = null;
+            try {
+                stored = this.readPersistedRecord();
+            } catch {
+                // Failure to read shared state cannot preserve this tab's authority.
+            }
+            if (this.record && stored && sameSavedSessionIdentity(stored, this.record)) return;
+            this.sessionGeneration++;
+            const record = this.record;
+            if (record) this.clearPersistedRecords(record);
+            else this.clearActiveRecord();
             this.state = 'expired';
+            try {
+                this.checkout.detachAccountCartForLogout({ preserveOtherStoredCart: true });
+            } catch {
+                // A storage event still revokes in-memory authority if cleanup storage is unavailable.
+            }
             this.emit();
         };
         window.addEventListener('storage', this.storageListener);
@@ -717,10 +767,50 @@ function persistedSession(session: ISalesEcommCustomerSession): Omit<ISalesEcomm
     return metadata;
 }
 
+function parsePersistedRecord(value: string): PersistedCustomerSession | null {
+    try {
+        const parsed = JSON.parse(value) as Partial<PersistedCustomerSession>;
+        if (parsed.version !== 1 || typeof parsed.sessionSecret !== 'string'
+            || typeof parsed.apiBase !== 'string' || typeof parsed.namespace !== 'string'
+            || typeof parsed.keyIdentity !== 'string' || typeof parsed.restricted !== 'boolean'
+            || !parsed.session || typeof parsed.session !== 'object'
+            || typeof parsed.session.sessionId !== 'string' || !parsed.session.policy) return null;
+        return parsed as PersistedCustomerSession;
+    } catch {
+        return null;
+    }
+}
+
+function sameSavedSessionIdentity(left: PersistedCustomerSession, right: PersistedCustomerSession): boolean {
+    return left.apiBase === right.apiBase
+        && left.namespace === right.namespace
+        && left.keyIdentity === right.keyIdentity
+        && left.origin === right.origin
+        && left.restricted === right.restricted
+        && left.sessionSecret === right.sessionSecret
+        && left.session.sessionId === right.session.sessionId
+        && left.session.phase === right.session.phase
+        && left.session.targetCartId === right.session.targetCartId
+        && samePolicy(left.session, right.session);
+}
+
+function sameSavedSessionSnapshot(left: PersistedCustomerSession, right: PersistedCustomerSession): boolean {
+    return sameSavedSessionIdentity(left, right)
+        && left.session.expiresAt === right.session.expiresAt
+        && left.session.idleExpiresAt === right.session.idleExpiresAt;
+}
+
 function policyMismatch(): ZynoSalesError {
     return new ZynoSalesError('This customer session belongs to a different storefront policy. Sign in again.', {
         status: 409,
         code: 'AUTH_POLICY_MISMATCH'
+    });
+}
+
+function invalidatedInAnotherTab(): ZynoSalesError {
+    return new ZynoSalesError('This customer session changed in another tab. Restore it before continuing.', {
+        status: 401,
+        code: 'REAUTHENTICATION_REQUIRED'
     });
 }
 

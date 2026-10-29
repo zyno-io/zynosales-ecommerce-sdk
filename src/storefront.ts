@@ -18,7 +18,7 @@ export type ZynoSalesSharedOptions = {
     storage?: ZynoSalesStorage;
     /** Session storage for payment recovery markers. Defaults to `sessionStorage` in browsers. */
     sessionStorage?: ZynoSalesStorage;
-    /** Private customer-session storage. Defaults to `sessionStorage`; pass `localStorage` for longer continuity. */
+    /** Where customer sign-in is remembered. Defaults to `localStorage`; pass `sessionStorage` for the current tab only. Email-link steps always stay in the current tab. */
     customerStorage?: ZynoSalesStorage;
     /** Customer flows the SDK may offer for this instance. The server policy can only narrow this subset. */
     customer?: { options?: CustomerInitializationOptions };

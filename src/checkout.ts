@@ -333,7 +333,7 @@ export class CheckoutCoordinator {
     }
 
     /** @internal Detaches an account cart on logout while retaining its pending payment outcome reference. */
-    public detachAccountCartForLogout(): void {
+    public detachAccountCartForLogout(options: { preserveOtherStoredCart?: boolean } = {}): void {
         const snapshot = this.cartSession.getSnapshot();
         if (!snapshot.hasCart || snapshot.mode !== 'account') return;
 
@@ -369,7 +369,8 @@ export class CheckoutCoordinator {
             this.paymentAttemptStatus = null;
         } finally {
             try {
-                this.cartSession.clear();
+                if (options.preserveOtherStoredCart) this.cartSession.clearIfCurrentReferenceUnchanged();
+                else this.cartSession.clear();
             } catch {
                 // CartSession clears its in-memory capability before attempting storage cleanup.
             }

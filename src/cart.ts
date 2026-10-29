@@ -128,6 +128,29 @@ export class CartSession {
         this.clearInternal();
     }
 
+    /** @internal Clears this tab's cart but removes shared storage only if it still holds the same capability. */
+    public clearIfCurrentReferenceUnchanged(): void {
+        const reference = this.reference;
+        if (!reference) return;
+        let stored: CartReference | null = null;
+        try {
+            stored = parseCartReference(this.storage.getItem(this.storageKey));
+        } catch {
+            // If storage cannot be checked, leave any potentially newer cart reference intact.
+        }
+        this.reference = null;
+        this.cart = null;
+        this.lastError = null;
+        if (stored && sameCartReference(stored, reference)) {
+            try {
+                this.storage.removeItem(this.storageKey);
+            } catch {
+                // The in-memory capability has already been dropped.
+            }
+        }
+        this.emit();
+    }
+
     /** Runs a same-origin server handoff with the current cart capability. */
     /**
      * Provides cart capability access for one trusted merchant-server call.
@@ -350,4 +373,13 @@ function referenceFromResponse(response: CartResponse, existing: CartReference |
 
 function isCapabilityLost(error: unknown): boolean {
     return error instanceof ZynoSalesError && error.isCapabilityLost;
+}
+
+function sameCartReference(left: CartReference, right: CartReference): boolean {
+    if (left.mode !== right.mode || left.cartId !== right.cartId || left.cartKey !== right.cartKey) return false;
+    if (left.mode === 'guest' && right.mode === 'guest') return left.orderKey === right.orderKey;
+    return left.mode === 'account' && right.mode === 'account'
+        && left.scope.policyId === right.scope.policyId
+        && left.scope.policyRevision === right.scope.policyRevision
+        && left.scope.orderHistoryScope === right.scope.orderHistoryScope;
 }

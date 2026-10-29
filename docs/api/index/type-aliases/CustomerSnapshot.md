@@ -64,6 +64,8 @@ Render-safe customer state. Opaque session secrets, passwords, codes, and proofs
 
 > **persistence**: `"session"` \| `"local"` \| `"memory"` \| `"custom"`
 
+`local` survives tab closure; restricted proof sessions and explicit session storage stay in this tab.
+
 ***
 
 ### policyDigest

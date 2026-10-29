@@ -21,12 +21,21 @@ let otpChallengeId: string | null = null;
 let registrationChallengeId: string | null = null;
 
 function render(snapshot: ReturnType<typeof storefront.customer.getSnapshot>): void {
-    status.textContent = [
-        `State: ${snapshot.state}`,
-        `Persistence: ${snapshot.persistence}`,
-        snapshot.policyId ? `Policy: ${snapshot.policyId} revision ${snapshot.policyRevision}` : '',
-        snapshot.lastError?.message ?? ''
-    ].filter(Boolean).join(' · ');
+    if (snapshot.isBusy) {
+        status.textContent = 'One moment…';
+    } else if (snapshot.lastError) {
+        status.textContent = snapshot.lastError.message;
+    } else if (snapshot.state === 'authenticated') {
+        status.textContent = 'You’re signed in. You can view your orders or check out with your account.';
+    } else if (snapshot.state === 'restricted') {
+        status.textContent = 'Finish the account step from your email before continuing.';
+    } else if (snapshot.state === 'cart-resume') {
+        status.textContent = snapshot.authenticationMethod
+            ? 'You’re signed in to finish your saved checkout.'
+            : 'Sign in to finish your saved checkout.';
+    } else {
+        status.textContent = 'Sign in with your password or an email code.';
+    }
 }
 
 function values(event: SubmitEvent): FormData {
@@ -44,12 +53,16 @@ function onError(error: unknown): void {
 
 storefront.customer.subscribe(render);
 
-const restored = await storefront.customer.restore();
-const cartState = storefront.cart.getSnapshot();
-if (cartState.mode === 'account' && restored.state !== 'authenticated' && restored.state !== 'cart-resume') {
-    await storefront.customer.resumeCart();
-} else if (restored.state === 'uninitialized' || restored.state === 'expired') {
-    await storefront.customer.initialize();
+try {
+    const restored = await storefront.customer.restore();
+    const cartState = storefront.cart.getSnapshot();
+    if (cartState.mode === 'account' && (restored.state === 'uninitialized' || restored.state === 'expired' || restored.state === 'anonymous')) {
+        await storefront.customer.resumeCart();
+    } else if (restored.state === 'uninitialized' || restored.state === 'expired') {
+        await storefront.customer.initialize();
+    }
+} catch (error) {
+    onError(error);
 }
 
 document.querySelector<HTMLFormElement>('#password-login')!.addEventListener('submit', event => {
@@ -111,16 +124,18 @@ document.querySelector<HTMLFormElement>('#password-reset')!.addEventListener('su
 
 document.querySelector<HTMLButtonElement>('#bind-cart')!.addEventListener('click', () => {
     void storefront.customer.bindCart().then(() => {
-        status.textContent = 'This cart is now bound to your customer account.';
+        status.textContent = 'You’re checking out with your account.';
     }).catch(onError);
 });
 
 document.querySelector<HTMLButtonElement>('#load-orders')!.addEventListener('click', () => {
     void storefront.customer.getOrders({ limit: 20 }).then(result => {
-        orderSummary.textContent = `${result.items.length} customer orders loaded.`;
+        orderSummary.textContent = `${result.items.length} orders found.`;
     }).catch(onError);
 });
 
 document.querySelector<HTMLButtonElement>('#sign-out')!.addEventListener('click', () => {
-    void storefront.customer.logout().then(render).catch(onError);
+    void storefront.customer.logout()
+        .then(() => storefront.customer.initialize())
+        .then(render).catch(onError);
 });

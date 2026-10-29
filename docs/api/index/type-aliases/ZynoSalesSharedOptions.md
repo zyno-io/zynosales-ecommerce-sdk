@@ -22,7 +22,7 @@ Customer flows the SDK may offer for this instance. The server policy can only n
 
 > `optional` **customerStorage?**: [`ZynoSalesStorage`](../interfaces/ZynoSalesStorage.md)
 
-Private customer-session storage. Defaults to `sessionStorage`; pass `localStorage` for longer continuity.
+Where customer sign-in is remembered. Defaults to `localStorage`; pass `sessionStorage` for the current tab only. Email-link steps always stay in the current tab.
 
 ***
 

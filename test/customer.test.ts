@@ -59,6 +59,20 @@ function configResponse(customerOptions: ISalesEcommCustomerAuthOptions = option
     };
 }
 
+function persistedSessionRecord(sessionSecret: string, sessionId: string) {
+    const { principal: _principal, ...metadata } = { ...session('authenticated'), sessionId };
+    return {
+        version: 1,
+        apiBase: 'https://sales.example',
+        namespace: 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1',
+        keyIdentity: 'zynosales:ecommerce:https%3A%2F%2Fsales.example:key%3Azs_pk_test',
+        origin: null,
+        restricted: false,
+        sessionSecret,
+        session: metadata
+    };
+}
+
 describe('CustomerAuth', () => {
     it('initializes an immutable policy, logs in, and persists only minimal session metadata', async () => {
         const customerStorage = new TestStorage();
@@ -111,6 +125,274 @@ describe('CustomerAuth', () => {
         expect(persisted).toContain('authenticated-secret');
         expect(persisted).not.toContain('never-store-this');
         expect(persisted).not.toContain('contact-private-id');
+    });
+
+    it('ignores same-session refresh writes, invalidates account switches, and honors cross-tab logout', async () => {
+        const localStorage = new TestStorage();
+        const browserSessionStorage = new TestStorage();
+        const storageListeners = new Set<(event: StorageEvent) => void>();
+        vi.stubGlobal('window', {
+            localStorage,
+            sessionStorage: browserSessionStorage,
+            addEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.add(listener),
+            removeEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.delete(listener)
+        });
+        const requests: Array<{ path: string; method: string; customerSession: string | null }> = [];
+        const sessionB = { ...session('authenticated'), sessionId: 'session-B' };
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const request = new Request(input);
+            const path = new URL(request.url).pathname;
+            requests.push({ path, method: request.method, customerSession: request.headers.get('x-zs-customer-session') });
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions') && request.method === 'POST') {
+                return Response.json({ session: session(), sessionSecret: 'anonymous-secret', rotated: false });
+            }
+            if (path.endsWith('/auth/password')) {
+                return Response.json({ session: session('authenticated'), sessionSecret: 'tab-session-secret', rotated: true });
+            }
+            if (path.endsWith('/sessions/current')) {
+                const current = request.headers.get('x-zs-customer-session') === 'new-account-secret' ? sessionB : session('authenticated');
+                return Response.json({ session: current, principal: current.principal });
+            }
+            return Response.json({});
+        });
+        const storefrontOptions = {
+            apiBase: 'https://sales.example',
+            publishableKey: 'zs_pk_test',
+            customer: { options },
+            fetch
+        } as const;
+
+        try {
+            const firstTab = createZynoSales(storefrontOptions);
+            await firstTab.customer.initialize();
+            const loggedIn = await firstTab.customer.passwordLogin({ email: 'shopper@example.test', password: 'test-password' });
+            expect(loggedIn.persistence).toBe('local');
+
+            const secondTab = createZynoSales(storefrontOptions);
+            const restored = await secondTab.customer.restore();
+            expect(restored.state).toBe('authenticated');
+            expect(restored.persistence).toBe('local');
+            expect(requests.find(request => request.path.endsWith('/sessions/current'))?.customerSession).toBe('tab-session-secret');
+
+            secondTab.cart.accept({
+                cartId: 'account-cart',
+                cartKey: 'account-cart-secret',
+                cart: { customer: { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' } }
+            } as never);
+            const storageKey = 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1:customer';
+            const dispatchStorage = (oldValue: string | null, newValue: string | null) => {
+                const event = { key: storageKey, oldValue, newValue, storageArea: localStorage } as unknown as StorageEvent;
+                for (const listener of storageListeners) listener(event);
+            };
+
+            const sameSessionRecord = JSON.parse(localStorage.getItem(storageKey)!);
+            const originalExpiry = restored.expiresAt;
+            sameSessionRecord.session.expiresAt = new Date(Date.now() + 2 * 60 * 60_000).toISOString();
+            const sameSessionValue = JSON.stringify(sameSessionRecord);
+            localStorage.setItem(storageKey, sameSessionValue);
+            dispatchStorage(JSON.stringify(sameSessionRecord), sameSessionValue);
+
+            expect(secondTab.customer.getSnapshot().state).toBe('authenticated');
+            expect(secondTab.customer.getSnapshot().expiresAt).toBe(originalExpiry);
+            expect(secondTab.cart.getSnapshot()).toMatchObject({ hasCart: true, mode: 'account' });
+
+            const accountBRecord = {
+                ...sameSessionRecord,
+                sessionSecret: 'new-account-secret',
+                session: { ...sameSessionRecord.session, sessionId: 'session-B' }
+            };
+            const accountBValue = JSON.stringify(accountBRecord);
+            const cartKey = 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1:cart';
+            const accountBCart = JSON.stringify({
+                version: 2, mode: 'account', cartId: 'account-cart-B', cartKey: 'account-cart-B-secret',
+                scope: { policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' }
+            });
+            localStorage.setItem(storageKey, accountBValue);
+            localStorage.setItem(cartKey, accountBCart);
+            dispatchStorage(sameSessionValue, accountBValue);
+
+            expect(secondTab.customer.getSnapshot().state).toBe('expired');
+            expect(secondTab.cart.getSnapshot()).toMatchObject({ hasCart: false, mode: null });
+            expect(localStorage.getItem(storageKey)).toBe(accountBValue);
+            expect(localStorage.getItem(cartKey)).toBe(accountBCart);
+
+            const restoredB = await secondTab.customer.restore();
+            expect(restoredB.state).toBe('authenticated');
+            secondTab.cart.accept({
+                cartId: 'account-cart-B',
+                cartKey: 'account-cart-B-secret',
+                cart: { customer: { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' } }
+            } as never);
+            const accountBStoredValue = localStorage.getItem(storageKey);
+            dispatchStorage(accountBStoredValue, null);
+            expect(secondTab.customer.getSnapshot().state).toBe('authenticated');
+            expect(secondTab.cart.getSnapshot()).toMatchObject({ hasCart: true, mode: 'account' });
+            localStorage.removeItem(storageKey);
+            dispatchStorage(accountBStoredValue, null);
+
+            expect(secondTab.customer.getSnapshot().state).toBe('expired');
+            expect(secondTab.cart.getSnapshot()).toMatchObject({ hasCart: false, mode: null });
+            expect(localStorage.getItem(cartKey)).toBeNull();
+            const requestCount = requests.length;
+            await expect(secondTab.customer.getOrders()).rejects.toThrow('Initialize or restore a customer session first.');
+            expect(requests).toHaveLength(requestCount);
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('does not resurrect a session when restore completes after cross-tab logout', async () => {
+        const localStorage = new TestStorage();
+        const browserSessionStorage = new TestStorage();
+        const storageListeners = new Set<(event: StorageEvent) => void>();
+        vi.stubGlobal('window', {
+            localStorage,
+            sessionStorage: browserSessionStorage,
+            addEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.add(listener),
+            removeEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.delete(listener)
+        });
+        const storageKey = 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1:customer';
+        const oldRecord = JSON.stringify(persistedSessionRecord('old-secret', 'old-session'));
+        localStorage.setItem(storageKey, oldRecord);
+        let onCurrentRequest: (() => void) | undefined;
+        let resolveCurrent!: (response: Response) => void;
+        const currentRequestStarted = new Promise<void>(resolve => { onCurrentRequest = resolve; });
+        const currentResponse = new Promise<Response>(resolve => { resolveCurrent = resolve; });
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const path = new URL(new Request(input).url).pathname;
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions/current')) {
+                onCurrentRequest?.();
+                return currentResponse;
+            }
+            return Response.json({});
+        });
+
+        try {
+            const storefront = createZynoSales({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_test', customer: { options }, fetch });
+            const restoring = storefront.customer.restore();
+            await currentRequestStarted;
+
+            localStorage.removeItem(storageKey);
+            const logoutEvent = { key: storageKey, oldValue: oldRecord, newValue: null, storageArea: localStorage } as unknown as StorageEvent;
+            for (const listener of storageListeners) listener(logoutEvent);
+            resolveCurrent(Response.json({ session: session('authenticated'), principal: session('authenticated').principal }));
+
+            await expect(restoring).rejects.toMatchObject({ code: 'REAUTHENTICATION_REQUIRED', status: 401 });
+            expect(storefront.customer.getSnapshot().state).toBe('expired');
+            expect(localStorage.getItem(storageKey)).toBeNull();
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('does not let a stale restore rejection delete a newer account session', async () => {
+        const localStorage = new TestStorage();
+        const browserSessionStorage = new TestStorage();
+        const storageListeners = new Set<(event: StorageEvent) => void>();
+        vi.stubGlobal('window', {
+            localStorage,
+            sessionStorage: browserSessionStorage,
+            addEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.add(listener),
+            removeEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.delete(listener)
+        });
+        const storageKey = 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1:customer';
+        const oldRecord = JSON.stringify(persistedSessionRecord('old-secret', 'old-session'));
+        localStorage.setItem(storageKey, oldRecord);
+        let onCurrentRequest: (() => void) | undefined;
+        let resolveCurrent!: (response: Response) => void;
+        const currentRequestStarted = new Promise<void>(resolve => { onCurrentRequest = resolve; });
+        const currentResponse = new Promise<Response>(resolve => { resolveCurrent = resolve; });
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const path = new URL(new Request(input).url).pathname;
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions/current')) {
+                onCurrentRequest?.();
+                return currentResponse;
+            }
+            return Response.json({});
+        });
+
+        try {
+            const storefront = createZynoSales({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_test', customer: { options }, fetch });
+            const restoring = storefront.customer.restore();
+            await currentRequestStarted;
+
+            const newerRecord = JSON.stringify(persistedSessionRecord('rotated-secret', 'old-session'));
+            localStorage.setItem(storageKey, newerRecord);
+            const accountSwitchEvent = { key: storageKey, oldValue: oldRecord, newValue: newerRecord, storageArea: localStorage } as unknown as StorageEvent;
+            for (const listener of storageListeners) listener(accountSwitchEvent);
+            resolveCurrent(Response.json({ code: 'REAUTHENTICATION_REQUIRED', message: 'Sign in again.' }, { status: 401 }));
+
+            await expect(restoring).rejects.toMatchObject({ code: 'REAUTHENTICATION_REQUIRED', status: 401 });
+            expect(storefront.customer.getSnapshot().state).toBe('expired');
+            expect(localStorage.getItem(storageKey)).toBe(newerRecord);
+        } finally {
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('keeps a same-session server renewal when an older tab reaches its local deadline', async () => {
+        const localStorage = new TestStorage();
+        const browserSessionStorage = new TestStorage();
+        const storageListeners = new Set<(event: StorageEvent) => void>();
+        vi.stubGlobal('window', {
+            localStorage,
+            sessionStorage: browserSessionStorage,
+            addEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.add(listener),
+            removeEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.delete(listener)
+        });
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const request = new Request(input);
+            const path = new URL(request.url).pathname;
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions') && request.method === 'POST') {
+                return Response.json({ session: session(), sessionSecret: 'anonymous-secret', rotated: false });
+            }
+            if (path.endsWith('/auth/password')) {
+                return Response.json({ session: session('authenticated'), sessionSecret: 'tab-session-secret', rotated: true });
+            }
+            if (path.endsWith('/sessions/current')) {
+                return Response.json({ session: session('authenticated'), principal: session('authenticated').principal });
+            }
+            return Response.json({ items: [], nextCursor: null });
+        });
+        const storefrontOptions = {
+            apiBase: 'https://sales.example',
+            publishableKey: 'zs_pk_test',
+            customer: { options },
+            fetch
+        } as const;
+
+        try {
+            const firstTab = createZynoSales(storefrontOptions);
+            await firstTab.customer.initialize();
+            const oldSnapshot = await firstTab.customer.passwordLogin({ email: 'shopper@example.test', password: 'test-password' });
+            const storageKey = 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1:customer';
+            const oldSavedRecord = localStorage.getItem(storageKey)!;
+
+            vi.setSystemTime(Date.now() + 10_000);
+            const secondTab = createZynoSales(storefrontOptions);
+            await secondTab.customer.restore();
+            const renewedRecord = localStorage.getItem(storageKey)!;
+            expect(renewedRecord).not.toBe(oldSavedRecord);
+            const renewalEvent = { key: storageKey, oldValue: oldSavedRecord, newValue: renewedRecord, storageArea: localStorage } as unknown as StorageEvent;
+            for (const listener of storageListeners) listener(renewalEvent);
+
+            vi.setSystemTime(Date.parse(oldSnapshot.idleExpiresAt!) + 1_000);
+            await expect(firstTab.customer.getOrders()).rejects.toMatchObject({ code: 'REAUTHENTICATION_REQUIRED', status: 401 });
+
+            expect(localStorage.getItem(storageKey)).toBe(renewedRecord);
+            const restored = await firstTab.customer.restore();
+            expect(restored.state).toBe('authenticated');
+            expect(localStorage.getItem(storageKey)).not.toBeNull();
+        } finally {
+            vi.useRealTimers();
+            vi.unstubAllGlobals();
+        }
     });
 
     it('restores through Sales and preserves migrated guest cart capabilities', async () => {

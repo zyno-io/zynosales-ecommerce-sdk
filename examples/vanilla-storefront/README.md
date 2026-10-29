@@ -15,9 +15,11 @@ state itself.
 
 The [`customer-auth.html`](./customer-auth.html) page and
 [`customer-auth.ts`](./customer-auth.ts) show password and email-code sign in,
-registration, password recovery requests, account-cart binding, order history,
-and sign out on a static site. They require only the browser bundle, the
-publishable key, and the storefront policy configured in Zyno.
+account creation, password reset emails, checkout with an account, order history,
+and sign-out on a static site. Sign-in is remembered across tabs with
+`localStorage`, and the SDK checks with Zyno when a customer returns. You need
+only the browser bundle, a publishable key, and customer accounts enabled for
+your storefront in Zyno.
 
 ## Use it
 

@@ -86,6 +86,7 @@ export type CustomerSnapshot = {
     options: ISalesEcommCustomerAuthOptions | null;
     authenticationMethod: 'password' | 'otp' | null;
     authenticatedAt: string | null;
+    /** `local` survives tab closure; restricted proof sessions and explicit session storage stay in this tab. */
     persistence: 'session' | 'local' | 'memory' | 'custom';
     availableActions: string[];
     lastError: PublicError | null;

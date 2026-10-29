@@ -1,6 +1,6 @@
 # Class: CustomerAuth
 
-Framework-neutral customer authentication, account orders, and account-cart binding.
+Sign customers in, remember their sessions, and connect account checkout and order history.
 
 ## Constructors
 
@@ -260,7 +260,7 @@ Lists payer-owned customer orders using the active verified customer session.
 
 > **getSnapshot**(): [`CustomerSnapshot`](../type-aliases/CustomerSnapshot.md)
 
-Returns render-safe state without the stored bearer secret or customer PII.
+Returns customer state for your UI, without passwords, session tokens, or personal details.
 
 #### Returns
 
@@ -272,7 +272,7 @@ Returns render-safe state without the stored bearer secret or customer PII.
 
 > **initialize**(`options?`): `Promise`\<[`CustomerSnapshot`](../type-aliases/CustomerSnapshot.md)\>
 
-Initializes one anonymous session with an immutable subset of the storefront policy.
+Starts a customer session using the flows this storefront enables. The browser saves it locally by default.
 
 #### Parameters
 
@@ -290,7 +290,7 @@ Initializes one anonymous session with an immutable subset of the storefront pol
 
 > **logout**(): `Promise`\<[`CustomerSnapshot`](../type-aliases/CustomerSnapshot.md)\>
 
-Revokes the current server session and clears browser storage even if the request fails.
+Signs out in this tab, clears its account cart, and asks Sales to revoke the session.
 
 #### Returns
 
@@ -416,7 +416,7 @@ Requests a registration verification code without submitting a password or profi
 
 > **restore**(): `Promise`\<[`CustomerSnapshot`](../type-aliases/CustomerSnapshot.md)\>
 
-Restores and verifies a stored opaque session with Sales before exposing its state.
+Checks a saved session with Sales before returning its state; local data alone never restores sign-in.
 
 #### Returns
 
@@ -440,7 +440,7 @@ Explicitly creates a restricted session to authenticate for the active account c
 
 > **subscribe**(`listener`): () => `void`
 
-Subscribes to render-safe customer state changes.
+Keeps your account menu and forms up to date as customer state changes.
 
 #### Parameters
 

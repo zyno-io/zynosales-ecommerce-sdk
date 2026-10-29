@@ -120,6 +120,8 @@ const cart = await storefront.cart.restore();
 // On Stripe return routes, also call storefront.checkout.recoverPayment().
 ```
 
+For customer accounts, [restore sign-in before the cart](./customer-auth#welcome-returning-customers). Customer sign-in is remembered in `localStorage` by default, including after a tab closes.
+
 ## Inject storage and fetch for tests
 
 ```ts
@@ -136,6 +138,7 @@ const storefront = createZynoSales({
 | --- | --- | --- |
 | `storage` | `localStorage` | Cart and order capabilities |
 | `sessionStorage` | `sessionStorage` | Payment recovery and completed-order markers |
+| `customerStorage` | `localStorage` | Customer sign-in, checked with Zyno when restored |
 | `fetch` | global `fetch` | HTTP transport |
 | `hooks` | none | Lifecycle callbacks |
 

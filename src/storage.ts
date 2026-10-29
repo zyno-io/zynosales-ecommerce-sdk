@@ -59,7 +59,7 @@ export function defaultSessionStorage(): ZynoSalesStorage {
     }
 }
 
-/** Uses tab-scoped storage for customer sessions, reporting memory fallback explicitly. */
+/** Uses local storage for ordinary customer sessions, with an in-memory fallback when browser storage is unavailable. */
 export function resolveCustomerSessionStorage(storage?: ZynoSalesStorage): ResolvedCustomerStorage {
     if (storage) {
         if (typeof window !== 'undefined') {
@@ -75,11 +75,11 @@ export function resolveCustomerSessionStorage(storage?: ZynoSalesStorage): Resol
     if (typeof window === 'undefined') return { storage: new MemoryStorage(), mode: 'memory' };
 
     try {
-        const candidate = window.sessionStorage;
+        const candidate = window.localStorage;
         const key = '__zynosales_customer_probe__';
         candidate.setItem(key, '1');
         candidate.removeItem(key);
-        return { storage: candidate, mode: 'session' };
+        return { storage: candidate, mode: 'local' };
     } catch {
         return { storage: new MemoryStorage(), mode: 'memory' };
     }
