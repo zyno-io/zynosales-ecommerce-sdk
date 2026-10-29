@@ -3,6 +3,8 @@ import type {
     ISalesEcommCartPaymentSetupResponse,
     ISalesEcommCartMembershipCardSetupResponse,
     ISalesEcommCartResponse,
+    ISalesEcommCustomerAuthOptions,
+    ISalesEcommCustomerOrderResponse,
     ISalesEcommOrderResponse,
     ISalesEcommPublicCart,
     ISalesEcommStoreProduct,
@@ -36,7 +38,7 @@ export type MembershipCardSetup = ISalesEcommCartMembershipCardSetupResponse;
 export type CardCheckoutSetup = CardPaymentSetup | MembershipCardSetup;
 
 /** Completed Sales order. */
-export type Order = ISalesEcommOrderResponse;
+export type Order = ISalesEcommOrderResponse | ISalesEcommCustomerOrderResponse;
 
 /** Browser-safe storefront configuration supplied at runtime by Sales. */
 export type StorefrontConfig = ISalesEcommStorefrontConfigResponse;
@@ -47,6 +49,10 @@ export type CartSnapshot = {
     cart: Cart | null;
     /** Whether a persisted cart capability currently exists. */
     hasCart: boolean;
+    /** Safe persisted checkout mode, used to choose guest versus customer recovery. */
+    mode: 'guest' | 'account' | null;
+    /** Safe account policy identifiers for an account-bound cart. */
+    customerPolicy: { policyId: string; policyRevision: number; orderHistoryScope: 'ecomm' | 'all' } | null;
     /** True while a cart restore or mutation is in flight. */
     isBusy: boolean;
     /** Last cart error safe to render in UI. */
@@ -64,6 +70,25 @@ export type CheckoutSnapshot = {
     /** True while a checkout operation is in flight. */
     isBusy: boolean;
     /** Last checkout error safe to render in UI. */
+    lastError: PublicError | null;
+};
+
+/** Render-safe customer state. Opaque session secrets, passwords, codes, and proofs are excluded. */
+export type CustomerSnapshot = {
+    state: 'uninitialized' | 'anonymous' | 'authenticated' | 'cart-resume' | 'restricted' | 'expired';
+    isBusy: boolean;
+    expiresAt: string | null;
+    idleExpiresAt: string | null;
+    policyId: string | null;
+    policyRevision: number | null;
+    policyDigest: string | null;
+    orderHistoryScope: 'ecomm' | 'all' | null;
+    options: ISalesEcommCustomerAuthOptions | null;
+    authenticationMethod: 'password' | 'otp' | null;
+    authenticatedAt: string | null;
+    /** `local` survives tab closure; restricted proof sessions and explicit session storage stay in this tab. */
+    persistence: 'session' | 'local' | 'memory' | 'custom';
+    availableActions: string[];
     lastError: PublicError | null;
 };
 

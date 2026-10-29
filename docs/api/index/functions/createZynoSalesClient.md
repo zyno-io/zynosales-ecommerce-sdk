@@ -8,7 +8,7 @@ Creates a raw generated-contract client without cart/session orchestration.
 
 ### options
 
-`Omit`\<[`ZynoSalesOptions`](../type-aliases/ZynoSalesOptions.md), `"hooks"` \| `"storage"` \| `"sessionStorage"`\>
+`Omit`\<[`ZynoSalesOptions`](../type-aliases/ZynoSalesOptions.md), `"hooks"` \| `"storage"` \| `"sessionStorage"` \| `"customerStorage"` \| `"customer"`\>
 
 ## Returns
 

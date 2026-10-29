@@ -30,6 +30,28 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### customer
+
+> **customer**: `object`
+
+#### bound
+
+> **bound**: `boolean`
+
+#### orderHistoryScope
+
+> **orderHistoryScope**: `"ecomm"` \| `"all"` \| `null`
+
+#### policyId
+
+> **policyId**: `string` \| `null`
+
+#### policyRevision
+
+> **policyRevision**: `number` \| `null`
+
+***
+
 ### fulfillment?
 
 > `optional` **fulfillment?**: `object`

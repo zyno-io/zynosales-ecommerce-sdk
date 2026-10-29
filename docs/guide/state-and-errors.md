@@ -86,6 +86,8 @@ subscription-driven UIs and `try/catch` paths stay aligned.
 | State | Default storage | Lifetime |
 | --- | --- | --- |
 | Cart and order capabilities | `localStorage` | Across browser reloads and sessions |
+| Customer sign-in | `localStorage` | Across tabs and browser restarts, while the server session remains valid |
+| Password reset and invitation steps | `sessionStorage` | Current tab; short-lived and never a saved login |
 | Payment attempt recovery | `sessionStorage` | Current browser tab/session |
 | Completed-order marker | `sessionStorage` | Current browser tab/session, bounded to one order |
 | Product list cache | Memory | Current storefront instance |
@@ -98,6 +100,10 @@ rekeys cart and payment state when `getConfig()` resolves.
 When browser storage throws or is unavailable, the defaults fall back to memory.
 Inject `ZynoSalesStorage` implementations to integrate a different synchronous
 storage policy.
+
+Customer sign-in is checked with Zyno on restore. Saved state cannot extend an
+expired or revoked session. See [customer accounts](./customer-auth) for sign-in,
+returning customers, and account checkout.
 
 ## Startup sequence
 

@@ -819,13 +819,479 @@ export const ISalesEcommStorefrontConfigResponseSchema = {
                 'discountCodes',
                 'pinnedBuyer'
             ]
+        },
+        customerAuth: {
+            type: 'object',
+            properties: {
+                enabled: {
+                    type: 'boolean'
+                },
+                policyId: {
+                    type: [
+                        'string',
+                        'null'
+                    ]
+                },
+                policyRevision: {
+                    type: [
+                        'number',
+                        'null'
+                    ]
+                },
+                options: {
+                    anyOf: [
+                        {
+                            $ref: '#/components/schemas/ISalesEcommCustomerAuthOptions'
+                        },
+                        {
+                            type: 'null'
+                        }
+                    ]
+                },
+                passwordRequirements: {
+                    type: 'object',
+                    properties: {
+                        minimumLength: {
+                            type: 'number'
+                        },
+                        maximumLength: {
+                            type: 'number'
+                        },
+                        minimumCharacterClasses: {
+                            type: 'number'
+                        }
+                    },
+                    required: [
+                        'minimumLength',
+                        'maximumLength',
+                        'minimumCharacterClasses'
+                    ]
+                },
+                orderHistoryScope: {
+                    enum: [
+                        'ecomm',
+                        'all'
+                    ],
+                    type: 'string'
+                },
+                orderHistoryConfigRevision: {
+                    type: 'number'
+                }
+            },
+            required: [
+                'enabled',
+                'policyId',
+                'policyRevision',
+                'options',
+                'passwordRequirements',
+                'orderHistoryScope',
+                'orderHistoryConfigRevision'
+            ]
         }
     },
     required: [
         'tenantId',
         'currency',
         'payments',
-        'capabilities'
+        'capabilities',
+        'customerAuth'
+    ]
+} as const;
+
+export const ISalesEcommCustomerSessionGrantResponseSchema = {
+    type: 'object',
+    properties: {
+        session: {
+            $ref: '#/components/schemas/ISalesEcommCustomerSession'
+        },
+        sessionSecret: {
+            type: 'string'
+        },
+        rotated: {
+            type: 'boolean'
+        }
+    },
+    required: [
+        'session',
+        'sessionSecret',
+        'rotated'
+    ]
+} as const;
+
+export const ISalesEcommCustomerSessionInitInputSchema = {
+    type: 'object',
+    properties: {
+        policyId: {
+            type: 'string'
+        },
+        policyRevision: {
+            type: 'number'
+        },
+        options: {
+            $ref: '#/components/schemas/ISalesEcommCustomerAuthOptions'
+        }
+    },
+    required: [
+        'policyId',
+        'policyRevision',
+        'options'
+    ]
+} as const;
+
+export const ISalesEcommCustomerSessionResponseSchema = {
+    type: 'object',
+    properties: {
+        session: {
+            $ref: '#/components/schemas/ISalesEcommCustomerSession'
+        },
+        principal: {
+            anyOf: [
+                {
+                    $ref: '#/components/schemas/ISalesEcommCustomerPrincipal'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        }
+    },
+    required: [
+        'session',
+        'principal'
+    ]
+} as const;
+
+export const ISalesEcommCustomerPasswordLoginInputSchema = {
+    type: 'object',
+    properties: {
+        email: {
+            type: 'string'
+        },
+        password: {
+            type: 'string'
+        }
+    },
+    required: [
+        'email',
+        'password'
+    ]
+} as const;
+
+export const ISalesEcommCustomerChallengeResponseSchema = {
+    type: 'object',
+    properties: {
+        challengeId: {
+            type: 'string'
+        },
+        expiresInSeconds: {
+            type: 'number'
+        },
+        resendAfterSeconds: {
+            type: 'number'
+        }
+    },
+    required: [
+        'challengeId',
+        'expiresInSeconds',
+        'resendAfterSeconds'
+    ]
+} as const;
+
+export const ISalesEcommCustomerEmailInputSchema = {
+    type: 'object',
+    properties: {
+        email: {
+            type: 'string'
+        }
+    },
+    required: [
+        'email'
+    ]
+} as const;
+
+export const ISalesEcommCustomerOtpVerifyInputSchema = {
+    type: 'object',
+    properties: {
+        challengeId: {
+            type: 'string'
+        },
+        code: {
+            type: 'string'
+        }
+    },
+    required: [
+        'challengeId',
+        'code'
+    ]
+} as const;
+
+export const ISalesEcommCustomerProofResponseSchema = {
+    type: 'object',
+    properties: {
+        proof: {
+            type: 'string'
+        },
+        expiresInSeconds: {
+            type: 'number'
+        }
+    },
+    required: [
+        'proof',
+        'expiresInSeconds'
+    ]
+} as const;
+
+export const ISalesEcommCustomerRegistrationVerifyInputSchema = {
+    type: 'object',
+    properties: {
+        challengeId: {
+            type: 'string'
+        },
+        code: {
+            type: 'string'
+        }
+    },
+    required: [
+        'challengeId',
+        'code'
+    ]
+} as const;
+
+export const ISalesEcommCustomerRegistrationCompleteInputSchema = {
+    type: 'object',
+    properties: {
+        proof: {
+            type: 'string'
+        },
+        name: {
+            type: 'string'
+        },
+        password: {
+            type: 'string'
+        }
+    },
+    required: [
+        'proof',
+        'name'
+    ]
+} as const;
+
+export const ISalesEcommCustomerResetExchangeInputSchema = {
+    type: 'object',
+    properties: {
+        token: {
+            type: 'string'
+        }
+    },
+    required: [
+        'token'
+    ]
+} as const;
+
+export const ISalesEcommCustomerPasswordResetCompleteInputSchema = {
+    type: 'object',
+    properties: {
+        newPassword: {
+            type: 'string'
+        }
+    },
+    required: [
+        'newPassword'
+    ]
+} as const;
+
+export const ISalesEcommCustomerPasswordProofVerifyInputSchema = {
+    type: 'object',
+    properties: {
+        challengeId: {
+            type: 'string'
+        },
+        code: {
+            type: 'string'
+        }
+    },
+    required: [
+        'challengeId',
+        'code'
+    ]
+} as const;
+
+export const ISalesEcommCustomerPasswordChangeInputSchema = {
+    type: 'object',
+    properties: {
+        newPassword: {
+            type: 'string'
+        },
+        currentPassword: {
+            type: 'string'
+        }
+    },
+    required: [
+        'newPassword'
+    ]
+} as const;
+
+export const ISalesEcommCustomerRestrictedExchangeInputSchema = {
+    type: 'object',
+    properties: {
+        token: {
+            type: 'string'
+        }
+    },
+    required: [
+        'token'
+    ]
+} as const;
+
+export const ISalesEcommCustomerInvitationCompleteInputSchema = {
+    type: 'object',
+    properties: {
+        password: {
+            type: 'string'
+        }
+    }
+} as const;
+
+export const ISalesEcommCustomerOrderListResponseSchema = {
+    type: 'object',
+    properties: {
+        items: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ISalesEcommCustomerOrderResponse'
+            }
+        },
+        nextCursor: {
+            type: [
+                'string',
+                'null'
+            ]
+        }
+    },
+    required: [
+        'items',
+        'nextCursor'
+    ]
+} as const;
+
+export const ISalesEcommCustomerOrderResponseSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        source: {
+            enum: [
+                'salespoint',
+                'subscription',
+                'ecomm',
+                'stripeCheckout',
+                'billing',
+                'external'
+            ],
+            type: 'string'
+        },
+        saleNumber: {
+            type: 'string'
+        },
+        status: {
+            enum: [
+                'open',
+                'payment_pending',
+                'paid',
+                'voided'
+            ],
+            type: 'string'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time'
+        },
+        closedAt: {
+            type: [
+                'string',
+                'null'
+            ],
+            format: 'date-time'
+        },
+        items: {
+            type: 'array',
+            items: {
+                $ref: '#/components/schemas/ISalesEcommCustomerOrderItem'
+            }
+        },
+        totals: {
+            type: 'object',
+            properties: {
+                discounted: {
+                    type: 'number'
+                },
+                base: {
+                    type: 'number'
+                },
+                tax: {
+                    type: 'number'
+                },
+                total: {
+                    type: 'number'
+                },
+                paid: {
+                    type: 'number'
+                },
+                due: {
+                    type: 'number'
+                }
+            },
+            required: [
+                'discounted',
+                'base',
+                'tax',
+                'total',
+                'paid',
+                'due'
+            ]
+        },
+        paymentStatus: {
+            enum: [
+                'pending',
+                'authorized',
+                'captured',
+                'failed',
+                'canceled',
+                null
+            ],
+            type: [
+                'string',
+                'null'
+            ]
+        },
+        fulfillmentStatus: {
+            enum: [
+                'pending',
+                'processing',
+                'shipped',
+                'delivered',
+                'exception',
+                'canceled',
+                null
+            ],
+            type: [
+                'string',
+                'null'
+            ]
+        }
+    },
+    required: [
+        'id',
+        'source',
+        'saleNumber',
+        'status',
+        'createdAt',
+        'closedAt',
+        'items',
+        'totals',
+        'paymentStatus',
+        'fulfillmentStatus'
     ]
 } as const;
 
@@ -929,6 +1395,43 @@ export const ISalesEcommPublicCartSchema = {
         },
         buyerContactPinned: {
             type: 'boolean'
+        },
+        customer: {
+            type: 'object',
+            properties: {
+                bound: {
+                    type: 'boolean'
+                },
+                policyId: {
+                    type: [
+                        'string',
+                        'null'
+                    ]
+                },
+                policyRevision: {
+                    type: [
+                        'number',
+                        'null'
+                    ]
+                },
+                orderHistoryScope: {
+                    enum: [
+                        'ecomm',
+                        'all',
+                        null
+                    ],
+                    type: [
+                        'string',
+                        'null'
+                    ]
+                }
+            },
+            required: [
+                'bound',
+                'policyId',
+                'policyRevision',
+                'orderHistoryScope'
+            ]
         },
         status: {
             enum: [
@@ -1067,6 +1570,7 @@ export const ISalesEcommPublicCartSchema = {
         'id',
         'saleNumber',
         'buyerContactPinned',
+        'customer',
         'status',
         'items',
         'priceDiscounted',
@@ -1454,6 +1958,175 @@ export const StripeEnvironmentSchema = {
     type: 'string'
 } as const;
 
+export const ISalesEcommCustomerAuthOptionsSchema = {
+    type: 'object',
+    properties: {
+        passwordLogin: {
+            type: 'boolean'
+        },
+        otpLogin: {
+            type: 'boolean'
+        },
+        createAccount: {
+            type: 'boolean'
+        },
+        createPassword: {
+            type: 'boolean'
+        },
+        changePasswordWithCurrent: {
+            type: 'boolean'
+        },
+        setPasswordWithoutCurrent: {
+            type: 'boolean'
+        },
+        passwordRecovery: {
+            type: 'boolean'
+        }
+    },
+    required: [
+        'passwordLogin',
+        'otpLogin',
+        'createAccount',
+        'createPassword',
+        'changePasswordWithCurrent',
+        'setPasswordWithoutCurrent',
+        'passwordRecovery'
+    ]
+} as const;
+
+export const ISalesEcommCustomerSessionSchema = {
+    type: 'object',
+    properties: {
+        tenantId: {
+            type: 'string'
+        },
+        sessionId: {
+            type: 'string'
+        },
+        phase: {
+            enum: [
+                'anonymous',
+                'authenticated',
+                'enrollment',
+                'loginEmailVerification',
+                'recovery'
+            ],
+            type: 'string'
+        },
+        expiresAt: {
+            type: 'string'
+        },
+        idleExpiresAt: {
+            type: 'string'
+        },
+        policy: {
+            $ref: '#/components/schemas/ISalesEcommCustomerPolicySnapshot'
+        },
+        principal: {
+            anyOf: [
+                {
+                    $ref: '#/components/schemas/ISalesEcommCustomerPrincipal'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        },
+        targetCartId: {
+            type: [
+                'string',
+                'null'
+            ]
+        }
+    },
+    required: [
+        'tenantId',
+        'sessionId',
+        'phase',
+        'expiresAt',
+        'idleExpiresAt',
+        'policy',
+        'principal',
+        'targetCartId'
+    ]
+} as const;
+
+export const ISalesEcommCustomerPrincipalSchema = {
+    type: 'object',
+    properties: {
+        method: {
+            enum: [
+                'password',
+                'otp'
+            ],
+            type: 'string'
+        },
+        authenticatedAt: {
+            type: 'string'
+        }
+    },
+    required: [
+        'method',
+        'authenticatedAt'
+    ]
+} as const;
+
+export const ISalesEcommCustomerOrderItemSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        qty: {
+            type: 'number'
+        },
+        effectivePrice: {
+            type: 'number'
+        },
+        priceBase: {
+            type: 'number'
+        },
+        priceTax: {
+            type: 'number'
+        },
+        priceTotal: {
+            type: 'number'
+        },
+        product: {
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string'
+                },
+                name: {
+                    type: 'string'
+                },
+                price: {
+                    type: 'number'
+                },
+                type: {
+                    type: 'string'
+                }
+            },
+            required: [
+                'id',
+                'name',
+                'price',
+                'type'
+            ]
+        }
+    },
+    required: [
+        'id',
+        'qty',
+        'effectivePrice',
+        'priceBase',
+        'priceTax',
+        'priceTotal',
+        'product'
+    ]
+} as const;
+
 export const ISalesMembershipCheckoutCatalogSchema = {
     type: 'object',
     properties: {
@@ -1833,6 +2506,42 @@ export const ISalesMembershipCheckoutTermsSchema = {
         'validityValue',
         'validityUnits',
         'termsHash'
+    ]
+} as const;
+
+export const ISalesEcommCustomerPolicySnapshotSchema = {
+    type: 'object',
+    properties: {
+        policyId: {
+            type: 'string'
+        },
+        policyRevision: {
+            type: 'number'
+        },
+        options: {
+            $ref: '#/components/schemas/ISalesEcommCustomerAuthOptions'
+        },
+        orderHistoryScope: {
+            enum: [
+                'ecomm',
+                'all'
+            ],
+            type: 'string'
+        },
+        orderHistoryConfigRevision: {
+            type: 'number'
+        },
+        digest: {
+            type: 'string'
+        }
+    },
+    required: [
+        'policyId',
+        'policyRevision',
+        'options',
+        'orderHistoryScope',
+        'orderHistoryConfigRevision',
+        'digest'
     ]
 } as const;
 

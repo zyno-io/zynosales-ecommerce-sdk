@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Your account</title>
+    </head>
+    <body>
+        <main>
+            <h1>Your account</h1>
+            <p id="customer-status" role="status" aria-live="polite">Checking your sign-in…</p>
+
+            <section aria-labelledby="password-heading">
+                <h2 id="password-heading">Sign in with a password</h2>
+                <form id="password-login">
+                    <label>Email <input name="email" type="email" autocomplete="username" required /></label>
+                    <label>Password <input name="password" type="password" autocomplete="current-password" required /></label>
+                    <button type="submit">Sign in</button>
+                </form>
+            </section>
+
+            <section aria-labelledby="otp-heading">
+                <h2 id="otp-heading">Sign in with an email code</h2>
+                <form id="otp-request">
+                    <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+                    <button type="submit">Send code</button>
+                </form>
+                <form id="otp-verify">
+                    <label>Code <input name="code" inputmode="numeric" autocomplete="one-time-code" required /></label>
+                    <button type="submit">Verify code</button>
+                </form>
+            </section>
+
+            <section aria-labelledby="registration-heading">
+                <h2 id="registration-heading">Create an account</h2>
+                <form id="registration-request">
+                    <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+                    <button type="submit">Send verification code</button>
+                </form>
+                <form id="registration-complete">
+                    <label>Code <input name="code" inputmode="numeric" autocomplete="one-time-code" required /></label>
+                    <label>Name <input name="name" autocomplete="name" required /></label>
+                    <label>Optional password <input name="password" type="password" autocomplete="new-password" /></label>
+                    <button type="submit">Verify and create account</button>
+                </form>
+            </section>
+
+            <section aria-labelledby="recovery-heading">
+                <h2 id="recovery-heading">Forgot your password?</h2>
+                <form id="password-reset">
+                    <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+                    <button type="submit">Send reset link</button>
+                </form>
+            </section>
+
+            <section aria-labelledby="account-heading">
+                <h2 id="account-heading">Your account</h2>
+                <button id="bind-cart" type="button">Use account for this cart</button>
+                <button id="load-orders" type="button">View your orders</button>
+                <button id="sign-out" type="button">Sign out</button>
+                <p id="order-summary"></p>
+            </section>
+        </main>
+        <script type="module" src="./customer-auth.js"></script>
+    </body>
+</html>

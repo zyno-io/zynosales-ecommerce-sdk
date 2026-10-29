@@ -1,13 +1,9 @@
 import type { ZynoSalesClient } from './client';
 import { toPublicError, type PublicError, ZynoSalesError } from './errors';
 import type { ZynoSalesStorage } from './storage';
+import { SerialQueue } from './queue';
+import { parseCartReference, type AccountCartReference, type CartReference, type GuestCartReference } from './references';
 import type { Cart, CartItemInput, CartResponse, CartServerAccess, CartSnapshot } from './types';
-
-type CartReference = {
-    cartId: string;
-    cartKey: string;
-    orderKey: string;
-};
 
 type CartMutationListener = () => void;
 
@@ -21,13 +17,14 @@ export class CartSession {
     private cart: Cart | null = null;
     private busy = false;
     private lastError: PublicError | null = null;
-    private queue: Promise<void> = Promise.resolve();
+    private readonly queue: SerialQueue;
     private mutationListener?: CartMutationListener;
 
-    public constructor(options: { client: ZynoSalesClient; storage: ZynoSalesStorage; storageKey: string }) {
+    public constructor(options: { client: ZynoSalesClient; storage: ZynoSalesStorage; storageKey: string; queue?: SerialQueue }) {
         this.client = options.client;
         this.storage = options.storage;
         this.storageKey = options.storageKey;
+        this.queue = options.queue ?? new SerialQueue();
         this.reference = this.readReference();
     }
 
@@ -36,6 +33,14 @@ export class CartSession {
         return {
             cart: this.cart,
             hasCart: this.reference !== null,
+            mode: this.reference?.mode ?? null,
+            customerPolicy: this.reference?.mode === 'account'
+                ? {
+                    policyId: this.reference.scope.policyId,
+                    policyRevision: this.reference.scope.policyRevision,
+                    orderHistoryScope: this.reference.scope.orderHistoryScope
+                }
+                : null,
             isBusy: this.busy,
             lastError: this.lastError
         };
@@ -123,6 +128,29 @@ export class CartSession {
         this.clearInternal();
     }
 
+    /** @internal Clears this tab's cart but removes shared storage only if it still holds the same capability. */
+    public clearIfCurrentReferenceUnchanged(): void {
+        const reference = this.reference;
+        if (!reference) return;
+        let stored: CartReference | null = null;
+        try {
+            stored = parseCartReference(this.storage.getItem(this.storageKey));
+        } catch {
+            // If storage cannot be checked, leave any potentially newer cart reference intact.
+        }
+        this.reference = null;
+        this.cart = null;
+        this.lastError = null;
+        if (stored && sameCartReference(stored, reference)) {
+            try {
+                this.storage.removeItem(this.storageKey);
+            } catch {
+                // The in-memory capability has already been dropped.
+            }
+        }
+        this.emit();
+    }
+
     /** Runs a same-origin server handoff with the current cart capability. */
     /**
      * Provides cart capability access for one trusted merchant-server call.
@@ -174,6 +202,11 @@ export class CartSession {
     /** @internal Adds a callback invoked after authoritative cart mutations. */
     public setMutationListener(listener: CartMutationListener): void {
         this.mutationListener = listener;
+    }
+
+    /** @internal Runs another SDK layer inside cart mutation serialization. */
+    public runExclusive<T>(operation: () => Promise<T>): Promise<T> {
+        return this.queue.run(operation);
     }
 
     private async replaceItems(items: CartItemInput[]): Promise<CartSnapshot> {
@@ -256,25 +289,14 @@ export class CartSession {
     }
 
     private enqueue<T>(operation: () => Promise<T>): Promise<T> {
-        const run = this.queue.then(operation, operation);
-        this.queue = run.then(
-            () => undefined,
-            () => undefined
-        );
-        return run;
+        return this.queue.run(operation);
     }
 
     private readReference(): CartReference | null {
-        const value = this.storage.getItem(this.storageKey);
-        if (!value) return null;
-
-        try {
-            const parsed = JSON.parse(value) as Partial<CartReference>;
-            if (typeof parsed.cartId !== 'string' || typeof parsed.cartKey !== 'string' || typeof parsed.orderKey !== 'string') return null;
-            return { cartId: parsed.cartId, cartKey: parsed.cartKey, orderKey: parsed.orderKey };
-        } catch {
-            return null;
-        }
+        const raw = this.storage.getItem(this.storageKey);
+        const reference = parseCartReference(raw);
+        if (reference && raw !== JSON.stringify(reference)) this.persistReference(reference);
+        return reference;
     }
 
     private persistReference(reference: CartReference): void {
@@ -311,11 +333,53 @@ export class CartSession {
 
 function referenceFromResponse(response: CartResponse, existing: CartReference | null): CartReference {
     const cartKey = response.cartKey ?? existing?.cartKey;
-    const orderKey = response.orderKey ?? existing?.orderKey;
-    if (!cartKey || !orderKey) throw new ZynoSalesError('Sales did not return the cart capabilities required to continue checkout.');
-    return { cartId: response.cartId, cartKey, orderKey };
+    if (!cartKey) throw new ZynoSalesError('Sales did not return the cart capability required to continue checkout.');
+
+    const customer = response.cart.customer;
+    if (customer.bound) {
+        if (!customer.policyId || customer.policyRevision === null || !customer.orderHistoryScope) {
+            throw new ZynoSalesError('Sales returned incomplete account checkout state.');
+        }
+        const accountReference: AccountCartReference = {
+            version: 2,
+            mode: 'account',
+            cartId: response.cartId,
+            cartKey,
+            scope: {
+                policyId: customer.policyId,
+                policyRevision: customer.policyRevision,
+                orderHistoryScope: customer.orderHistoryScope
+            }
+        };
+        if (existing?.mode === 'account' && (
+            existing.scope.policyId !== accountReference.scope.policyId
+            || existing.scope.policyRevision !== accountReference.scope.policyRevision
+            || existing.scope.orderHistoryScope !== accountReference.scope.orderHistoryScope
+        )) {
+            throw new ZynoSalesError('The account cart policy changed. Resume it with its original customer session.', {
+                status: 409,
+                code: 'AUTH_POLICY_MISMATCH'
+            });
+        }
+        return accountReference;
+    }
+
+    if (existing?.mode === 'account') throw new ZynoSalesError('Sales no longer reports the saved account binding.');
+    const orderKey = response.orderKey ?? (existing?.mode === 'guest' ? existing.orderKey : undefined);
+    if (!orderKey) throw new ZynoSalesError('Sales did not return the order capability required to continue guest checkout.');
+    const guestReference: GuestCartReference = { version: 1, mode: 'guest', cartId: response.cartId, cartKey, orderKey };
+    return guestReference;
 }
 
 function isCapabilityLost(error: unknown): boolean {
     return error instanceof ZynoSalesError && error.isCapabilityLost;
+}
+
+function sameCartReference(left: CartReference, right: CartReference): boolean {
+    if (left.mode !== right.mode || left.cartId !== right.cartId || left.cartKey !== right.cartKey) return false;
+    if (left.mode === 'guest' && right.mode === 'guest') return left.orderKey === right.orderKey;
+    return left.mode === 'account' && right.mode === 'account'
+        && left.scope.policyId === right.scope.policyId
+        && left.scope.policyRevision === right.scope.policyRevision
+        && left.scope.orderHistoryScope === right.scope.orderHistoryScope;
 }

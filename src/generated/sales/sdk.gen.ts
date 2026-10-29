@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { DeleteSalesEcommCheckoutEmbeddedAbandonCartData, DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptData, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeData, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentData, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses, GetSalesEcommCheckoutEmbeddedGetCartData, GetSalesEcommCheckoutEmbeddedGetCartResponses, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptData, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses, GetSalesEcommOrdersEmbeddedGetData, GetSalesEcommOrdersEmbeddedGetResponses, GetSalesEcommProductsEmbeddedIndexData, GetSalesEcommProductsEmbeddedIndexResponses, GetSalesEcommProductsEmbeddedShowData, GetSalesEcommProductsEmbeddedShowResponses, GetSalesEcommStorefrontConfigEmbeddedGetData, GetSalesEcommStorefrontConfigEmbeddedGetResponses, PostSalesDiscountCodesEmbeddedValidateData, PostSalesDiscountCodesEmbeddedValidateResponses, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeData, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesData, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses, PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData, PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses, PostSalesEcommCheckoutEmbeddedCreateCartData, PostSalesEcommCheckoutEmbeddedCreateCartResponses, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionData, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses, PostSalesEcommCheckoutEmbeddedSetupCardPaymentData, PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses, PostSalesEcommCheckoutEmbeddedSetupMembershipCardData, PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses, PostSalesEcommCheckoutEmbeddedVerifyAddressData, PostSalesEcommCheckoutEmbeddedVerifyAddressResponses, PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData, PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses, PutSalesEcommCheckoutEmbeddedReplaceItemsData, PutSalesEcommCheckoutEmbeddedReplaceItemsResponses, PutSalesEcommCheckoutEmbeddedUpdateBuyerData, PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentData, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses } from './types.gen';
+import type { DeleteSalesEcommCheckoutEmbeddedAbandonCartData, DeleteSalesEcommCheckoutEmbeddedAbandonCartResponses, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptData, DeleteSalesEcommCheckoutEmbeddedCancelPaymentAttemptResponses, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeData, DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeResponses, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentData, DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses, DeleteSalesEcommCustomerAuthEmbeddedLogoutData, DeleteSalesEcommCustomerAuthEmbeddedLogoutResponses, GetSalesEcommCheckoutEmbeddedGetCartData, GetSalesEcommCheckoutEmbeddedGetCartResponses, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptData, GetSalesEcommCheckoutEmbeddedGetPaymentAttemptResponses, GetSalesEcommCustomerAuthEmbeddedCurrentData, GetSalesEcommCustomerAuthEmbeddedCurrentResponses, GetSalesEcommCustomerAuthEmbeddedCustomerOrderData, GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses, GetSalesEcommCustomerAuthEmbeddedCustomerOrdersData, GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponses, GetSalesEcommOrdersEmbeddedGetData, GetSalesEcommOrdersEmbeddedGetResponses, GetSalesEcommProductsEmbeddedIndexData, GetSalesEcommProductsEmbeddedIndexResponses, GetSalesEcommProductsEmbeddedShowData, GetSalesEcommProductsEmbeddedShowResponses, GetSalesEcommStorefrontConfigEmbeddedGetData, GetSalesEcommStorefrontConfigEmbeddedGetResponses, PostSalesDiscountCodesEmbeddedValidateData, PostSalesDiscountCodesEmbeddedValidateResponses, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeData, PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesData, PostSalesEcommCheckoutEmbeddedCalculateShippingRatesResponses, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentData, PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses, PostSalesEcommCheckoutEmbeddedConfirmMembershipCardData, PostSalesEcommCheckoutEmbeddedConfirmMembershipCardResponses, PostSalesEcommCheckoutEmbeddedCreateCartData, PostSalesEcommCheckoutEmbeddedCreateCartResponses, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData, PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionData, PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses, PostSalesEcommCheckoutEmbeddedSetupCardPaymentData, PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses, PostSalesEcommCheckoutEmbeddedSetupMembershipCardData, PostSalesEcommCheckoutEmbeddedSetupMembershipCardResponses, PostSalesEcommCheckoutEmbeddedVerifyAddressData, PostSalesEcommCheckoutEmbeddedVerifyAddressResponses, PostSalesEcommCustomerAuthEmbeddedCompleteInvitationData, PostSalesEcommCustomerAuthEmbeddedCompleteInvitationResponses, PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationData, PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses, PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentData, PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponses, PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailData, PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponses, PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetData, PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponses, PostSalesEcommCustomerAuthEmbeddedInitializeData, PostSalesEcommCustomerAuthEmbeddedInitializeResponses, PostSalesEcommCustomerAuthEmbeddedPasswordLoginData, PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses, PostSalesEcommCustomerAuthEmbeddedRequestOtpData, PostSalesEcommCustomerAuthEmbeddedRequestOtpResponses, PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofData, PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponses, PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetData, PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponses, PostSalesEcommCustomerAuthEmbeddedRequestRegistrationData, PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponses, PostSalesEcommCustomerAuthEmbeddedResumeCartData, PostSalesEcommCustomerAuthEmbeddedResumeCartResponses, PostSalesEcommCustomerAuthEmbeddedVerifyOtpData, PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponses, PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofData, PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponses, PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationData, PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses, PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData, PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses, PutSalesEcommCheckoutEmbeddedReplaceItemsData, PutSalesEcommCheckoutEmbeddedReplaceItemsResponses, PutSalesEcommCheckoutEmbeddedUpdateBuyerData, PutSalesEcommCheckoutEmbeddedUpdateBuyerResponses, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentData, PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses, PutSalesEcommCustomerAuthEmbeddedBindCartData, PutSalesEcommCustomerAuthEmbeddedBindCartResponses, PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailData, PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailResponses, PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetData, PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetResponses, PutSalesEcommCustomerAuthEmbeddedReplacePasswordData, PutSalesEcommCustomerAuthEmbeddedReplacePasswordResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -213,6 +213,212 @@ export class SalesSalesEcommOrdersEmbeddedApi {
 export class SalesSalesEcommStorefrontConfigEmbeddedApi {
     public static getSalesEcommStorefrontConfigEmbeddedGet<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommStorefrontConfigEmbeddedGetData, ThrowOnError>): RequestResult<GetSalesEcommStorefrontConfigEmbeddedGetResponses, unknown, ThrowOnError> {
         return (options.client ?? client).get<GetSalesEcommStorefrontConfigEmbeddedGetResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/config', ...options });
+    }
+}
+
+export class SalesSalesEcommCustomerAuthEmbeddedApi {
+    public static postSalesEcommCustomerAuthEmbeddedInitialize<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedInitializeData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedInitializeResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedInitializeResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/sessions',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedResumeCart<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedResumeCartData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedResumeCartResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedResumeCartResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/sessions/resume-cart',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static deleteSalesEcommCustomerAuthEmbeddedLogout<ThrowOnError extends boolean = false>(options: Options<DeleteSalesEcommCustomerAuthEmbeddedLogoutData, ThrowOnError>): RequestResult<DeleteSalesEcommCustomerAuthEmbeddedLogoutResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).delete<DeleteSalesEcommCustomerAuthEmbeddedLogoutResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/sessions/current', ...options });
+    }
+
+    public static getSalesEcommCustomerAuthEmbeddedCurrent<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommCustomerAuthEmbeddedCurrentData, ThrowOnError>): RequestResult<GetSalesEcommCustomerAuthEmbeddedCurrentResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).get<GetSalesEcommCustomerAuthEmbeddedCurrentResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/sessions/current', ...options });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedPasswordLogin<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedPasswordLoginData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/password',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedRequestOtp<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedRequestOtpData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedRequestOtpResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedRequestOtpResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/otp',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedVerifyOtp<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedVerifyOtpData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedVerifyOtpResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/otp/verify',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedRequestRegistration<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedRequestRegistrationData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedRequestRegistrationResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/registration',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedVerifyRegistration<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/registration/verify',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedCompleteRegistration<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/registration/complete',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedRequestPasswordReset<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedRequestPasswordResetResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/password-reset',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedExchangePasswordReset<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedExchangePasswordResetResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/password-reset/exchange',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static putSalesEcommCustomerAuthEmbeddedCompletePasswordReset<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetData, ThrowOnError>): RequestResult<PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).put<PutSalesEcommCustomerAuthEmbeddedCompletePasswordResetResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/password-reset/complete',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedRequestPasswordProof<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedRequestPasswordProofResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/customer/password-proof', ...options });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedVerifyPasswordProof<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedVerifyPasswordProofResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/customer/password-proof/verify',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static putSalesEcommCustomerAuthEmbeddedReplacePassword<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCustomerAuthEmbeddedReplacePasswordData, ThrowOnError>): RequestResult<PutSalesEcommCustomerAuthEmbeddedReplacePasswordResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).put<PutSalesEcommCustomerAuthEmbeddedReplacePasswordResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/customer/password',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedExchangeEnrollment<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedExchangeEnrollmentResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/enrollment/exchange',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedCompleteInvitation<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedCompleteInvitationData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedCompleteInvitationResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedCompleteInvitationResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/enrollment/complete',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static postSalesEcommCustomerAuthEmbeddedExchangeLoginEmail<ThrowOnError extends boolean = false>(options: Options<PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailData, ThrowOnError>): RequestResult<PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).post<PostSalesEcommCustomerAuthEmbeddedExchangeLoginEmailResponses, unknown, ThrowOnError>({
+            url: '/embedded/sales/ecomm/auth/login-email/exchange',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    public static putSalesEcommCustomerAuthEmbeddedCompleteLoginEmail<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailData, ThrowOnError>): RequestResult<PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).put<PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/auth/login-email/complete', ...options });
+    }
+
+    public static putSalesEcommCustomerAuthEmbeddedBindCart<ThrowOnError extends boolean = false>(options: Options<PutSalesEcommCustomerAuthEmbeddedBindCartData, ThrowOnError>): RequestResult<PutSalesEcommCustomerAuthEmbeddedBindCartResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).put<PutSalesEcommCustomerAuthEmbeddedBindCartResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/carts/{cartId}/customer', ...options });
+    }
+
+    public static getSalesEcommCustomerAuthEmbeddedCustomerOrders<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommCustomerAuthEmbeddedCustomerOrdersData, ThrowOnError>): RequestResult<GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).get<GetSalesEcommCustomerAuthEmbeddedCustomerOrdersResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/customer/orders', ...options });
+    }
+
+    public static getSalesEcommCustomerAuthEmbeddedCustomerOrder<ThrowOnError extends boolean = false>(options: Options<GetSalesEcommCustomerAuthEmbeddedCustomerOrderData, ThrowOnError>): RequestResult<GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses, unknown, ThrowOnError> {
+        return (options.client ?? client).get<GetSalesEcommCustomerAuthEmbeddedCustomerOrderResponses, unknown, ThrowOnError>({ url: '/embedded/sales/ecomm/customer/orders/{orderId}', ...options });
     }
 }
 

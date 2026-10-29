@@ -1,0 +1,3 @@
+# Type Alias: PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponse
+
+> **PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponse** = [`PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses`](PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses.md)\[keyof [`PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses`](PostSalesEcommCustomerAuthEmbeddedCompleteRegistrationResponses.md)\]

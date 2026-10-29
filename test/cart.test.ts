@@ -29,6 +29,7 @@ const firstCart: CartResponse = {
         id: 'cart-1',
         saleNumber: 'S-1',
         buyerContactPinned: false,
+        customer: { bound: false, policyId: null, policyRevision: null, orderHistoryScope: null },
         status: 'open',
         items: [{
             id: 'line-1',
@@ -67,6 +68,8 @@ describe('CartSession', () => {
         expect(cart.getSnapshot()).toEqual({
             cart: firstCart.cart,
             hasCart: true,
+            mode: 'guest',
+            customerPolicy: null,
             isBusy: false,
             lastError: null
         });
@@ -159,6 +162,8 @@ describe('CartSession', () => {
 
         expect(cart.getSnapshot()).toMatchObject({ cart: null, hasCart: true });
         expect(cart.requireReference()).toEqual({
+            version: 1,
+            mode: 'guest',
             cartId: 'cart-2',
             cartKey: 'cart-secret-2',
             orderKey: 'order-secret-2'

@@ -11,6 +11,7 @@ and checkout state.
 - Persistent cart creation, restoration, and serialized mutations
 - Buyer, address, shipping, fulfillment, and discount workflows
 - Card-payment setup, Sales confirmation, and interrupted-payment recovery
+- Customer sign-in, order history, and checkout with an account
 - Render-safe cart and checkout snapshots for any UI framework
 - Lifecycle hooks for merchant policy and completed-order follow-up
 
@@ -61,6 +62,7 @@ small DOM renderer.
 | `catalog` | Listing products and loading a product by slug |
 | `cart` | Restoring, mutating, and observing the active cart |
 | `checkout` | Buyer, delivery, discounts, payment, and recovery |
+| `customer` | Sign-in, saved sessions, account checkout, and order history |
 | `getConfig()` | Runtime capabilities, currency, and Stripe settings |
 | `getStripeConfiguration()` | Options for `loadStripe` without bundling Stripe.js |
 | `client` | Advanced access to the generated Sales contract client |
@@ -74,7 +76,8 @@ small DOM renderer.
 5. [Complete card or zero-due orders](./stripe)
 6. [Connect lifecycle hooks](./hooks)
 7. [Handle state, recovery, and errors](./state-and-errors)
-8. [Hand off to a trusted merchant server when needed](./server-handoff)
+8. [Add customer accounts](./customer-auth)
+9. [Hand off to a trusted merchant server when needed](./server-handoff)
 
 Use the [generated API reference](../api/) when you need exact signatures or
 lower-level contract types.

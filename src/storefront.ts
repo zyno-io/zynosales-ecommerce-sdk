@@ -1,9 +1,11 @@
 import { CartSession } from './cart';
 import { CatalogApi } from './catalog';
 import { CheckoutCoordinator } from './checkout';
+import { CustomerAuth, type CustomerInitializationOptions } from './customer';
 import { ZynoSalesClient } from './client';
 import { resolveApiBase, storageNamespace, type ZynoSalesEnvironment } from './configuration';
-import { defaultPersistentStorage, defaultSessionStorage, type ZynoSalesStorage } from './storage';
+import { defaultPersistentStorage, defaultSessionStorage, resolveCustomerSessionStorage, type ZynoSalesStorage } from './storage';
+import { SerialQueue } from './queue';
 import type { StorefrontConfig, StripeBrowserConfiguration, ZynoSalesHooks } from './types';
 
 /** Common storefront configuration shared by environment and explicit-base setup. */
@@ -16,6 +18,10 @@ export type ZynoSalesSharedOptions = {
     storage?: ZynoSalesStorage;
     /** Session storage for payment recovery markers. Defaults to `sessionStorage` in browsers. */
     sessionStorage?: ZynoSalesStorage;
+    /** Where customer sign-in is remembered. Defaults to `localStorage`; pass `sessionStorage` for the current tab only. Email-link steps always stay in the current tab. */
+    customerStorage?: ZynoSalesStorage;
+    /** Customer flows the SDK may offer for this instance. The server policy can only narrow this subset. */
+    customer?: { options?: CustomerInitializationOptions };
     /** Lifecycle callbacks for cart changes, payment policy, and completed orders. */
     hooks?: ZynoSalesHooks;
 };
@@ -42,6 +48,8 @@ export type ZynoSalesStorefront = {
     readonly cart: CartSession;
     /** Buyer, delivery, discount, payment, and recovery workflows. */
     readonly checkout: CheckoutCoordinator;
+    /** Customer auth, account orders, and account-cart binding. UI remains host-owned. */
+    readonly customer: CustomerAuth;
     /** Cached runtime storefront configuration from Sales. */
     getConfig(): Promise<StorefrontConfig>;
     /** Forces a fresh configuration read from Sales. */
@@ -56,15 +64,36 @@ export function createZynoSales(options: ZynoSalesOptions): ZynoSalesStorefront 
     const apiBase = resolveApiBase(environment, options.apiBase);
     const storage = options.storage ?? defaultPersistentStorage();
     const sessionStorage = options.sessionStorage ?? defaultSessionStorage();
+    if (options.customerStorage && options.customerStorage === storage) {
+        throw new Error('Customer session storage must be separate from cart capability storage.');
+    }
+    const resolvedCustomerStorage = resolveCustomerSessionStorage(options.customerStorage);
     const client = new ZynoSalesClient({ apiBase, publishableKey: options.publishableKey, ...(options.fetch ? { fetch: options.fetch } : {}) });
     const provisionalNamespace = storageNamespace(apiBase, `key:${options.publishableKey}`);
-    const cart = new CartSession({ client, storage, storageKey: `${provisionalNamespace}:cart` });
+    const cartQueue = new SerialQueue();
+    const checkoutQueue = new SerialQueue();
+    const cart = new CartSession({ client, storage, storageKey: `${provisionalNamespace}:cart`, queue: cartQueue });
     const checkout = new CheckoutCoordinator({
         client,
         cartSession: cart,
         storage: sessionStorage,
         pendingPaymentKey: `${provisionalNamespace}:payment`,
-        hooks: options.hooks ?? {}
+        hooks: options.hooks ?? {},
+        queue: checkoutQueue
+    });
+    const customer = new CustomerAuth({
+        client,
+        cart,
+        checkout,
+        storage: resolvedCustomerStorage.storage,
+        restrictedStorage: defaultSessionStorage(),
+        storageMode: resolvedCustomerStorage.mode,
+        storageKey: `${provisionalNamespace}:customer`,
+        namespace: provisionalNamespace,
+        apiBase,
+        publishableKey: options.publishableKey,
+        configuredOptions: options.customer?.options,
+        config: () => readConfig(false)
     });
     const catalog = new CatalogApi(client);
     let config: StorefrontConfig | null = null;
@@ -79,6 +108,7 @@ export function createZynoSales(options: ZynoSalesOptions): ZynoSalesStorefront 
         const namespace = storageNamespace(apiBase, response.tenantId);
         checkout.setStorageKey(`${namespace}:payment`);
         cart.setStorageKey(`${namespace}:cart`);
+        customer.setStorageKey(`${namespace}:customer`, namespace);
         return response;
     }
 
@@ -87,6 +117,7 @@ export function createZynoSales(options: ZynoSalesOptions): ZynoSalesStorefront 
         catalog,
         cart,
         checkout,
+        customer,
         getConfig: () => readConfig(false),
         refreshConfig: () => readConfig(true),
         getStripeConfiguration: async () => {
@@ -97,7 +128,7 @@ export function createZynoSales(options: ZynoSalesOptions): ZynoSalesStorefront 
 }
 
 /** Creates a raw generated-contract client without cart/session orchestration. */
-export function createZynoSalesClient(options: Omit<ZynoSalesOptions, 'hooks' | 'storage' | 'sessionStorage'>): ZynoSalesClient {
+export function createZynoSalesClient(options: Omit<ZynoSalesOptions, 'hooks' | 'storage' | 'sessionStorage' | 'customerStorage' | 'customer'>): ZynoSalesClient {
     const environment = 'environment' in options && options.environment ? options.environment : 'production';
     const apiBase = resolveApiBase(environment, options.apiBase);
     return new ZynoSalesClient({ apiBase, publishableKey: options.publishableKey, ...(options.fetch ? { fetch: options.fetch } : {}) });

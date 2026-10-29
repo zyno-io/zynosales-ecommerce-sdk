@@ -32,6 +32,7 @@ function cartResponse(cartId = 'cart-1', priceDue = 1000): CartResponse {
             id: cartId,
             saleNumber: 'S-1',
             buyerContactPinned: false,
+            customer: { bound: false, policyId: null, policyRevision: null, orderHistoryScope: null },
             status: 'open',
             items: [{
                 id: `${cartId}-line-1`,
@@ -247,6 +248,169 @@ describe('CheckoutCoordinator', () => {
 
         expect(recoveredOrder).toEqual(order);
         expect(afterOrderCompleted).toHaveBeenCalledTimes(1);
+    });
+
+    it('recovers account order history through the customer endpoint without an order key', async () => {
+        const accountOrder: Order = {
+            id: 'order-account-1',
+            source: 'ecomm',
+            saleNumber: 'S-ACCOUNT-1',
+            status: 'paid',
+            createdAt: '2026-01-01T00:00:00.000Z',
+            closedAt: '2026-01-01T00:01:00.000Z',
+            items: [],
+            totals: { discounted: 1000, base: 1000, tax: 0, total: 1000, paid: 1000, due: 0 },
+            paymentStatus: 'captured',
+            fulfillmentStatus: null
+        };
+        const getCustomerOrder = vi.fn(async () => accountOrder);
+        const getOrder = vi.fn();
+        const client = { getCustomerOrder, getOrder } as unknown as ZynoSalesClient;
+        const paymentStorage = new TestStorage();
+        paymentStorage.setItem('payment:completed', JSON.stringify({
+            version: 2,
+            mode: 'account',
+            cartId: 'cart-account-1',
+            orderId: accountOrder.id,
+            scope: { policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' },
+            orderKey: 'stale-guest-capability'
+        }));
+        const { checkout } = checkoutFixture(client, paymentStorage);
+
+        const recoveredOrder = await checkout.getOrder();
+
+        expect(recoveredOrder).toEqual(accountOrder);
+        expect(getCustomerOrder).toHaveBeenCalledWith(accountOrder.id);
+        expect(getOrder).not.toHaveBeenCalled();
+        expect(paymentStorage.getItem('payment:completed')).not.toContain('orderKey');
+    });
+
+    it('finalizes a zero-due account cart and reads the resulting order through customer history', async () => {
+        const response = cartResponse('account-free', 0);
+        response.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const accountOrder: Order = {
+            id: 'account-free', source: 'ecomm', saleNumber: 'S-FREE', status: 'paid',
+            createdAt: '2026-01-01T00:00:00.000Z', closedAt: '2026-01-01T00:01:00.000Z',
+            items: [], totals: { discounted: 0, base: 0, tax: 0, total: 0, paid: 0, due: 0 },
+            paymentStatus: null, fulfillmentStatus: null
+        };
+        const getCustomerOrder = vi.fn()
+            .mockRejectedValueOnce(new ZynoSalesError('Order is not ready.', { status: 404 }))
+            .mockResolvedValueOnce(accountOrder);
+        const getOrder = vi.fn();
+        const finalizeZeroDueCart = vi.fn(async () => response);
+        const client = { finalizeZeroDueCart, getCustomerOrder, getOrder } as unknown as ZynoSalesClient;
+        const { cart, checkout, storage } = checkoutFixture(client);
+        cart.accept(response);
+
+        const setup = await checkout.beginCardPayment();
+
+        expect(setup).toBeNull();
+        expect(finalizeZeroDueCart).toHaveBeenCalledWith('account-free', 'account-free-secret');
+        expect(getCustomerOrder).toHaveBeenNthCalledWith(2, 'account-free');
+        expect(getOrder).not.toHaveBeenCalled();
+        expect(storage.getItem('payment:completed')).not.toContain('orderKey');
+        expect(cart.getSnapshot()).toMatchObject({ cart: null, hasCart: false });
+    });
+
+    it('preserves account cart and pending payment references when order recovery needs reauthentication', async () => {
+        const response = cartResponse('account-pending');
+        response.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const getCustomerOrder = vi.fn(async () => {
+            throw new ZynoSalesError('Sign in again.', { status: 401, code: 'REAUTHENTICATION_REQUIRED' });
+        });
+        const getPaymentAttempt = vi.fn();
+        const client = { getCustomerOrder, getPaymentAttempt } as unknown as ZynoSalesClient;
+        const paymentStorage = new TestStorage();
+        const pending = {
+            cartId: response.cartId, idempotencyKey: 'idem-1', paymentAttemptId: 'attempt-1',
+            paymentIntentId: 'intent-1', kind: 'payment'
+        };
+        paymentStorage.setItem('payment', JSON.stringify(pending));
+        const { cart, checkout } = checkoutFixture(client, paymentStorage);
+        cart.accept(response);
+
+        await expect(checkout.recoverPayment()).rejects.toMatchObject({ code: 'REAUTHENTICATION_REQUIRED', status: 401 });
+
+        expect(cart.getSnapshot()).toMatchObject({ hasCart: true, mode: 'account' });
+        expect(paymentStorage.getItem('payment')).toBe(JSON.stringify(pending));
+        expect(getPaymentAttempt).not.toHaveBeenCalled();
+    });
+
+    it('lets another account start payment without probing the orphan and keeps prior uncertainty for explicit recovery', async () => {
+        const oldCart = cartResponse('old-account-cart');
+        oldCart.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const newCart = cartResponse('new-account-cart');
+        newCart.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const storage = new TestStorage();
+        storage.setItem('payment', JSON.stringify({
+            cartId: oldCart.cartId,
+            idempotencyKey: 'old-idem',
+            paymentAttemptId: 'old-attempt',
+            paymentIntentId: 'old-intent',
+            kind: 'payment'
+        }));
+        const getCustomerOrder = vi.fn(async (orderId: string) => {
+            throw new ZynoSalesError(`No order visible for ${orderId}.`, { status: 404 });
+        });
+        const setupCardPayment = vi.fn(async () => paymentSetup(newCart));
+        const getPaymentAttempt = vi.fn();
+        const client = { getCustomerOrder, setupCardPayment, getPaymentAttempt } as unknown as ZynoSalesClient;
+        const { cart, checkout } = checkoutFixture(client, storage);
+        cart.accept(oldCart);
+        checkout.detachAccountCartForLogout();
+
+        await expect(checkout.beginCardPayment()).rejects.toThrow('There is no active cart.');
+        expect(getCustomerOrder).not.toHaveBeenCalled();
+        expect(setupCardPayment).not.toHaveBeenCalled();
+
+        cart.accept(newCart);
+        await checkout.beginCardPayment();
+
+        expect(getCustomerOrder.mock.calls.map(([orderId]) => orderId)).toEqual(['new-account-cart']);
+        expect(setupCardPayment).toHaveBeenCalledOnce();
+        expect(JSON.parse(storage.getItem('payment')!).cartId).toBe('new-account-cart');
+        const orphan = JSON.parse(storage.getItem('payment:orphan-account')!);
+        expect(orphan.items[0].reference.orderId).toBe('old-account-cart');
+        expect(orphan.items[0].pending.paymentAttemptId).toBe('old-attempt');
+        expect(JSON.stringify(orphan)).not.toContain('cartKey');
+        expect(JSON.stringify(orphan)).not.toContain('orderKey');
+
+        cart.clear();
+        await expect(checkout.recoverPayment()).rejects.toMatchObject({ status: 404 });
+
+        expect(getCustomerOrder.mock.calls.map(([orderId]) => orderId)).toEqual(['new-account-cart', 'old-account-cart']);
+        expect(storage.getItem('payment:orphan-account')).not.toBeNull();
+        expect(JSON.parse(storage.getItem('payment')!).cartId).toBe('new-account-cart');
+        expect(getPaymentAttempt).not.toHaveBeenCalled();
+    });
+
+    it('detaches on logout with a second unresolved outcome and preserves both for explicit recovery', async () => {
+        const first = cartResponse('first-account-cart');
+        first.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const second = cartResponse('second-account-cart');
+        second.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const third = cartResponse('third-account-cart');
+        third.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const storage = new TestStorage();
+        const client = { setupCardPayment: vi.fn() } as unknown as ZynoSalesClient;
+        const { cart, checkout } = checkoutFixture(client, storage);
+
+        cart.accept(first);
+        storage.setItem('payment', JSON.stringify({ cartId: first.cartId, idempotencyKey: 'idem-1', paymentAttemptId: 'attempt-1' }));
+        expect(() => checkout.detachAccountCartForLogout()).not.toThrow();
+        cart.accept(second);
+        storage.setItem('payment', JSON.stringify({ cartId: second.cartId, idempotencyKey: 'idem-2', paymentAttemptId: 'attempt-2' }));
+
+        expect(() => checkout.detachAccountCartForLogout()).not.toThrow();
+
+        expect(cart.getSnapshot()).toMatchObject({ hasCart: false, mode: null });
+        expect(storage.getItem('payment')).toBeNull();
+        expect(JSON.parse(storage.getItem('payment:orphan-account')!).items).toHaveLength(2);
+
+        cart.accept(third);
+        expect(() => checkout.detachAccountCartForLogout()).not.toThrow();
+        expect(JSON.parse(storage.getItem('payment:orphan-account')!).items).toHaveLength(2);
     });
 
     it('clears the cart after zero-due finalization', async () => {

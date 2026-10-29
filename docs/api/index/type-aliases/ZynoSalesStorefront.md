@@ -36,6 +36,14 @@ Buyer, delivery, discount, payment, and recovery workflows.
 
 Low-level generated Sales client for advanced integrations.
 
+***
+
+### customer
+
+> `readonly` **customer**: [`CustomerAuth`](../classes/CustomerAuth.md)
+
+Customer auth, account orders, and account-cart binding. UI remains host-owned.
+
 ## Methods
 
 ### getConfig()

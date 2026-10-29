@@ -6,6 +6,14 @@ A render-safe representation of an SDK error.
 
 ## Properties
 
+### code?
+
+> `optional` **code?**: `string`
+
+Stable, non-secret business error code for UI flow selection.
+
+***
+
 ### kind
 
 > **kind**: `"api"` \| `"capability-lost"` \| `"network"`

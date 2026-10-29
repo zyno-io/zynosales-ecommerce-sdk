@@ -38,6 +38,7 @@ export default defineConfig({
                     text: 'Operate safely',
                     items: [
                         { text: 'State, recovery, and errors', link: '/guide/state-and-errors' },
+                        { text: 'Customer accounts', link: '/guide/customer-auth' },
                         { text: 'Server handoff', link: '/guide/server-handoff' }
                     ]
                 }

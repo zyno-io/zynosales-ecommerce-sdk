@@ -24,7 +24,16 @@ describe('endpoint and Stripe configuration', () => {
                 stripePublishableKey: 'pk_test_123',
                 stripeConnectedAccountId: 'acct_123'
             },
-            capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true }
+            capabilities: { addressVerification: true, shipping: true, discountCodes: true, pinnedBuyer: true },
+            customerAuth: {
+                enabled: false,
+                policyId: null,
+                policyRevision: null,
+                options: null,
+                passwordRequirements: { minimumLength: 10, maximumLength: 128, minimumCharacterClasses: 3 },
+                orderHistoryScope: 'ecomm',
+                orderHistoryConfigRevision: 1
+            }
         };
 
         expect(stripeConfiguration(config)).toEqual({ publishableKey: 'pk_test_123', stripeAccount: 'acct_123' });
