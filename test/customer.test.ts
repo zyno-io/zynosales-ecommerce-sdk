@@ -150,7 +150,7 @@ describe('CustomerAuth', () => {
             if (path.endsWith('/auth/password')) {
                 return Response.json({ session: session('authenticated'), sessionSecret: 'tab-session-secret', rotated: true });
             }
-            if (path.endsWith('/sessions/current')) {
+            if (path.endsWith('/sessions/current') && request.method === 'GET') {
                 const current = request.headers.get('x-zs-customer-session') === 'new-account-secret' ? sessionB : session('authenticated');
                 return Response.json({ session: current, principal: current.principal });
             }
@@ -391,6 +391,81 @@ describe('CustomerAuth', () => {
             expect(localStorage.getItem(storageKey)).not.toBeNull();
         } finally {
             vi.useRealTimers();
+            vi.unstubAllGlobals();
+        }
+    });
+
+    it('keeps tab-restricted proof sessions when another tab signs in or out normally', async () => {
+        const localStorage = new TestStorage();
+        const proofTabStorage = new TestStorage();
+        const normalTabStorage = new TestStorage();
+        const storageListeners = new Set<(event: StorageEvent) => void>();
+        const browser = {
+            localStorage,
+            sessionStorage: proofTabStorage,
+            addEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.add(listener),
+            removeEventListener: (_type: string, listener: (event: StorageEvent) => void) => storageListeners.delete(listener)
+        };
+        vi.stubGlobal('window', browser);
+        const storageKey = 'zynosales:ecommerce:https%3A%2F%2Fsales.example:tenant-1:customer';
+        const proofRecord = persistedSessionRecord('proof-secret', 'proof-session');
+        proofRecord.restricted = true;
+        proofRecord.session.phase = 'enrollment';
+        const proofValue = JSON.stringify(proofRecord);
+        proofTabStorage.setItem(storageKey, proofValue);
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const request = new Request(input);
+            const path = new URL(request.url).pathname;
+            const secret = request.headers.get('x-zs-customer-session');
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions/current') && request.method === 'GET') {
+                const current = secret === 'proof-secret'
+                    ? { ...session('enrollment'), sessionId: 'proof-session' }
+                    : { ...session('authenticated'), sessionId: 'session-B' };
+                return Response.json({ session: current, principal: current.principal });
+            }
+            if (path.endsWith('/sessions') && request.method === 'POST') {
+                return Response.json({ session: session(), sessionSecret: 'anonymous-B', rotated: false });
+            }
+            if (path.endsWith('/auth/password')) {
+                return Response.json({ session: { ...session('authenticated'), sessionId: 'session-B' }, sessionSecret: 'account-B-secret', rotated: true });
+            }
+            if (path.endsWith('/sessions/current') && request.method === 'DELETE') return new Response(null, { status: 204 });
+            return Response.json({});
+        });
+        const common = { apiBase: 'https://sales.example', publishableKey: 'zs_pk_test', customer: { options }, fetch } as const;
+
+        try {
+            const proofTab = createZynoSales(common);
+            const proofRestored = await proofTab.customer.restore();
+            expect(proofRestored.state).toBe('restricted');
+            expect(proofRestored.persistence).toBe('session');
+            const proofStoredAfterRestore = proofTabStorage.getItem(storageKey)!;
+
+            browser.sessionStorage = normalTabStorage;
+            const normalTab = createZynoSales(common);
+            await normalTab.customer.initialize();
+            await normalTab.customer.passwordLogin({ email: 'account-b@example.test', password: 'test-password' });
+            const normalRecord = localStorage.getItem(storageKey)!;
+            const signedInEvent = { key: storageKey, oldValue: null, newValue: normalRecord, storageArea: localStorage } as unknown as StorageEvent;
+            for (const listener of storageListeners) listener(signedInEvent);
+
+            expect(proofTab.customer.getSnapshot().state).toBe('restricted');
+            expect(proofTab.customer.getSnapshot().persistence).toBe('session');
+            expect(proofTabStorage.getItem(storageKey)).toBe(proofStoredAfterRestore);
+
+            const proofRestoredAgain = await proofTab.customer.restore();
+            expect(proofRestoredAgain.state).toBe('restricted');
+            expect(localStorage.getItem(storageKey)).toBe(normalRecord);
+            expect(proofTabStorage.getItem(storageKey)).not.toBeNull();
+
+            await normalTab.customer.logout();
+            const logoutEvent = { key: storageKey, oldValue: normalRecord, newValue: null, storageArea: localStorage } as unknown as StorageEvent;
+            for (const listener of storageListeners) listener(logoutEvent);
+
+            expect(proofTab.customer.getSnapshot().state).toBe('restricted');
+            expect(proofTabStorage.getItem(storageKey)).not.toBeNull();
+        } finally {
             vi.unstubAllGlobals();
         }
     });

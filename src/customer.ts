@@ -619,8 +619,7 @@ export class CustomerAuth {
 
     private persistRecord(record: PersistedCustomerSession): void {
         const storage = record.restricted ? this.restrictedStorage : this.storage;
-        if (record.restricted) this.storage.removeItem(this.storageKey);
-        else this.restrictedStorage.removeItem(this.storageKey);
+        if (!record.restricted) this.restrictedStorage.removeItem(this.storageKey);
         storage.setItem(this.storageKey, JSON.stringify(record));
     }
 
@@ -629,8 +628,10 @@ export class CustomerAuth {
     }
 
     private readPersistedRecord(): PersistedCustomerSession | null {
+        const restricted = this.readFromStorage(this.restrictedStorage);
+        if (restricted && this.matchesCurrentContext(restricted) && !isLocallyExpired(restricted.session)) return restricted;
         const normal = this.readFromStorage(this.storage);
-        return normal ?? this.readFromStorage(this.restrictedStorage);
+        return normal ?? restricted;
     }
 
     private readFromStorage(storage: ZynoSalesStorage): PersistedCustomerSession | null {
@@ -677,6 +678,7 @@ export class CustomerAuth {
         if (typeof window === 'undefined') return;
         this.storageListener = event => {
             if (event.storageArea !== (this.storage as Storage) || (event.key !== null && event.key !== this.storageKey)) return;
+            if (this.record?.restricted) return;
             let stored: PersistedCustomerSession | null = null;
             try {
                 stored = this.readPersistedRecord();
