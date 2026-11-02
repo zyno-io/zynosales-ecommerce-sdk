@@ -27,14 +27,17 @@ export type ISalesEcommCartResponse = {
 };
 
 export type ISalesEcommCartCreateInput = {
+    expectedPricingRevision?: number;
     items: Array<ISalesEcommCartItemInput>;
 };
 
 export type ISalesEcommCartUpdateItemsInput = {
+    expectedPricingRevision?: number;
     items: Array<ISalesEcommCartItemInput>;
 };
 
 export type ISalesEcommBuyerInput = {
+    expectedPricingRevision?: number;
     name: string;
     company?: string | null;
     email: string;
@@ -59,6 +62,7 @@ export type ISalesEcommShippingRatesResponse = ISalesEcommPublicShippingPlan | {
 };
 
 export type ISalesEcommCartShippingRatesInput = {
+    expectedPricingRevision?: number;
     existingId?: string;
     locationId?: string;
     address?: ISalesFulfillmentShippingCalculateRequestAddressDetail | {
@@ -80,6 +84,7 @@ export type ISalesEcommShippingSelectionQuoteResponse = {
 };
 
 export type ISalesEcommShippingSelectionQuoteInput = {
+    expectedPricingRevision?: number;
     shippingPlanId: string;
     packageRates: Array<{
         packageId: string;
@@ -88,6 +93,7 @@ export type ISalesEcommShippingSelectionQuoteInput = {
 };
 
 export type ISalesEcommCartFulfillmentInput = {
+    expectedPricingRevision?: number;
     recipient: SalesFulfillmentOrderRecipient;
     crmAddressId?: string | null;
     shippingPlanId?: string | null;
@@ -99,6 +105,7 @@ export type ISalesEcommCartFulfillmentInput = {
 };
 
 export type ISalesEcommCartDiscountCodeInput = {
+    expectedPricingRevision?: number;
     code: string;
 };
 
@@ -115,6 +122,8 @@ export type ISalesEcommCartPaymentSetupResponse = {
 
 export type ISalesEcommCartPaymentSetupInput = {
     idempotencyKey: string;
+    expectedPricingRevision?: number;
+    expectedPriceTotal?: number;
 };
 
 export type ISalesEcommCartMembershipCardSetupResponse = {
@@ -167,12 +176,18 @@ export type ISalesEcommPaymentAttemptResponse = {
     updatedAt: string;
     paymentIntentId: string | null;
     setupIntentId: string | null;
-    kind: 'payment' | 'setup';
+    kind: 'payment' | 'setup' | 'zeroDue';
 };
 
 export type ISalesEcommCartConfirmPaymentInput = {
     paymentAttemptId: string;
     paymentIntentId: string;
+};
+
+export type ISalesEcommZeroDueFinalizeInput = {
+    idempotencyKey?: string;
+    expectedPricingRevision?: number;
+    expectedPriceTotal?: number;
 };
 
 export type ISalesEcommStorefrontConfigResponse = {
@@ -336,6 +351,8 @@ export type ISalesEcommStoreProduct = {
 export type SalesPredefinedDiscountScope = 'item' | 'tab' | 'shipping';
 
 export type ISalesEcommPublicCart = {
+    pricingRevision?: number;
+    automaticPromotionSuppressedReason?: string;
     id: string;
     saleNumber: string;
     buyerContactPinned: boolean;
@@ -362,6 +379,10 @@ export type ISalesEcommPublicCart = {
         shippingPlan?: ISalesEcommPublicShippingPlan;
     };
     appliedDiscount?: ISalesEcommAppliedDiscount;
+    automaticPromotion?: {
+        name: string;
+        savings: number;
+    };
     priceOverride?: ISalesEcommPublicPriceOverride;
     priceDiscounted: number;
     priceBase: number;
@@ -376,6 +397,7 @@ export type ISalesEcommPublicCart = {
 };
 
 export type ISalesEcommCartItemInput = {
+    selectionId?: string;
     productId: string;
     qty: number;
     notes?: string | null;
@@ -449,12 +471,16 @@ export type ISalesEcommOrderItem = {
     priceBase: number;
     priceTax: number;
     priceTotal: number;
+    lineAmountBase?: number | null;
+    lineAmountTax?: number;
     membership?: {
         id: string | null;
         status: 'pending' | 'active' | 'paused' | 'suspended' | 'terminated';
         terms: ISalesMembershipCheckoutTerms;
     };
     priceOverride?: ISalesEcommPublicPriceOverride;
+    priceGroups?: Array<ISalesEcommPromotionPriceGroup>;
+    automaticPromotionName?: string;
     product: {
         id: string;
         name: string;
@@ -552,12 +578,16 @@ export type ISalesEcommPublicCartItem = {
     id: string;
     qty: number;
     effectivePrice: number;
+    lineAmountBase: number | null;
     notes: string | null;
+    lineAmountTax?: number;
     priceBase: number;
     priceTax: number;
     priceTotal: number;
+    selectionId?: string;
     membership?: ISalesMembershipCheckoutTerms;
     priceOverride?: ISalesEcommPublicPriceOverride;
+    priceGroups?: Array<ISalesEcommPromotionPriceGroup>;
     product: PickISalesTabItemProduct;
 };
 
@@ -600,6 +630,14 @@ export type ISalesMembershipCheckoutTerms = {
     validityValue: number | null;
     validityUnits: 'day' | 'month' | 'year' | null;
     termsHash: string;
+};
+
+export type ISalesEcommPromotionPriceGroup = {
+    kind: 'fullPrice' | 'reward';
+    qty: number;
+    unitPrice: number;
+    lineAmount: number;
+    pricingSource?: 'existingPrice';
 };
 
 export type ISalesEcommCustomerPolicySnapshot = {
@@ -677,7 +715,9 @@ export type PostSalesEcommCheckoutEmbeddedCreateCartResponses = {
 export type PostSalesEcommCheckoutEmbeddedCreateCartResponse = PostSalesEcommCheckoutEmbeddedCreateCartResponses[keyof PostSalesEcommCheckoutEmbeddedCreateCartResponses];
 
 export type DeleteSalesEcommCheckoutEmbeddedAbandonCartData = {
-    body?: never;
+    body?: {
+        expectedPricingRevision?: number;
+    };
     headers: {
         'x-zs-cart-key': string;
         'x-zs-publishable-key': string;
@@ -740,6 +780,30 @@ export type PutSalesEcommCheckoutEmbeddedReplaceItemsResponses = {
 
 export type PutSalesEcommCheckoutEmbeddedReplaceItemsResponse = PutSalesEcommCheckoutEmbeddedReplaceItemsResponses[keyof PutSalesEcommCheckoutEmbeddedReplaceItemsResponses];
 
+export type PostSalesEcommCheckoutEmbeddedRefreshPricingData = {
+    body: {
+        expectedPricingRevision: number;
+    };
+    headers: {
+        'x-zs-cart-key': string;
+        'x-zs-publishable-key': string;
+    };
+    path: {
+        cartId: string;
+    };
+    query?: never;
+    url: '/embedded/sales/ecomm/carts/{cartId}/pricing';
+};
+
+export type PostSalesEcommCheckoutEmbeddedRefreshPricingResponses = {
+    /**
+     * OK
+     */
+    200: ISalesEcommCartResponse;
+};
+
+export type PostSalesEcommCheckoutEmbeddedRefreshPricingResponse = PostSalesEcommCheckoutEmbeddedRefreshPricingResponses[keyof PostSalesEcommCheckoutEmbeddedRefreshPricingResponses];
+
 export type PutSalesEcommCheckoutEmbeddedUpdateBuyerData = {
     body: ISalesEcommBuyerInput;
     headers: {
@@ -765,6 +829,7 @@ export type PutSalesEcommCheckoutEmbeddedUpdateBuyerResponse = PutSalesEcommChec
 export type PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsData = {
     body: {
         termsHash: string;
+        expectedPricingRevision?: number;
     };
     headers: {
         'x-zs-cart-key': string;
@@ -853,7 +918,9 @@ export type PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses = {
 export type PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponse = PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses[keyof PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses];
 
 export type DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentData = {
-    body?: never;
+    body?: {
+        expectedPricingRevision?: number;
+    };
     headers: {
         'x-zs-cart-key': string;
         'x-zs-publishable-key': string;
@@ -897,7 +964,9 @@ export type PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses = {
 export type PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponse = PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses[keyof PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses];
 
 export type DeleteSalesEcommCheckoutEmbeddedRemoveDiscountCodeData = {
-    body?: never;
+    body?: {
+        expectedPricingRevision?: number;
+    };
     headers: {
         'x-zs-cart-key': string;
         'x-zs-publishable-key': string;
@@ -1076,7 +1145,7 @@ export type PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses = {
 export type PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponse = PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses[keyof PostSalesEcommCheckoutEmbeddedConfirmCardPaymentResponses];
 
 export type PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartData = {
-    body?: never;
+    body?: ISalesEcommZeroDueFinalizeInput;
     headers: {
         'x-zs-cart-key': string;
         'x-zs-publishable-key': string;
@@ -1534,7 +1603,9 @@ export type PutSalesEcommCustomerAuthEmbeddedCompleteLoginEmailResponses = {
 };
 
 export type PutSalesEcommCustomerAuthEmbeddedBindCartData = {
-    body?: never;
+    body?: {
+        expectedPricingRevision?: number;
+    };
     headers: {
         'x-zs-publishable-key': string;
         'x-zs-customer-session': string;

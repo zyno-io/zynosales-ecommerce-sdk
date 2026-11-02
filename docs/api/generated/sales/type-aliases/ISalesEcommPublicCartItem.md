@@ -16,6 +16,18 @@
 
 ***
 
+### lineAmountBase
+
+> **lineAmountBase**: `number` \| `null`
+
+***
+
+### lineAmountTax?
+
+> `optional` **lineAmountTax?**: `number`
+
+***
+
 ### membership?
 
 > `optional` **membership?**: [`ISalesMembershipCheckoutTerms`](../../../index/type-aliases/ISalesMembershipCheckoutTerms.md)
@@ -31,6 +43,12 @@
 ### priceBase
 
 > **priceBase**: `number`
+
+***
+
+### priceGroups?
+
+> `optional` **priceGroups?**: [`ISalesEcommPromotionPriceGroup`](ISalesEcommPromotionPriceGroup.md)[]
 
 ***
 
@@ -61,3 +79,9 @@
 ### qty
 
 > **qty**: `number`
+
+***
+
+### selectionId?
+
+> `optional` **selectionId?**: `string`

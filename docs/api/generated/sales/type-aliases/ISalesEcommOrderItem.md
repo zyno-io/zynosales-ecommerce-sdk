@@ -4,6 +4,12 @@
 
 ## Properties
 
+### automaticPromotionName?
+
+> `optional` **automaticPromotionName?**: `string`
+
+***
+
 ### effectivePrice
 
 > **effectivePrice**: `number`
@@ -13,6 +19,18 @@
 ### id
 
 > **id**: `string`
+
+***
+
+### lineAmountBase?
+
+> `optional` **lineAmountBase?**: `number` \| `null`
+
+***
+
+### lineAmountTax?
+
+> `optional` **lineAmountTax?**: `number`
 
 ***
 
@@ -43,6 +61,12 @@
 ### priceBase
 
 > **priceBase**: `number`
+
+***
+
+### priceGroups?
+
+> `optional` **priceGroups?**: [`ISalesEcommPromotionPriceGroup`](ISalesEcommPromotionPriceGroup.md)[]
 
 ***
 

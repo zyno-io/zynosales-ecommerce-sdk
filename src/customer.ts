@@ -427,7 +427,14 @@ export class CustomerAuth {
                 const record = this.requireAuthenticatedRecord();
                 await this.cart.runExclusive(async () => {
                     const reference = this.cart.requireReference();
-                    const response = await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret);
+                    if (!this.cart.getSnapshot().cart) {
+                        const current = await this.client.getCart(reference.cartId, reference.cartKey);
+                        this.cart.accept(current);
+                    }
+                    const revision = this.cart.getSnapshot().cart?.pricingRevision;
+                    const response = revision === undefined
+                        ? await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret)
+                        : await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret, revision);
                     this.cart.accept(response);
                 });
                 this.lastError = null;

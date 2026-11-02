@@ -601,6 +601,7 @@ describe('CustomerAuth', () => {
         cartStorage.setItem(`${base}:key%3Azs_pk_test:cart`, JSON.stringify({ cartId: 'cart-1', cartKey: 'cart-key', orderKey: 'guest-order-key' }));
         paymentStorage.setItem(`${base}:key%3Azs_pk_test:payment`, JSON.stringify({ cartId: 'cart-1', idempotencyKey: 'pending-payment', paymentAttemptId: 'attempt-1' }));
         const calls: Array<{ path: string; method: string; session: string | null }> = [];
+        let bindingBody: unknown;
         const fetch: typeof globalThis.fetch = vi.fn(async input => {
             const request = new Request(input);
             const path = new URL(request.url).pathname;
@@ -608,10 +609,16 @@ describe('CustomerAuth', () => {
             if (path.endsWith('/config')) return Response.json(configResponse());
             if (path.endsWith('/sessions') && request.method === 'POST') return Response.json({ session: session(), sessionSecret: 'anonymous-secret', rotated: false });
             if (path.endsWith('/auth/password')) return Response.json({ session: session('authenticated'), sessionSecret: 'authenticated-secret', rotated: true });
-            if (path.endsWith('/carts/cart-1/customer')) return Response.json({
-                cartId: 'cart-1', cartKey: 'cart-key', orderKey: 'stale-guest-key',
-                cart: { customer: { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' } }
+            if (path.endsWith('/carts/cart-1') && request.method === 'GET') return Response.json({
+                cartId: 'cart-1', cart: { pricingRevision: 7, customer: { bound: false } }
             });
+            if (path.endsWith('/carts/cart-1/customer')) {
+                bindingBody = await request.json();
+                return Response.json({
+                cartId: 'cart-1', cartKey: 'cart-key', orderKey: 'stale-guest-key',
+                cart: { pricingRevision: 8, customer: { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' } }
+            });
+            }
             if (path.endsWith('/customer/orders/cart-1')) return Response.json({
                 id: 'cart-1', source: 'ecomm', saleNumber: 'S-1', status: 'paid',
                 createdAt: new Date().toISOString(), closedAt: new Date().toISOString(), items: [],
@@ -636,6 +643,7 @@ describe('CustomerAuth', () => {
         expect(storedCart).toContain('"mode":"account"');
         expect(paymentStorage.getItem(`${base}:tenant-1:payment`)).toContain('pending-payment');
         expect(calls.find(call => call.path.endsWith('/carts/cart-1/customer'))?.session).toBe('authenticated-secret');
+        expect(bindingBody).toEqual({ expectedPricingRevision: 7 });
 
         await storefront.customer.logout();
 
@@ -655,7 +663,7 @@ describe('CustomerAuth', () => {
 
         expect(recovered?.id).toBe('cart-1');
         expect(calls.some(call => call.path.endsWith('/customer/orders/cart-1'))).toBe(true);
-        expect(calls.some(call => call.path.endsWith('/carts/cart-1'))).toBe(false);
+        expect(calls.filter(call => call.path.endsWith('/carts/cart-1'))).toHaveLength(1);
         expect(calls.some(call => call.path.endsWith('/setup-payment'))).toBe(false);
         expect(paymentStorage.getItem(`${base}:tenant-1:payment`)).toBeNull();
         expect(paymentStorage.getItem(`${base}:tenant-1:payment:orphan-account`)).toBeNull();

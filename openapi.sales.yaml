@@ -108,6 +108,15 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expectedPricingRevision:
+                  type: number
   /embedded/sales/ecomm/carts/{cartId}/items:
     put:
       operationId: putSalesEcommCheckoutEmbeddedReplaceItems
@@ -142,6 +151,45 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ISalesEcommCartUpdateItemsInput"
+  /embedded/sales/ecomm/carts/{cartId}/pricing:
+    post:
+      operationId: postSalesEcommCheckoutEmbeddedRefreshPricing
+      tags:
+        - salesEcommCheckoutEmbedded
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ISalesEcommCartResponse"
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-zs-cart-key
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: x-zs-publishable-key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expectedPricingRevision:
+                  type: number
+              required:
+                - expectedPricingRevision
   /embedded/sales/ecomm/carts/{cartId}/buyer:
     put:
       operationId: putSalesEcommCheckoutEmbeddedUpdateBuyer
@@ -213,6 +261,8 @@ paths:
               properties:
                 termsHash:
                   type: string
+                expectedPricingRevision:
+                  type: number
               required:
                 - termsHash
   /embedded/sales/ecomm/carts/{cartId}/address/verify:
@@ -378,6 +428,15 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expectedPricingRevision:
+                  type: number
   /embedded/sales/ecomm/carts/{cartId}/discount-code:
     post:
       operationId: postSalesEcommCheckoutEmbeddedApplyDiscountCode
@@ -439,6 +498,15 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expectedPricingRevision:
+                  type: number
   /embedded/sales/ecomm/carts/{cartId}/payments/setup-cc:
     post:
       operationId: postSalesEcommCheckoutEmbeddedSetupCardPayment
@@ -672,6 +740,12 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ISalesEcommZeroDueFinalizeInput"
   /embedded/sales/ecomm/orders/{orderId}:
     get:
       operationId: getSalesEcommOrdersEmbeddedGet
@@ -1293,6 +1367,15 @@ paths:
           required: true
           schema:
             type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expectedPricingRevision:
+                  type: number
   /embedded/sales/ecomm/customer/orders:
     get:
       operationId: getSalesEcommCustomerAuthEmbeddedCustomerOrders
@@ -1463,6 +1546,8 @@ components:
     ISalesEcommCartCreateInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         items:
           type: array
           items:
@@ -1472,6 +1557,8 @@ components:
     ISalesEcommCartUpdateItemsInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         items:
           type: array
           items:
@@ -1481,6 +1568,8 @@ components:
     ISalesEcommBuyerInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         name:
           type: string
         company:
@@ -1547,6 +1636,8 @@ components:
     ISalesEcommCartShippingRatesInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         existingId:
           type: string
         locationId:
@@ -1600,6 +1691,8 @@ components:
     ISalesEcommShippingSelectionQuoteInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         shippingPlanId:
           type: string
         packageRates:
@@ -1620,6 +1713,8 @@ components:
     ISalesEcommCartFulfillmentInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         recipient:
           $ref: "#/components/schemas/SalesFulfillmentOrderRecipient"
         crmAddressId:
@@ -1651,6 +1746,8 @@ components:
     ISalesEcommCartDiscountCodeInput:
       type: object
       properties:
+        expectedPricingRevision:
+          type: number
         code:
           type: string
       required:
@@ -1686,6 +1783,10 @@ components:
       properties:
         idempotencyKey:
           type: string
+        expectedPricingRevision:
+          type: number
+        expectedPriceTotal:
+          type: number
       required:
         - idempotencyKey
     ISalesEcommCartMembershipCardSetupResponse:
@@ -1864,6 +1965,7 @@ components:
           enum:
             - payment
             - setup
+            - zeroDue
           type: string
       required:
         - id
@@ -1884,6 +1986,15 @@ components:
       required:
         - paymentAttemptId
         - paymentIntentId
+    ISalesEcommZeroDueFinalizeInput:
+      type: object
+      properties:
+        idempotencyKey:
+          type: string
+        expectedPricingRevision:
+          type: number
+        expectedPriceTotal:
+          type: number
     ISalesEcommStorefrontConfigResponse:
       type: object
       properties:
@@ -2318,6 +2429,10 @@ components:
     ISalesEcommPublicCart:
       type: object
       properties:
+        pricingRevision:
+          type: number
+        automaticPromotionSuppressedReason:
+          type: string
         id:
           type: string
         saleNumber:
@@ -2411,6 +2526,16 @@ components:
             - shippingPrice
         appliedDiscount:
           $ref: "#/components/schemas/ISalesEcommAppliedDiscount"
+        automaticPromotion:
+          type: object
+          properties:
+            name:
+              type: string
+            savings:
+              type: number
+          required:
+            - name
+            - savings
         priceOverride:
           $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
         priceDiscounted:
@@ -2464,6 +2589,10 @@ components:
     ISalesEcommCartItemInput:
       type: object
       properties:
+        selectionId:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
         productId:
           type: string
         qty:
@@ -2632,6 +2761,12 @@ components:
           type: number
         priceTotal:
           type: number
+        lineAmountBase:
+          type:
+            - number
+            - "null"
+        lineAmountTax:
+          type: number
         membership:
           type: object
           properties:
@@ -2655,6 +2790,12 @@ components:
             - terms
         priceOverride:
           $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
+        priceGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommPromotionPriceGroup"
+        automaticPromotionName:
+          type: string
         product:
           type: object
           properties:
@@ -2914,26 +3055,41 @@ components:
         effectivePrice:
           type: number
           minimum: 0
+        lineAmountBase:
+          type:
+            - number
+            - "null"
         notes:
           type:
             - string
             - "null"
+        lineAmountTax:
+          type: number
         priceBase:
           type: number
         priceTax:
           type: number
         priceTotal:
           type: number
+        selectionId:
+          type: string
+          format: uuid
+          pattern: ^(?:urn:uuid:)?[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$
         membership:
           $ref: "#/components/schemas/ISalesMembershipCheckoutTerms"
         priceOverride:
           $ref: "#/components/schemas/ISalesEcommPublicPriceOverride"
+        priceGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/ISalesEcommPromotionPriceGroup"
         product:
           $ref: "#/components/schemas/PickISalesTabItemProduct"
       required:
         - id
         - qty
         - effectivePrice
+        - lineAmountBase
         - notes
         - priceBase
         - priceTax
@@ -3089,6 +3245,29 @@ components:
         - validityValue
         - validityUnits
         - termsHash
+    ISalesEcommPromotionPriceGroup:
+      type: object
+      properties:
+        kind:
+          enum:
+            - fullPrice
+            - reward
+          type: string
+        qty:
+          type: number
+        unitPrice:
+          type: number
+        lineAmount:
+          type: number
+        pricingSource:
+          type: string
+          enum:
+            - existingPrice
+      required:
+        - kind
+        - qty
+        - unitPrice
+        - lineAmount
     ISalesEcommCustomerPolicySnapshot:
       type: object
       properties:

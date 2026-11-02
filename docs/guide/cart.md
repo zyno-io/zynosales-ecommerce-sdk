@@ -184,3 +184,32 @@ the server-selected tier while you change quantities or remove ordinary products
 Membership quantities remain one; choose a tier through a replacement input when
 changing the membership selection. Read `cart.membershipRequirements` for buyer,
 billing address, recurring consent, and reusable-card requirements.
+
+### Promotion price groups
+
+When Sales supplies `automaticPromotion` and an item's `priceGroups`, render the
+promotion name and savings from the cart and the exact quantity, unit price,
+and extended amount of each group. Amounts are in minor currency units before
+item tax. Use the cart's `priceTotal` for the payable total; do not reconstruct
+it from displayed unit prices. An order may include the frozen group amounts
+and promotion name on each item. Fields are absent when no automatic promotion
+applies to the cart or order.
+If `automaticPromotionSuppressedReason` is present, show the server-provided
+reason with the cart totals.
+
+New carts use revision-aware pricing by default. Set `automaticPromotions: false`
+in `createZynoSales` when connecting to an older Sales server that does not yet
+support this protocol. A previously created cart continues with its existing
+protocol after it is restored.
+
+For a revision-aware cart, keep the server-provided `selectionId` when calling
+`setItems` for a retained selection. `add`, `setQuantity`, and `remove` do this
+for you. New selections receive unique IDs. Sales rejects stale revisions; the
+SDK refreshes the cart and surfaces the conflict without replaying the change.
+Review the updated cart and submit the intended change again.
+
+`refresh()` reads the cart without changing an accepted payment attempt. When
+Sales reports that promotion terms changed, call `refreshPricing()` to request a
+new evaluation, then show the resulting groups and total for the shopper to
+review. A cart with an active payment attempt cannot be repriced until that
+attempt is resolved or canceled. Legacy carts use a normal read for this call.

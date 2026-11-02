@@ -12,6 +12,26 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### automaticPromotion?
+
+> `optional` **automaticPromotion?**: `object`
+
+#### name
+
+> **name**: `string`
+
+#### savings
+
+> **savings**: `number`
+
+***
+
+### automaticPromotionSuppressedReason?
+
+> `optional` **automaticPromotionSuppressedReason?**: `string`
+
+***
+
 ### buyerContactPinned
 
 > **buyerContactPinned**: `boolean`
@@ -149,6 +169,12 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### priceTotal
 
 > **priceTotal**: `number`
+
+***
+
+### pricingRevision?
+
+> `optional` **pricingRevision?**: `number`
 
 ***
 

@@ -6,7 +6,11 @@
 
 ### body?
 
-> `optional` **body?**: `never`
+> `optional` **body?**: `object`
+
+#### expectedPricingRevision?
+
+> `optional` **expectedPricingRevision?**: `number`
 
 ***
 

@@ -31,3 +31,9 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### qty
 
 > **qty**: `number`
+
+***
+
+### selectionId?
+
+> `optional` **selectionId?**: `string`

@@ -6,7 +6,7 @@
 
 ### body?
 
-> `optional` **body?**: `never`
+> `optional` **body?**: [`ISalesEcommZeroDueFinalizeInput`](ISalesEcommZeroDueFinalizeInput.md)
 
 ***
 

@@ -23,6 +23,7 @@ import type {
     ISalesEcommShippingRatesResponse,
     ISalesEcommShippingSelectionQuoteInput,
     ISalesEcommShippingSelectionQuoteResponse,
+    ISalesEcommZeroDueFinalizeInput,
     ISalesEcommStoreProduct,
     ISalesEcommStorefrontConfigResponse,
     ISalesEcommCustomerAuthOptions,
@@ -47,6 +48,7 @@ import type {
     IValidateDiscountCodeRequest,
     IValidateDiscountCodeResponse
 } from './generated/sales';
+import type { PostSalesEcommCheckoutEmbeddedRefreshPricingData } from './generated/sales';
 import { toZynoSalesError, ZynoSalesError } from './errors';
 
 /** Low-level generated-contract client. It does not persist cart capabilities. */
@@ -130,17 +132,28 @@ export class ZynoSalesClient {
         }));
     }
 
-    public abandonCart(cartId: string, cartKey: string): Promise<void> {
+    public abandonCart(cartId: string, cartKey: string, expectedPricingRevision?: number): Promise<void> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.deleteSalesEcommCheckoutEmbeddedAbandonCart({
             client: this.client,
             path: { cartId },
             headers: this.cartHeaders(cartKey),
+            ...(expectedPricingRevision === undefined ? {} : { body: { expectedPricingRevision } }),
             throwOnError: true
         })).then(() => undefined);
     }
 
     public replaceItems(cartId: string, cartKey: string, input: ISalesEcommCartUpdateItemsInput): Promise<ISalesEcommCartResponse> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.putSalesEcommCheckoutEmbeddedReplaceItems({
+            client: this.client,
+            path: { cartId },
+            headers: this.cartHeaders(cartKey),
+            body: input,
+            throwOnError: true
+        }));
+    }
+
+    public refreshPricing(cartId: string, cartKey: string, input: PostSalesEcommCheckoutEmbeddedRefreshPricingData['body']): Promise<ISalesEcommCartResponse> {
+        return unwrap(SalesSalesEcommCheckoutEmbeddedApi.postSalesEcommCheckoutEmbeddedRefreshPricing({
             client: this.client,
             path: { cartId },
             headers: this.cartHeaders(cartKey),
@@ -159,7 +172,7 @@ export class ZynoSalesClient {
         }));
     }
 
-    public acceptMembershipTerms(cartId: string, cartKey: string, input: { termsHash: string }): Promise<ISalesEcommCartResponse> {
+    public acceptMembershipTerms(cartId: string, cartKey: string, input: { termsHash: string; expectedPricingRevision?: number }): Promise<ISalesEcommCartResponse> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.putSalesEcommCheckoutEmbeddedAcceptMembershipTerms({
             client: this.client, path: { cartId }, headers: this.cartHeaders(cartKey), body: input, throwOnError: true
         }));
@@ -217,11 +230,12 @@ export class ZynoSalesClient {
         }));
     }
 
-    public removeFulfillment(cartId: string, cartKey: string): Promise<ISalesEcommCartResponse> {
+    public removeFulfillment(cartId: string, cartKey: string, expectedPricingRevision?: number): Promise<ISalesEcommCartResponse> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.deleteSalesEcommCheckoutEmbeddedRemoveFulfillment({
             client: this.client,
             path: { cartId },
             headers: this.cartHeaders(cartKey),
+            ...(expectedPricingRevision === undefined ? {} : { body: { expectedPricingRevision } }),
             throwOnError: true
         }));
     }
@@ -246,11 +260,12 @@ export class ZynoSalesClient {
         }));
     }
 
-    public removeDiscount(cartId: string, cartKey: string): Promise<ISalesEcommCartResponse> {
+    public removeDiscount(cartId: string, cartKey: string, expectedPricingRevision?: number): Promise<ISalesEcommCartResponse> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.deleteSalesEcommCheckoutEmbeddedRemoveDiscountCode({
             client: this.client,
             path: { cartId },
             headers: this.cartHeaders(cartKey),
+            ...(expectedPricingRevision === undefined ? {} : { body: { expectedPricingRevision } }),
             throwOnError: true
         }));
     }
@@ -293,11 +308,12 @@ export class ZynoSalesClient {
         }));
     }
 
-    public finalizeZeroDueCart(cartId: string, cartKey: string): Promise<ISalesEcommCartResponse> {
+    public finalizeZeroDueCart(cartId: string, cartKey: string, input?: ISalesEcommZeroDueFinalizeInput): Promise<ISalesEcommCartResponse> {
         return unwrap(SalesSalesEcommCheckoutEmbeddedApi.postSalesEcommCheckoutEmbeddedFinalizeZeroDueCart({
             client: this.client,
             path: { cartId },
             headers: this.cartHeaders(cartKey),
+            ...(input ? { body: input } : {}),
             throwOnError: true
         }));
     }
@@ -440,11 +456,12 @@ export class ZynoSalesClient {
         void result;
     }
 
-    public bindCustomerCart(cartId: string, cartKey: string, secret: string) {
+    public bindCustomerCart(cartId: string, cartKey: string, secret: string, expectedPricingRevision?: number) {
         return unwrap(SalesSalesEcommCustomerAuthEmbeddedApi.putSalesEcommCustomerAuthEmbeddedBindCart({
             client: this.client,
             path: { cartId },
             headers: { ...this.cartHeaders(cartKey), 'x-zs-customer-session': secret },
+            ...(expectedPricingRevision === undefined ? {} : { body: { expectedPricingRevision } }),
             throwOnError: true
         }));
     }

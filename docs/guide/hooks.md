@@ -72,8 +72,10 @@ This hook runs immediately before a **new** payment setup. It receives:
 
 After the hook resolves, the SDK refreshes the cart from Sales. This lets your
 server attach policy-driven data or reject checkout before the payment amount is
-created. Throwing or rejecting prevents payment setup and appears as checkout
-error state.
+created. If a revision-aware cart changes during the hook, setup stops with a
+conflict so the shopper can review the refreshed total before trying again.
+Throwing or rejecting also prevents payment setup and appears as checkout error
+state.
 
 The hook is **not** rerun while recovering or retrying the same persisted payment
 setup. This preserves the setup's idempotency key and amount.

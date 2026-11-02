@@ -26,7 +26,7 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ### kind
 
-> **kind**: `"payment"` \| `"setup"`
+> **kind**: `"payment"` \| `"setup"` \| `"zeroDue"`
 
 ***
 
