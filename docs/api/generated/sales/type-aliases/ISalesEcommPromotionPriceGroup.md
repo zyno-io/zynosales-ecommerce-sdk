@@ -18,7 +18,7 @@
 
 ### pricingSource?
 
-> `optional` **pricingSource?**: `"existingPrice"`
+> `optional` **pricingSource?**: `"existingPrice"` \| `"shipping"`
 
 ***
 
