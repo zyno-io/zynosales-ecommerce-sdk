@@ -215,6 +215,11 @@ If sign-in has expired, use `resumeCart()` and show your sign-in form before
 continuing. This lets the original customer finish that checkout. To open their
 full order history, start a regular sign-in session instead.
 
+Use the same cart-resume flow if a different session for the same account cannot
+read a cart with a payment in progress. Recover or cancel the original payment
+through the resumed session. Once that payment settles, you can bind a regular
+session to the cart.
+
 ## Show order history
 
 ```ts
