@@ -3260,9 +3260,10 @@ components:
         lineAmount:
           type: number
         pricingSource:
-          type: string
           enum:
             - existingPrice
+            - shipping
+          type: string
       required:
         - kind
         - qty

@@ -637,7 +637,7 @@ export type ISalesEcommPromotionPriceGroup = {
     qty: number;
     unitPrice: number;
     lineAmount: number;
-    pricingSource?: 'existingPrice';
+    pricingSource?: 'existingPrice' | 'shipping';
 };
 
 export type ISalesEcommCustomerPolicySnapshot = {

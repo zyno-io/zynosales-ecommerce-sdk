@@ -2637,10 +2637,11 @@ export const ISalesEcommPromotionPriceGroupSchema = {
             type: 'number'
         },
         pricingSource: {
-            type: 'string',
             enum: [
-                'existingPrice'
-            ]
+                'existingPrice',
+                'shipping'
+            ],
+            type: 'string'
         }
     },
     required: [
