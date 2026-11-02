@@ -427,15 +427,27 @@ export class CustomerAuth {
                 const record = this.requireAuthenticatedRecord();
                 await this.cart.runExclusive(async () => {
                     const reference = this.cart.requireReference();
-                    if (!this.cart.getSnapshot().cart) {
-                        const current = await this.client.getCart(reference.cartId, reference.cartKey);
-                        this.cart.accept(current);
-                    }
                     const revision = this.cart.getSnapshot().cart?.pricingRevision;
-                    const response = revision === undefined
-                        ? await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret)
-                        : await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret, revision);
-                    this.cart.accept(response);
+                    try {
+                        const response = revision === undefined
+                            ? await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret)
+                            : await this.client.bindCustomerCart(reference.cartId, reference.cartKey, record.sessionSecret, revision);
+                        this.cart.accept(response);
+                    } catch (error) {
+                        // A first bind to a revisioned guest cart needs a current quote. A same-owner
+                        // account refresh may be the only operation permitted on a closed cart, so
+                        // it must never depend on a preceding cart read. Refresh conflicts for an
+                        // explicit retry; never replay the binding mutation automatically.
+                        if (error instanceof ZynoSalesError && error.status === 409 && reference.mode === 'guest') {
+                            try {
+                                const current = await this.client.getCart(reference.cartId, reference.cartKey);
+                                this.cart.accept(current);
+                            } catch {
+                                // Preserve the original bind error and existing capability.
+                            }
+                        }
+                        throw error;
+                    }
                 });
                 this.lastError = null;
             } catch (error) {

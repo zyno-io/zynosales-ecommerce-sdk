@@ -593,6 +593,72 @@ describe('CustomerAuth', () => {
         expect(saved).not.toContain('never-store-password');
     });
 
+    it.each([401, 404])('refreshes a bound cart session without a preliminary cart read that would return %i', async status => {
+        const cartStorage = new TestStorage();
+        const customerStorage = new TestStorage();
+        const base = 'zynosales:ecommerce:https%3A%2F%2Fsales.example';
+        cartStorage.setItem(`${base}:key%3Azs_pk_test:cart`, JSON.stringify({
+            version: 2, mode: 'account', cartId: 'cart-1', cartKey: 'cart-key',
+            scope: { policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' }
+        }));
+        const calls: Array<{ path: string; method: string; session: string | null }> = [];
+        let bindingBody: unknown = 'not-called';
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const request = new Request(input);
+            const path = new URL(request.url).pathname;
+            calls.push({ path, method: request.method, session: request.headers.get('x-zs-customer-session') });
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions') && request.method === 'POST') return Response.json({ session: session(), sessionSecret: 'anonymous-secret', rotated: false });
+            if (path.endsWith('/auth/password')) return Response.json({ session: session('authenticated'), sessionSecret: 'rotated-session-secret', rotated: true });
+            if (path.endsWith('/carts/cart-1') && request.method === 'GET') return Response.json({ message: 'Cart read unavailable' }, { status });
+            if (path.endsWith('/carts/cart-1/customer') && request.method === 'PUT') {
+                bindingBody = await request.json().catch(() => undefined);
+                return Response.json({ cartId: 'cart-1', cart: { status: 'closed', pricingRevision: 7, customer: { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' } } });
+            }
+            return Response.json({});
+        });
+        const storefront = createZynoSales({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_test', storage: cartStorage, customerStorage, customer: { options }, fetch });
+        await storefront.customer.initialize();
+        await storefront.customer.passwordLogin({ email: 'shopper@example.test', password: 'test-password' });
+        await storefront.customer.bindCart();
+        expect(calls.filter(call => call.path.endsWith('/carts/cart-1') && call.method === 'GET')).toHaveLength(0);
+        expect(calls.find(call => call.path.endsWith('/carts/cart-1/customer'))?.session).toBe('rotated-session-secret');
+        expect(bindingBody).toBeUndefined();
+        expect(storefront.cart.getSnapshot()).toMatchObject({ hasCart: true, mode: 'account', cart: { status: 'closed' } });
+    });
+
+    it('refreshes a first-bind pricing conflict without replaying the mutation', async () => {
+        const cartStorage = new TestStorage();
+        const customerStorage = new TestStorage();
+        const base = 'zynosales:ecommerce:https%3A%2F%2Fsales.example';
+        cartStorage.setItem(`${base}:key%3Azs_pk_test:cart`, JSON.stringify({ cartId: 'cart-1', cartKey: 'cart-key', orderKey: 'order-key' }));
+        const bindBodies: unknown[] = [];
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const request = new Request(input);
+            const path = new URL(request.url).pathname;
+            if (path.endsWith('/config')) return Response.json(configResponse());
+            if (path.endsWith('/sessions') && request.method === 'POST') return Response.json({ session: session(), sessionSecret: 'anonymous-secret', rotated: false });
+            if (path.endsWith('/auth/password')) return Response.json({ session: session('authenticated'), sessionSecret: 'authenticated-secret', rotated: true });
+            if (path.endsWith('/carts/cart-1') && request.method === 'GET') return Response.json({ cartId: 'cart-1', cart: { pricingRevision: 7, customer: { bound: false } } });
+            if (path.endsWith('/carts/cart-1/customer') && request.method === 'PUT') {
+                const body = await request.json().catch(() => undefined);
+                bindBodies.push(body);
+                if (body === undefined) return Response.json({ message: 'Cart pricing changed; refresh and retry' }, { status: 409 });
+                return Response.json({ cartId: 'cart-1', cart: { pricingRevision: 8, customer: { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' } } });
+            }
+            return Response.json({});
+        });
+        const storefront = createZynoSales({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_test', storage: cartStorage, customerStorage, customer: { options }, fetch });
+        await storefront.customer.initialize();
+        await storefront.customer.passwordLogin({ email: 'shopper@example.test', password: 'test-password' });
+        await expect(storefront.customer.bindCart()).rejects.toMatchObject({ status: 409 });
+        expect(bindBodies).toEqual([undefined]);
+        expect(storefront.cart.getSnapshot().cart?.pricingRevision).toBe(7);
+        await storefront.customer.bindCart();
+        expect(bindBodies).toEqual([undefined, { expectedPricingRevision: 7 }]);
+        expect(storefront.cart.getSnapshot().mode).toBe('account');
+    });
+
     it('binds a cart into account mode without persisting an order key or clearing payment recovery', async () => {
         const customerStorage = new TestStorage();
         const cartStorage = new TestStorage();
@@ -632,6 +698,7 @@ describe('CustomerAuth', () => {
 
         await storefront.customer.initialize();
         await storefront.customer.passwordLogin({ email: 'shopper@example.test', password: 'test-password' });
+        await storefront.cart.restore();
         await storefront.customer.bindCart();
 
         const reference = storefront.cart.requireReference();
