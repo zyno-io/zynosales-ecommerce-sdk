@@ -24,6 +24,8 @@ export type ZynoSalesSharedOptions = {
     customer?: { options?: CustomerInitializationOptions };
     /** Lifecycle callbacks for cart changes, payment policy, and completed orders. */
     hooks?: ZynoSalesHooks;
+    /** Use revision-aware automatic pricing for new carts. Set false for older Sales servers. */
+    automaticPromotions?: boolean;
 };
 
 /**
@@ -72,7 +74,7 @@ export function createZynoSales(options: ZynoSalesOptions): ZynoSalesStorefront 
     const provisionalNamespace = storageNamespace(apiBase, `key:${options.publishableKey}`);
     const cartQueue = new SerialQueue();
     const checkoutQueue = new SerialQueue();
-    const cart = new CartSession({ client, storage, storageKey: `${provisionalNamespace}:cart`, queue: cartQueue });
+    const cart = new CartSession({ client, storage, storageKey: `${provisionalNamespace}:cart`, queue: cartQueue, automaticPromotions: options.automaticPromotions !== false });
     const checkout = new CheckoutCoordinator({
         client,
         cartSession: cart,

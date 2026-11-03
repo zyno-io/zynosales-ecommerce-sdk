@@ -32,7 +32,7 @@ Low-level generated-contract client. It does not persist cart capabilities.
 
 ### abandonCart()
 
-> **abandonCart**(`cartId`, `cartKey`): `Promise`\<`void`\>
+> **abandonCart**(`cartId`, `cartKey`, `expectedPricingRevision?`): `Promise`\<`void`\>
 
 #### Parameters
 
@@ -43,6 +43,10 @@ Low-level generated-contract client. It does not persist cart capabilities.
 ##### cartKey
 
 `string`
+
+##### expectedPricingRevision?
+
+`number`
 
 #### Returns
 
@@ -65,6 +69,10 @@ Low-level generated-contract client. It does not persist cart capabilities.
 `string`
 
 ##### input
+
+###### expectedPricingRevision?
+
+`number`
 
 ###### termsHash
 
@@ -102,7 +110,7 @@ Low-level generated-contract client. It does not persist cart capabilities.
 
 ### bindCustomerCart()
 
-> **bindCustomerCart**(`cartId`, `cartKey`, `secret`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+> **bindCustomerCart**(`cartId`, `cartKey`, `secret`, `expectedPricingRevision?`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
 
 #### Parameters
 
@@ -117,6 +125,10 @@ Low-level generated-contract client. It does not persist cart capabilities.
 ##### secret
 
 `string`
+
+##### expectedPricingRevision?
+
+`number`
 
 #### Returns
 
@@ -368,7 +380,7 @@ Low-level generated-contract client. It does not persist cart capabilities.
 
 ### finalizeZeroDueCart()
 
-> **finalizeZeroDueCart**(`cartId`, `cartKey`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+> **finalizeZeroDueCart**(`cartId`, `cartKey`, `input?`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
 
 #### Parameters
 
@@ -379,6 +391,16 @@ Low-level generated-contract client. It does not persist cart capabilities.
 ##### cartKey
 
 `string`
+
+##### input?
+
+###### expectedPriceTotal?
+
+`number`
+
+###### expectedPricingRevision?
+
+`number`
 
 #### Returns
 
@@ -634,9 +656,9 @@ Low-level generated-contract client. It does not persist cart capabilities.
 
 ***
 
-### removeDiscount()
+### refreshPricing()
 
-> **removeDiscount**(`cartId`, `cartKey`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+> **refreshPricing**(`cartId`, `cartKey`, `input`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
 
 #### Parameters
 
@@ -647,6 +669,36 @@ Low-level generated-contract client. It does not persist cart capabilities.
 ##### cartKey
 
 `string`
+
+##### input
+
+###### expectedPricingRevision
+
+`number`
+
+#### Returns
+
+`Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+
+***
+
+### removeDiscount()
+
+> **removeDiscount**(`cartId`, `cartKey`, `expectedPricingRevision?`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+
+#### Parameters
+
+##### cartId
+
+`string`
+
+##### cartKey
+
+`string`
+
+##### expectedPricingRevision?
+
+`number`
 
 #### Returns
 
@@ -656,7 +708,7 @@ Low-level generated-contract client. It does not persist cart capabilities.
 
 ### removeFulfillment()
 
-> **removeFulfillment**(`cartId`, `cartKey`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
+> **removeFulfillment**(`cartId`, `cartKey`, `expectedPricingRevision?`): `Promise`\<[`ISalesEcommCartResponse`](../type-aliases/ISalesEcommCartResponse.md)\>
 
 #### Parameters
 
@@ -667,6 +719,10 @@ Low-level generated-contract client. It does not persist cart capabilities.
 ##### cartKey
 
 `string`
+
+##### expectedPricingRevision?
+
+`number`
 
 #### Returns
 

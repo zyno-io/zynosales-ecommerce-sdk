@@ -9,3 +9,9 @@ Generated browser-facing Sales contract types for advanced integrations.
 ### code
 
 > **code**: `string`
+
+***
+
+### expectedPricingRevision?
+
+> `optional` **expectedPricingRevision?**: `number`

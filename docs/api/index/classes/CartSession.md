@@ -12,6 +12,10 @@ Persistent, serialized cart state for one storefront instance.
 
 ##### options
 
+###### automaticPromotions?
+
+`boolean`
+
 ###### client
 
 [`ZynoSalesClient`](ZynoSalesClient.md)
@@ -93,6 +97,18 @@ Returns the latest render-safe cart snapshot.
 > **refresh**(): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
 
 Reads the cart from Sales without creating a new cart.
+
+#### Returns
+
+`Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
+
+***
+
+### refreshPricing()
+
+> **refreshPricing**(): `Promise`\<[`CartSnapshot`](../type-aliases/CartSnapshot.md)\>
+
+Re-evaluates automatic prices. Review the returned cart before accepting payment.
 
 #### Returns
 

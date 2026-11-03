@@ -8,6 +8,10 @@
 
 > **body**: `object`
 
+#### expectedPricingRevision?
+
+> `optional` **expectedPricingRevision?**: `number`
+
 #### termsHash
 
 > **termsHash**: `string`
