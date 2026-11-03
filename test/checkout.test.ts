@@ -217,6 +217,65 @@ describe('CheckoutCoordinator', () => {
         expect(setupCardPayment).toHaveBeenCalledOnce();
     });
 
+    it('retires a definitively rejected card setup and retries refreshed terms after reload', async () => {
+        const initial = cartResponse();
+        initial.cart.pricingRevision = 1;
+        const refreshed = { ...initial, cart: { ...initial.cart, pricingRevision: 2, priceTotal: 1200, priceDue: 1200 } };
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => refreshed);
+        const setupCardPayment = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Cart pricing changed; refresh before payment', { status: 409 }))
+            .mockResolvedValueOnce(paymentSetup(refreshed));
+        const client = { getOrder, getCart, setupCardPayment } as unknown as ZynoSalesClient;
+        const storage = new TestStorage();
+        const first = checkoutFixture(client, storage);
+        first.cart.accept(initial);
+        await expect(first.checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+        expect(storage.getItem('payment')).toBeNull();
+        expect(first.cart.getSnapshot().cart?.pricingRevision).toBe(2);
+        const reloaded = checkoutFixture(client, storage);
+        reloaded.cart.accept(refreshed);
+        await reloaded.checkout.beginCardPayment();
+        expect(setupCardPayment.mock.calls[0]?.[2]).toMatchObject({ expectedPricingRevision: 1, expectedPriceTotal: 1000 });
+        expect(setupCardPayment.mock.calls[1]?.[2]).toMatchObject({ expectedPricingRevision: 2, expectedPriceTotal: 1200 });
+        expect(setupCardPayment.mock.calls[1]?.[2].idempotencyKey).not.toBe(setupCardPayment.mock.calls[0]?.[2].idempotencyKey);
+    });
+
+    it('preserves an ambiguous setup key even after a later pricing conflict', async () => {
+        const initial = cartResponse();
+        initial.cart.pricingRevision = 1;
+        const refreshed = { ...initial, cart: { ...initial.cart, pricingRevision: 2 } };
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => refreshed);
+        const setupCardPayment = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Timed out'))
+            .mockRejectedValueOnce(new ZynoSalesError('Cart pricing changed', { status: 409 }));
+        const client = { getOrder, getCart, setupCardPayment } as unknown as ZynoSalesClient;
+        const storage = new TestStorage();
+        const first = checkoutFixture(client, storage);
+        first.cart.accept(initial);
+        await expect(first.checkout.beginCardPayment()).rejects.toThrow('Timed out');
+        const pending = storage.getItem('payment');
+        const reloaded = checkoutFixture(client, storage);
+        reloaded.cart.accept(initial);
+        await expect(reloaded.checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+        expect(storage.getItem('payment')).toBe(pending);
+        expect(setupCardPayment.mock.calls[0]?.[2]).toEqual(setupCardPayment.mock.calls[1]?.[2]);
+    });
+
+    it('never retires a marker containing a created attempt after a pricing conflict', async () => {
+        const response = cartResponse();
+        response.cart.pricingRevision = 1;
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getPaymentAttempt = vi.fn(async () => { throw new ZynoSalesError('Cart pricing changed', { status: 409 }); });
+        const getCart = vi.fn(async () => response);
+        const client = { getOrder, getPaymentAttempt, getCart } as unknown as ZynoSalesClient;
+        const { cart, checkout, storage } = checkoutFixture(client);
+        cart.accept(response);
+        const pending = { cartId: 'cart-1', idempotencyKey: 'key', paymentAttemptId: 'attempt', paymentIntentId: 'intent', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000 };
+        storage.setItem('payment', JSON.stringify(pending));
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+        expect(JSON.parse(storage.getItem('payment')!)).toEqual(pending);
+    });
+
     it('reuses a pending setup idempotency key after a timeout', async () => {
         const response = cartResponse();
         const setup = paymentSetup(response);
@@ -506,6 +565,29 @@ describe('CheckoutCoordinator', () => {
         expect(setupCardPayment).not.toHaveBeenCalled();
         expect(cart.getSnapshot()).toMatchObject({ cart: null, hasCart: false });
         expect(checkout.getSnapshot().order).toEqual(order);
+    });
+
+    it('retires a rejected zero-due acceptance and retries refreshed terms after reload', async () => {
+        const initial = cartResponse('cart-free', 0);
+        initial.cart.pricingRevision = 4;
+        const refreshed = { ...initial, cart: { ...initial.cart, pricingRevision: 5 } };
+        const getOrder = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 }))
+            .mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 })).mockResolvedValueOnce(paidOrder('cart-free'));
+        const getCart = vi.fn(async () => refreshed);
+        const finalizeZeroDueCart = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Cart total changed; refresh before payment', { status: 409 }))
+            .mockResolvedValueOnce(refreshed);
+        const client = { getOrder, getCart, finalizeZeroDueCart } as unknown as ZynoSalesClient;
+        const storage = new TestStorage();
+        const first = checkoutFixture(client, storage);
+        first.cart.accept(initial);
+        await expect(first.checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+        expect(storage.getItem('payment')).toBeNull();
+        const reloaded = checkoutFixture(client, storage);
+        reloaded.cart.accept(refreshed);
+        await reloaded.checkout.beginCardPayment();
+        expect(finalizeZeroDueCart.mock.calls[0]?.[2]).toMatchObject({ expectedPricingRevision: 4, expectedPriceTotal: 0 });
+        expect(finalizeZeroDueCart.mock.calls[1]?.[2]).toMatchObject({ expectedPricingRevision: 5, expectedPriceTotal: 0 });
+        expect(finalizeZeroDueCart.mock.calls[1]?.[2].idempotencyKey).not.toBe(finalizeZeroDueCart.mock.calls[0]?.[2].idempotencyKey);
     });
 
     it('replays the same zero-due acceptance after a timeout', async () => {
