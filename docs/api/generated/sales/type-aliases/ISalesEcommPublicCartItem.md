@@ -16,6 +16,18 @@
 
 ***
 
+### lineAmountBase?
+
+> `optional` **lineAmountBase?**: `number`
+
+***
+
+### lineAmountTax?
+
+> `optional` **lineAmountTax?**: `number`
+
+***
+
 ### membership?
 
 > `optional` **membership?**: [`ISalesMembershipCheckoutTerms`](../../../index/type-aliases/ISalesMembershipCheckoutTerms.md)
@@ -31,6 +43,28 @@
 ### priceBase
 
 > **priceBase**: `number`
+
+***
+
+### priceGroups?
+
+> `optional` **priceGroups?**: `object`[]
+
+#### kind
+
+> **kind**: `"fullPrice"` \| `"reward"`
+
+#### lineAmount
+
+> **lineAmount**: `number`
+
+#### qty
+
+> **qty**: `number`
+
+#### unitPrice
+
+> **unitPrice**: `number`
 
 ***
 
@@ -58,6 +92,18 @@
 
 ***
 
+### promotionName?
+
+> `optional` **promotionName?**: `string`
+
+***
+
 ### qty
 
 > **qty**: `number`
+
+***
+
+### selectionId?
+
+> `optional` **selectionId?**: `string`

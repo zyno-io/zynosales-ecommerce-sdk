@@ -93,6 +93,9 @@ export const ISalesEcommCartResponseSchema = {
 export const ISalesEcommCartCreateInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         items: {
             type: 'array',
             items: {
@@ -108,6 +111,9 @@ export const ISalesEcommCartCreateInputSchema = {
 export const ISalesEcommCartUpdateItemsInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         items: {
             type: 'array',
             items: {
@@ -123,6 +129,9 @@ export const ISalesEcommCartUpdateItemsInputSchema = {
 export const ISalesEcommBuyerInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         name: {
             type: 'string'
         },
@@ -239,6 +248,9 @@ export const ISalesEcommShippingRatesResponseSchema = {
 export const ISalesEcommCartShippingRatesInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         existingId: {
             type: 'string'
         },
@@ -322,6 +334,9 @@ export const ISalesEcommShippingSelectionQuoteResponseSchema = {
 export const ISalesEcommShippingSelectionQuoteInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         shippingPlanId: {
             type: 'string'
         },
@@ -353,6 +368,9 @@ export const ISalesEcommShippingSelectionQuoteInputSchema = {
 export const ISalesEcommCartFulfillmentInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         recipient: {
             $ref: '#/components/schemas/SalesFulfillmentOrderRecipient'
         },
@@ -401,6 +419,9 @@ export const ISalesEcommCartFulfillmentInputSchema = {
 export const ISalesEcommCartDiscountCodeInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
         code: {
             type: 'string'
         }
@@ -451,6 +472,12 @@ export const ISalesEcommCartPaymentSetupResponseSchema = {
 export const ISalesEcommCartPaymentSetupInputSchema = {
     type: 'object',
     properties: {
+        expectedPricingRevision: {
+            type: 'number'
+        },
+        expectedPriceTotal: {
+            type: 'number'
+        },
         idempotencyKey: {
             type: 'string'
         }
@@ -1387,6 +1414,12 @@ export const SalesPredefinedDiscountScopeSchema = {
 export const ISalesEcommPublicCartSchema = {
     type: 'object',
     properties: {
+        pricingRevision: {
+            type: 'number'
+        },
+        automaticPromotionSuppressedReason: {
+            type: 'string'
+        },
         id: {
             type: 'string'
         },
@@ -1518,6 +1551,21 @@ export const ISalesEcommPublicCartSchema = {
         appliedDiscount: {
             $ref: '#/components/schemas/ISalesEcommAppliedDiscount'
         },
+        automaticPromotion: {
+            type: 'object',
+            properties: {
+                name: {
+                    type: 'string'
+                },
+                savings: {
+                    type: 'number'
+                }
+            },
+            required: [
+                'name',
+                'savings'
+            ]
+        },
         priceOverride: {
             $ref: '#/components/schemas/ISalesEcommPublicPriceOverride'
         },
@@ -1589,6 +1637,9 @@ export const ISalesEcommPublicCartSchema = {
 export const ISalesEcommCartItemInputSchema = {
     type: 'object',
     properties: {
+        selectionId: {
+            type: 'string'
+        },
         productId: {
             type: 'string'
         },
@@ -1817,6 +1868,45 @@ export const SalesFulfillmentOrderRecipientSchema = {
 export const ISalesEcommOrderItemSchema = {
     type: 'object',
     properties: {
+        priceGroups: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    kind: {
+                        enum: [
+                            'fullPrice',
+                            'reward'
+                        ],
+                        type: 'string'
+                    },
+                    qty: {
+                        type: 'number'
+                    },
+                    unitPrice: {
+                        type: 'number'
+                    },
+                    lineAmount: {
+                        type: 'number'
+                    }
+                },
+                required: [
+                    'kind',
+                    'qty',
+                    'unitPrice',
+                    'lineAmount'
+                ]
+            }
+        },
+        lineAmountBase: {
+            type: 'number'
+        },
+        lineAmountTax: {
+            type: 'number'
+        },
+        promotionName: {
+            type: 'string'
+        },
         id: {
             type: 'string'
         },
@@ -2074,6 +2164,45 @@ export const ISalesEcommCustomerPrincipalSchema = {
 export const ISalesEcommCustomerOrderItemSchema = {
     type: 'object',
     properties: {
+        priceGroups: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    kind: {
+                        enum: [
+                            'fullPrice',
+                            'reward'
+                        ],
+                        type: 'string'
+                    },
+                    qty: {
+                        type: 'number'
+                    },
+                    unitPrice: {
+                        type: 'number'
+                    },
+                    lineAmount: {
+                        type: 'number'
+                    }
+                },
+                required: [
+                    'kind',
+                    'qty',
+                    'unitPrice',
+                    'lineAmount'
+                ]
+            }
+        },
+        lineAmountBase: {
+            type: 'number'
+        },
+        lineAmountTax: {
+            type: 'number'
+        },
+        promotionName: {
+            type: 'string'
+        },
         id: {
             type: 'string'
         },
@@ -2268,8 +2397,50 @@ export const ISalesEcommPublicCartItemSchema = {
         priceTotal: {
             type: 'number'
         },
+        priceGroups: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    kind: {
+                        enum: [
+                            'fullPrice',
+                            'reward'
+                        ],
+                        type: 'string'
+                    },
+                    qty: {
+                        type: 'number'
+                    },
+                    unitPrice: {
+                        type: 'number'
+                    },
+                    lineAmount: {
+                        type: 'number'
+                    }
+                },
+                required: [
+                    'kind',
+                    'qty',
+                    'unitPrice',
+                    'lineAmount'
+                ]
+            }
+        },
+        lineAmountBase: {
+            type: 'number'
+        },
+        lineAmountTax: {
+            type: 'number'
+        },
+        promotionName: {
+            type: 'string'
+        },
         membership: {
             $ref: '#/components/schemas/ISalesMembershipCheckoutTerms'
+        },
+        selectionId: {
+            type: 'string'
         },
         priceOverride: {
             $ref: '#/components/schemas/ISalesEcommPublicPriceOverride'

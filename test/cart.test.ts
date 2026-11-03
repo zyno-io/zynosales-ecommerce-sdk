@@ -4,6 +4,7 @@ import { CartSession } from '../src/cart';
 import type { ZynoSalesClient } from '../src/client';
 import type { ZynoSalesStorage } from '../src/storage';
 import type { CartResponse } from '../src/types';
+import { ZynoSalesError } from '../src/errors';
 
 class TestStorage implements ZynoSalesStorage {
     public readonly values = new Map<string, string>();
@@ -55,11 +56,86 @@ const firstCart: CartResponse = {
 };
 
 describe('CartSession', () => {
+    it('only re-evaluates prices on an explicit pricing refresh', async () => {
+        const selectionId = 'c1111111-1111-4111-8111-111111111111';
+        const response = { ...firstCart, cart: { ...firstCart.cart, pricingRevision: 3, items: [{ ...firstCart.cart.items[0]!, selectionId }] } };
+        const updated = { ...response, cart: { ...response.cart, pricingRevision: 4 } };
+        const getCart = vi.fn(async () => response);
+        const refreshPricing = vi.fn(async () => updated);
+        const cart = new CartSession({ client: { getCart, refreshPricing } as unknown as ZynoSalesClient, storage: new TestStorage(), storageKey: 'cart' });
+        cart.accept(response);
+        await cart.refresh();
+        expect(refreshPricing).not.toHaveBeenCalled();
+        await cart.refreshPricing();
+        expect(refreshPricing).toHaveBeenCalledWith('cart-1', 'cart-secret', { expectedPricingRevision: 3 });
+        expect(cart.getSnapshot().cart?.pricingRevision).toBe(4);
+    });
+    it('creates distinct stable selections and permits opting out for old servers', async () => {
+        const createCart = vi.fn(async (body: { expectedPricingRevision?: number; items: { selectionId?: string }[] }) => ({
+            ...firstCart,
+            cart: { ...firstCart.cart, ...(body.expectedPricingRevision === undefined ? {} : { pricingRevision: 1 }),
+                items: body.items.map(item => ({ ...firstCart.cart.items[0]!, selectionId: item.selectionId })) }
+        }));
+        const client = { createCart } as unknown as ZynoSalesClient;
+        const cart = new CartSession({ client, storage: new TestStorage(), storageKey: 'cart' });
+        await cart.setItems([{ productId: 'product-1', qty: 1 }, { productId: 'product-1', qty: 1 }]);
+        const body = createCart.mock.calls[0]![0] as unknown as { expectedPricingRevision: number; items: { selectionId: string }[] };
+        expect(body.expectedPricingRevision).toBe(0);
+        expect(body.items[0]!.selectionId).not.toBe(body.items[1]!.selectionId);
+        const legacy = new CartSession({ client, storage: new TestStorage(), storageKey: 'legacy', automaticPromotions: false });
+        await legacy.setItems([{ productId: 'product-1', qty: 1 }]);
+        expect(createCart.mock.calls[1]![0]).toEqual({ items: [{ productId: 'product-1', qty: 1 }] });
+    });
+    it('does not silently downgrade when a server ignores the new protocol', async () => {
+        const createCart = vi.fn(async () => firstCart);
+        const storage = new TestStorage();
+        const cart = new CartSession({ client: { createCart } as unknown as ZynoSalesClient, storage, storageKey: 'cart' });
+        await expect(cart.add({ productId: 'product-1', qty: 1 })).rejects.toMatchObject({ status: 422 });
+        expect(storage.getItem('cart')).toContain('cart-secret');
+        expect(cart.getSnapshot().lastError?.message).toContain('revision-aware');
+    });
+    it('retains selection identity and sends the server revision on quantity updates', async () => {
+        const selectionId = 'c1111111-1111-4111-8111-111111111111';
+        const response = { ...firstCart, cart: { ...firstCart.cart, pricingRevision: 3, items: [{ ...firstCart.cart.items[0]!, selectionId }] } };
+        const replaceItems = vi.fn(async () => response);
+        const cart = new CartSession({ client: { replaceItems } as unknown as ZynoSalesClient, storage: new TestStorage(), storageKey: 'cart' });
+        cart.accept(response);
+        await cart.setQuantity({ cartItemId: 'line-1', qty: 2 });
+        expect(replaceItems).toHaveBeenCalledWith('cart-1', 'cart-secret', {
+            expectedPricingRevision: 3, items: [{ productId: 'product-1', qty: 2, notes: null, selectionId }]
+        });
+    });
+
+    it('refreshes after a stale mutation without replaying it', async () => {
+        const selectionId = 'c1111111-1111-4111-8111-111111111111';
+        const response = { ...firstCart, cart: { ...firstCart.cart, pricingRevision: 3, items: [{ ...firstCart.cart.items[0]!, selectionId }] } };
+        const latest = { ...response, cart: { ...response.cart, pricingRevision: 4 } };
+        const replaceItems = vi.fn(async () => { throw new ZynoSalesError('Cart pricing changed', { status: 409 }); });
+        const getCart = vi.fn(async () => latest);
+        const cart = new CartSession({ client: { replaceItems, getCart } as unknown as ZynoSalesClient, storage: new TestStorage(), storageKey: 'cart' });
+        cart.accept(response);
+        await expect(cart.setQuantity({ cartItemId: 'line-1', qty: 2 })).rejects.toMatchObject({ status: 409 });
+        expect(replaceItems).toHaveBeenCalledTimes(1);
+        expect(cart.getSnapshot().cart?.pricingRevision).toBe(4);
+    });
+
+    it('retains cart capability when abandonment conflicts with a newer revision', async () => {
+        const response = { ...firstCart, cart: { ...firstCart.cart, pricingRevision: 3 } };
+        const latest = { ...response, cart: { ...response.cart, pricingRevision: 4 } };
+        const abandonCart = vi.fn(async () => { throw new ZynoSalesError('Cart pricing changed', { status: 409 }); });
+        const getCart = vi.fn(async () => latest);
+        const storage = new TestStorage();
+        const cart = new CartSession({ client: { abandonCart, getCart } as unknown as ZynoSalesClient, storage, storageKey: 'cart' });
+        cart.accept(response);
+        await expect(cart.abandon()).rejects.toMatchObject({ status: 409 });
+        expect(cart.getSnapshot()).toMatchObject({ hasCart: true, cart: { pricingRevision: 4 } });
+        expect(storage.getItem('cart')).not.toBeNull();
+    });
     it('persists capabilities before exposing a render-safe cart snapshot', async () => {
         const storage = new TestStorage();
         const createCart = vi.fn(async () => firstCart);
         const client = { createCart } as unknown as ZynoSalesClient;
-        const cart = new CartSession({ client, storage, storageKey: 'cart' });
+        const cart = new CartSession({ client, storage, storageKey: 'cart', automaticPromotions: false });
 
         await cart.add({ productId: 'product-1', qty: 1 });
 
@@ -86,7 +162,7 @@ describe('CartSession', () => {
         const createCart = vi.fn(async () => firstCart);
         const replaceItems = vi.fn(async () => secondCart);
         const client = { createCart, replaceItems } as unknown as ZynoSalesClient;
-        const cart = new CartSession({ client, storage, storageKey: 'cart' });
+        const cart = new CartSession({ client, storage, storageKey: 'cart', automaticPromotions: false });
 
         await Promise.all([
             cart.add({ productId: 'product-1', qty: 1 }),

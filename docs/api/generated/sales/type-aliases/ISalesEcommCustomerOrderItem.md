@@ -16,9 +16,43 @@
 
 ***
 
+### lineAmountBase?
+
+> `optional` **lineAmountBase?**: `number`
+
+***
+
+### lineAmountTax?
+
+> `optional` **lineAmountTax?**: `number`
+
+***
+
 ### priceBase
 
 > **priceBase**: `number`
+
+***
+
+### priceGroups?
+
+> `optional` **priceGroups?**: `object`[]
+
+#### kind
+
+> **kind**: `"fullPrice"` \| `"reward"`
+
+#### lineAmount
+
+> **lineAmount**: `number`
+
+#### qty
+
+> **qty**: `number`
+
+#### unitPrice
+
+> **unitPrice**: `number`
 
 ***
 
@@ -53,6 +87,12 @@
 #### type
 
 > **type**: `string`
+
+***
+
+### promotionName?
+
+> `optional` **promotionName?**: `string`
 
 ***
 

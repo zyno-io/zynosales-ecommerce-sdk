@@ -9,6 +9,7 @@ import type {
     MembershipCardSetup,
     CardCheckoutSetup,
     Cart,
+    CartResponse,
     CheckoutSnapshot,
     Order,
     ZynoSalesHooks
@@ -28,7 +29,9 @@ type PendingPayment = {
     paymentAttemptId?: string;
     paymentIntentId?: string;
     setupIntentId?: string;
-    kind?: 'payment' | 'setup';
+    kind?: 'payment' | 'setup' | 'zero';
+    expectedPricingRevision?: number;
+    expectedPriceTotal?: number;
 };
 
 type OrphanAccountPayment = {
@@ -104,7 +107,8 @@ export class CheckoutCoordinator {
     public setBuyer(input: ISalesEcommBuyerInput): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
-            const response = await this.client.updateBuyer(reference.cartId, reference.cartKey, input);
+            const { expectedPricingRevision: _revision, ...buyer } = input;
+            const response = await this.client.updateBuyer(reference.cartId, reference.cartKey, { ...buyer, ...this.pricingExpectation() });
             this.cartSession.accept(response);
             return response.cart;
         });
@@ -121,16 +125,24 @@ export class CheckoutCoordinator {
     /** Requests backend-authoritative shipping rates. */
     public getShippingRates(input: ISalesEcommCartShippingRatesInput) {
         return this.run(async () => {
+            if (!this.cartSession.getSnapshot().cart) await this.cartSession.refresh();
             const reference = this.cartSession.requireReference();
-            return this.client.calculateShippingRates(reference.cartId, reference.cartKey, input);
+            const revision = this.requireCart().pricingRevision;
+            const { expectedPricingRevision: _revision, ...shippingInput } = input;
+            const body = revision === undefined ? shippingInput : { ...shippingInput, existingId: undefined, expectedPricingRevision: revision };
+            return this.client.calculateShippingRates(reference.cartId, reference.cartKey, body);
         });
     }
 
     /** Quotes a complete package-rate selection with backend-authoritative pricing. */
     public quoteShippingSelection(input: ISalesEcommShippingSelectionQuoteInput) {
         return this.run(async () => {
+            if (!this.cartSession.getSnapshot().cart) await this.cartSession.refresh();
             const reference = this.cartSession.requireReference();
-            return this.client.quoteShippingSelection(reference.cartId, reference.cartKey, input);
+            const revision = this.requireCart().pricingRevision;
+            const { expectedPricingRevision: _revision, ...selection } = input;
+            const body = revision === undefined ? selection : { ...selection, expectedPricingRevision: revision };
+            return this.client.quoteShippingSelection(reference.cartId, reference.cartKey, body);
         });
     }
 
@@ -138,7 +150,8 @@ export class CheckoutCoordinator {
     public setFulfillment(input: ISalesEcommCartFulfillmentInput): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
-            const response = await this.client.updateFulfillment(reference.cartId, reference.cartKey, input);
+            const { expectedPricingRevision: _revision, ...fulfillment } = input;
+            const response = await this.client.updateFulfillment(reference.cartId, reference.cartKey, { ...fulfillment, ...this.pricingExpectation() });
             this.cartSession.accept(response);
             return response.cart;
         });
@@ -148,7 +161,10 @@ export class CheckoutCoordinator {
     public removeFulfillment(): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
-            const response = await this.client.removeFulfillment(reference.cartId, reference.cartKey);
+            const revision = this.requireCart().pricingRevision;
+            const response = revision === undefined
+                ? await this.client.removeFulfillment(reference.cartId, reference.cartKey)
+                : await this.client.removeFulfillment(reference.cartId, reference.cartKey, revision);
             this.cartSession.accept(response);
             return response.cart;
         });
@@ -166,7 +182,8 @@ export class CheckoutCoordinator {
     public applyDiscount(input: ISalesEcommCartDiscountCodeInput): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
-            const response = await this.client.applyDiscount(reference.cartId, reference.cartKey, input);
+            const { expectedPricingRevision: _revision, ...discount } = input;
+            const response = await this.client.applyDiscount(reference.cartId, reference.cartKey, { ...discount, ...this.pricingExpectation() });
             this.cartSession.accept(response);
             return response.cart;
         });
@@ -176,7 +193,10 @@ export class CheckoutCoordinator {
     public removeDiscount(): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
-            const response = await this.client.removeDiscount(reference.cartId, reference.cartKey);
+            const revision = this.requireCart().pricingRevision;
+            const response = revision === undefined
+                ? await this.client.removeDiscount(reference.cartId, reference.cartKey)
+                : await this.client.removeDiscount(reference.cartId, reference.cartKey, revision);
             this.cartSession.accept(response);
             return response.cart;
         });
@@ -186,7 +206,7 @@ export class CheckoutCoordinator {
     public acceptMembershipTerms(input: { termsHash: string }): Promise<Cart> {
         return this.runCartMutation(async () => {
             const reference = this.cartSession.requireReference();
-            const response = await this.client.acceptMembershipTerms(reference.cartId, reference.cartKey, input);
+            const response = await this.client.acceptMembershipTerms(reference.cartId, reference.cartKey, { ...input, ...this.pricingExpectation() });
             this.cartSession.accept(response);
             return response.cart;
         });
@@ -213,34 +233,57 @@ export class CheckoutCoordinator {
                 pending = null;
             }
 
+            if (pending?.kind === 'zero') {
+                await this.finalizeZeroDueCartInternal(reference, pending);
+                return null;
+            }
+
             if (!pending) {
                 const before = this.hooks.beforePayment;
                 if (before) {
                     const cart = this.requireCart();
                     await this.cartSession.withServerAccess(access => before({ cart, cartAccess: access }));
                     await this.cartSession.refresh();
+                    const refreshed = this.requireCart();
+                    if (cart.pricingRevision !== undefined && (cart.pricingRevision !== refreshed.pricingRevision || cart.priceTotal !== refreshed.priceTotal)) {
+                        throw new ZynoSalesError('Cart pricing changed. Review the updated cart before payment.', { status: 409 });
+                    }
                 }
 
                 reference = this.cartSession.requireReference();
                 const cart = this.requireCart();
                 if (cart.priceDue === 0 && !cart.membershipRequirements?.paymentMethodSetupRequired) {
-                    await this.finalizeZeroDueCartInternal(reference);
+                    const zero = cart.pricingRevision === undefined ? undefined : {
+                        cartId: reference.cartId, idempotencyKey: createIdempotencyKey(), kind: 'zero' as const,
+                        expectedPricingRevision: cart.pricingRevision, expectedPriceTotal: cart.priceTotal
+                    };
+                    if (zero) this.writePending(zero);
+                    await this.finalizeZeroDueCartInternal(reference, zero, !!zero);
                     return null;
                 }
             }
 
             const idempotencyKey = pending?.idempotencyKey ?? createIdempotencyKey();
             const kind = pending?.kind ?? (this.requireCart().membershipRequirements?.paymentMethodSetupRequired ? 'setup' : 'payment');
+            const acceptance = pending
+                ? pending.expectedPricingRevision === undefined ? {} : { expectedPricingRevision: pending.expectedPricingRevision, expectedPriceTotal: pending.expectedPriceTotal }
+                : this.paymentExpectation();
             this.writePending({
                 cartId: reference.cartId,
-                idempotencyKey, kind,
+                idempotencyKey, kind, ...acceptance,
                 ...(pending?.setupIntentId ? { setupIntentId: pending.setupIntentId } : {}),
                 ...(pending?.paymentAttemptId ? { paymentAttemptId: pending.paymentAttemptId } : {}),
                 ...(pending?.paymentIntentId ? { paymentIntentId: pending.paymentIntentId } : {})
             });
-            const setup = kind === 'setup'
-                ? await this.client.setupMembershipCard(reference.cartId, reference.cartKey, { idempotencyKey })
-                : await this.client.setupCardPayment(reference.cartId, reference.cartKey, { idempotencyKey });
+            let setup: CardCheckoutSetup;
+            try {
+                setup = kind === 'setup'
+                    ? await this.client.setupMembershipCard(reference.cartId, reference.cartKey, { idempotencyKey, ...acceptance })
+                    : await this.client.setupCardPayment(reference.cartId, reference.cartKey, { idempotencyKey, ...acceptance });
+            } catch (error) {
+                if (!pending) this.clearRejectedPending(reference.cartId, idempotencyKey, error);
+                throw error;
+            }
             this.cartSession.accept(setup);
             this.paymentAttemptId = setup.paymentAttemptId;
             this.paymentAttemptStatus = 'creating';
@@ -248,7 +291,7 @@ export class CheckoutCoordinator {
                 cartId: setup.cartId,
                 idempotencyKey,
                 paymentAttemptId: setup.paymentAttemptId,
-                kind,
+                kind, ...acceptance,
                 ...('setupIntentId' in setup ? { setupIntentId: setup.setupIntentId } : { paymentIntentId: setup.paymentIntentId })
             });
             this.emit();
@@ -405,8 +448,15 @@ export class CheckoutCoordinator {
         this.emit();
     }
 
-    private async finalizeZeroDueCartInternal(reference: CartReference): Promise<void> {
-        const result = await this.client.finalizeZeroDueCart(reference.cartId, reference.cartKey);
+    private async finalizeZeroDueCartInternal(reference: CartReference, pending?: PendingPayment, fresh = false): Promise<void> {
+        const input = pending ? { idempotencyKey: pending.idempotencyKey, expectedPricingRevision: pending.expectedPricingRevision, expectedPriceTotal: pending.expectedPriceTotal } : undefined;
+        let result: CartResponse;
+        try {
+            result = input ? await this.client.finalizeZeroDueCart(reference.cartId, reference.cartKey, input) : await this.client.finalizeZeroDueCart(reference.cartId, reference.cartKey);
+        } catch (error) {
+            if (fresh && pending) this.clearRejectedPending(reference.cartId, pending.idempotencyKey, error);
+            throw error;
+        }
         this.cartSession.accept(result);
         const finalReference = this.cartSession.requireReference();
         const order = finalReference.mode === 'guest'
@@ -504,11 +554,29 @@ export class CheckoutCoordinator {
         return cart;
     }
 
+    private pricingExpectation(): { expectedPricingRevision?: number } {
+        const revision = this.requireCart().pricingRevision;
+        return revision === undefined ? {} : { expectedPricingRevision: revision };
+    }
+
+    private paymentExpectation(): { expectedPricingRevision?: number; expectedPriceTotal?: number } {
+        const cart = this.requireCart();
+        return cart.pricingRevision === undefined ? {} : { expectedPricingRevision: cart.pricingRevision, expectedPriceTotal: cart.priceTotal };
+    }
+
     private runCartMutation<T>(operation: () => Promise<T>): Promise<T> {
         return this.run(async () => {
-            const result = await operation();
-            this.invalidatePayment();
-            return result;
+            if (!this.cartSession.getSnapshot().cart) await this.cartSession.refresh();
+            try {
+                const result = await operation();
+                this.invalidatePayment();
+                return result;
+            } catch (error) {
+                if (error instanceof ZynoSalesError && error.status === 409) {
+                    try { await this.cartSession.refresh(); } catch { /* Preserve the original conflict. */ }
+                }
+                throw error;
+            }
         });
     }
 
@@ -520,6 +588,9 @@ export class CheckoutCoordinator {
                 this.lastError = null;
                 return await operation();
             } catch (error) {
+                if (isPricingConflict(error)) {
+                    try { await this.cartSession.refresh(); } catch { /* Preserve the original conflict. */ }
+                }
                 this.lastError = toPublicError(error);
                 this.emit();
                 throw error;
@@ -528,6 +599,15 @@ export class CheckoutCoordinator {
                 this.emit();
             }
         });
+    }
+
+    /** Only a first, definitively rejected request can release its unowned recovery marker. */
+    private clearRejectedPending(cartId: string, idempotencyKey: string, error: unknown): void {
+        if (!isPricingConflict(error)) return;
+        const current = this.readPending();
+        if (current?.cartId === cartId && current.idempotencyKey === idempotencyKey && !current.paymentAttemptId && !current.paymentIntentId && !current.setupIntentId) {
+            this.clearPending();
+        }
     }
 
     private readPending(storageKey: string = this.pendingPaymentKey): PendingPayment | null {
@@ -542,7 +622,9 @@ export class CheckoutCoordinator {
                 ...(typeof parsed.paymentAttemptId === 'string' ? { paymentAttemptId: parsed.paymentAttemptId } : {}),
                 ...(typeof parsed.paymentIntentId === 'string' ? { paymentIntentId: parsed.paymentIntentId } : {}),
                 ...(typeof parsed.setupIntentId === 'string' ? { setupIntentId: parsed.setupIntentId } : {}),
-                ...(parsed.kind === 'setup' || parsed.kind === 'payment' ? { kind: parsed.kind } : {})
+                ...(parsed.kind === 'setup' || parsed.kind === 'payment' || parsed.kind === 'zero' ? { kind: parsed.kind } : {}),
+                ...(typeof parsed.expectedPricingRevision === 'number' ? { expectedPricingRevision: parsed.expectedPricingRevision } : {}),
+                ...(typeof parsed.expectedPriceTotal === 'number' ? { expectedPriceTotal: parsed.expectedPriceTotal } : {})
             };
         } catch {
             return null;
@@ -660,4 +742,8 @@ function completedReference(reference: CartReference, orderId: string): Complete
         return { version: 1, mode: 'guest', cartId: reference.cartId, orderId, orderKey: reference.orderKey };
     }
     return { version: 2, mode: 'account', cartId: reference.cartId, orderId, scope: reference.scope };
+}
+
+function isPricingConflict(error: unknown): boolean {
+    return error instanceof ZynoSalesError && error.status === 409 && /pricing changed|total changed|refresh before payment/i.test(error.message);
 }

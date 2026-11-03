@@ -6,6 +6,14 @@ Common storefront configuration shared by environment and explicit-base setup.
 
 ## Properties
 
+### automaticPromotions?
+
+> `optional` **automaticPromotions?**: `boolean`
+
+Use revision-aware automatic pricing for new carts. Set false for older Sales servers.
+
+***
+
 ### customer?
 
 > `optional` **customer?**: `object`

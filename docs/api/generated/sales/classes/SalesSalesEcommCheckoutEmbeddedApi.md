@@ -298,6 +298,28 @@
 
 ***
 
+### postSalesEcommCheckoutEmbeddedRefreshPricing()
+
+> `static` **postSalesEcommCheckoutEmbeddedRefreshPricing**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedRefreshPricingResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedRefreshPricingResponses.md), `unknown`, `ThrowOnError`\>
+
+#### Type Parameters
+
+##### ThrowOnError
+
+`ThrowOnError` *extends* `boolean` = `false`
+
+#### Parameters
+
+##### options
+
+[`Options`](../type-aliases/Options.md)\<[`PostSalesEcommCheckoutEmbeddedRefreshPricingData`](../type-aliases/PostSalesEcommCheckoutEmbeddedRefreshPricingData.md), `ThrowOnError`\>
+
+#### Returns
+
+`RequestResult`\<[`PostSalesEcommCheckoutEmbeddedRefreshPricingResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedRefreshPricingResponses.md), `unknown`, `ThrowOnError`\>
+
+***
+
 ### postSalesEcommCheckoutEmbeddedSetupCardPayment()
 
 > `static` **postSalesEcommCheckoutEmbeddedSetupCardPayment**\<`ThrowOnError`\>(`options`): `RequestResult`\<[`PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses`](../type-aliases/PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses.md), `unknown`, `ThrowOnError`\>
