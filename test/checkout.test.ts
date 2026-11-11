@@ -5,7 +5,10 @@ import { CheckoutCoordinator } from '../src/checkout';
 import type { ZynoSalesClient } from '../src/client';
 import { ZynoSalesError } from '../src/errors';
 import type { ZynoSalesStorage } from '../src/storage';
-import type { CardPaymentSetup, CartResponse, Order } from '../src/types';
+import type { CardPaymentSetup, CartResponse, Order, ZynoSalesHooks } from '../src/types';
+
+/** The conflict Sales returns when discount configuration changed after the cart was priced. */
+const DISCOUNT_DRIFT_MESSAGE = 'Discount configuration changed; refresh cart pricing and retry';
 
 class TestStorage implements ZynoSalesStorage {
     public readonly values = new Map<string, string>();
@@ -87,7 +90,7 @@ function paidOrder(id = 'cart-1'): Order {
     };
 }
 
-function checkoutFixture(client: ZynoSalesClient, storage = new TestStorage(), pendingPaymentKey = 'payment') {
+function checkoutFixture(client: ZynoSalesClient, storage = new TestStorage(), pendingPaymentKey = 'payment', hooks: ZynoSalesHooks = {}) {
     const cartStorage = new TestStorage();
     const cart = new CartSession({ client, storage: cartStorage, storageKey: 'cart', automaticPromotions: false });
     const checkout = new CheckoutCoordinator({
@@ -95,7 +98,7 @@ function checkoutFixture(client: ZynoSalesClient, storage = new TestStorage(), p
         client,
         storage,
         pendingPaymentKey,
-        hooks: {}
+        hooks
     });
     cart.setMutationListener(() => checkout.invalidatePayment());
     return { cart, checkout, storage };
@@ -273,6 +276,152 @@ describe('CheckoutCoordinator', () => {
         storage.setItem('payment', JSON.stringify(pending));
         await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
         expect(JSON.parse(storage.getItem('payment')!)).toEqual(pending);
+    });
+
+    it('retires a first card setup rejected for discount configuration drift without replaying or repricing it', async () => {
+        const initial = cartResponse();
+        initial.cart.pricingRevision = 1;
+        const repriced = { ...initial, cart: { ...initial.cart, pricingRevision: 2, priceTotal: 900, priceDue: 900 } };
+        let serverCart = initial;
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => serverCart);
+        // Sales keeps rejecting payment setup until the cart is explicitly repriced.
+        const refreshPricing = vi.fn(async () => { serverCart = repriced; return repriced; });
+        const setupCardPayment = vi.fn().mockImplementation(async () => {
+            if (serverCart !== repriced) throw new ZynoSalesError(DISCOUNT_DRIFT_MESSAGE, { status: 409 });
+            return paymentSetup(repriced);
+        });
+        const beforePayment = vi.fn();
+        const client = { getOrder, getCart, refreshPricing, setupCardPayment } as unknown as ZynoSalesClient;
+        const { cart, checkout, storage } = checkoutFixture(client, new TestStorage(), 'payment', { beforePayment });
+        cart.accept(initial);
+
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409, message: DISCOUNT_DRIFT_MESSAGE });
+
+        // The rejected attempt is released and the cart is re-read, but nothing is replayed or repriced for the shopper.
+        expect(storage.getItem('payment')).toBeNull();
+        expect(getCart).toHaveBeenCalledTimes(2);
+        expect(cart.getSnapshot().cart?.pricingRevision).toBe(1);
+        expect(checkout.getSnapshot().lastError).toMatchObject({ kind: 'api', status: 409, message: DISCOUNT_DRIFT_MESSAGE });
+        expect(setupCardPayment).toHaveBeenCalledTimes(1);
+        expect(refreshPricing).not.toHaveBeenCalled();
+
+        // Retrying without repricing is a new attempt, not a replay of the rejected key.
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+
+        const rejected = setupCardPayment.mock.calls[0]?.[2];
+        const retried = setupCardPayment.mock.calls[1]?.[2];
+        expect(beforePayment).toHaveBeenCalledTimes(2);
+        expect(setupCardPayment).toHaveBeenCalledTimes(2);
+        expect(retried.idempotencyKey).not.toBe(rejected.idempotencyKey);
+        expect(storage.getItem('payment')).toBeNull();
+        expect(refreshPricing).not.toHaveBeenCalled();
+
+        // Only an explicit pricing refresh changes the terms the next attempt accepts.
+        await cart.refreshPricing();
+        const setup = await checkout.beginCardPayment();
+
+        const accepted = setupCardPayment.mock.calls[2]?.[2];
+        expect(setup).toEqual(paymentSetup(repriced));
+        expect(beforePayment).toHaveBeenCalledTimes(3);
+        expect(beforePayment.mock.calls[2]?.[0].cart).toEqual(repriced.cart);
+        expect(rejected).toMatchObject({ expectedPricingRevision: 1, expectedPriceTotal: 1000 });
+        expect(accepted).toMatchObject({ expectedPricingRevision: 2, expectedPriceTotal: 900 });
+        expect([rejected.idempotencyKey, retried.idempotencyKey]).not.toContain(accepted.idempotencyKey);
+    });
+
+    it('preserves an ambiguous setup key when its replay is rejected for discount configuration drift', async () => {
+        const response = cartResponse();
+        response.cart.pricingRevision = 1;
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => response);
+        const setupCardPayment = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Timed out'))
+            .mockRejectedValueOnce(new ZynoSalesError(DISCOUNT_DRIFT_MESSAGE, { status: 409 }));
+        const beforePayment = vi.fn();
+        const client = { getOrder, getCart, setupCardPayment } as unknown as ZynoSalesClient;
+        const { cart, checkout, storage } = checkoutFixture(client, new TestStorage(), 'payment', { beforePayment });
+        cart.accept(response);
+
+        await expect(checkout.beginCardPayment()).rejects.toThrow('Timed out');
+        const pending = storage.getItem('payment');
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+
+        expect(pending).not.toBeNull();
+        expect(storage.getItem('payment')).toBe(pending);
+        expect(setupCardPayment.mock.calls[1]?.[2]).toEqual(setupCardPayment.mock.calls[0]?.[2]);
+        expect(beforePayment).toHaveBeenCalledTimes(1);
+    });
+
+    it('never retires a marker containing a created attempt when its setup replay is rejected for discount configuration drift', async () => {
+        const response = cartResponse();
+        response.cart.pricingRevision = 1;
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getPaymentAttempt = vi.fn(async () => ({ id: 'attempt', status: 'creating' }));
+        const getCart = vi.fn(async () => response);
+        const setupCardPayment = vi.fn(async () => { throw new ZynoSalesError(DISCOUNT_DRIFT_MESSAGE, { status: 409 }); });
+        const beforePayment = vi.fn();
+        const client = { getOrder, getPaymentAttempt, getCart, setupCardPayment } as unknown as ZynoSalesClient;
+        const { cart, checkout, storage } = checkoutFixture(client, new TestStorage(), 'payment', { beforePayment });
+        cart.accept(response);
+        const pending = { cartId: 'cart-1', idempotencyKey: 'key', paymentAttemptId: 'attempt', paymentIntentId: 'intent', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000 };
+        storage.setItem('payment', JSON.stringify(pending));
+
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+
+        expect(JSON.parse(storage.getItem('payment')!)).toEqual(pending);
+        expect(setupCardPayment).toHaveBeenCalledWith('cart-1', 'cart-1-secret', { idempotencyKey: 'key', expectedPricingRevision: 1, expectedPriceTotal: 1000 });
+        expect(beforePayment).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        { owner: 'an attempt another tab already created', marker: { cartId: 'cart-1', idempotencyKey: 'other-tab-key', paymentAttemptId: 'attempt', paymentIntentId: 'intent', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000 } },
+        { owner: 'a setup another tab still has in flight', marker: { cartId: 'cart-1', idempotencyKey: 'other-tab-key', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000 } }
+    ])('leaves $owner recoverable when its own first setup is rejected for discount configuration drift', async ({ marker }) => {
+        const response = cartResponse();
+        response.cart.pricingRevision = 1;
+        const storage = new TestStorage();
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => response);
+        const setupCardPayment = vi.fn(async () => {
+            storage.setItem('payment', JSON.stringify(marker));
+            throw new ZynoSalesError(DISCOUNT_DRIFT_MESSAGE, { status: 409 });
+        });
+        const client = { getOrder, getCart, setupCardPayment } as unknown as ZynoSalesClient;
+        const { cart, checkout } = checkoutFixture(client, storage);
+        cart.accept(response);
+
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+
+        expect(JSON.parse(storage.getItem('payment')!)).toEqual(marker);
+    });
+
+    it.each([
+        { reason: 'a payment already in progress', rejection: new ZynoSalesError('Payment is already in progress for this cart', { status: 409 }) },
+        { reason: 'a changed buyer contact', rejection: new ZynoSalesError('Buyer contact changed; pin the contact again', { status: 409 }) },
+        { reason: 'a storefront configuration change', rejection: new ZynoSalesError('Storefront configuration changed', { status: 409, code: 'STOREFRONT_CONFIG_CHANGED' }) },
+        { reason: 'a different discount configuration conflict', rejection: new ZynoSalesError('Discount configuration changed after provider settlement', { status: 409 }) }
+    ])('keeps the recovery marker and replays it when a first setup conflicts with $reason', async ({ rejection }) => {
+        const response = cartResponse();
+        response.cart.pricingRevision = 1;
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => response);
+        const setupCardPayment = vi.fn().mockRejectedValueOnce(rejection).mockResolvedValueOnce(paymentSetup(response));
+        const beforePayment = vi.fn();
+        const client = { getOrder, getCart, setupCardPayment } as unknown as ZynoSalesClient;
+        const { cart, checkout, storage } = checkoutFixture(client, new TestStorage(), 'payment', { beforePayment });
+        cart.accept(response);
+
+        await expect(checkout.beginCardPayment()).rejects.toBe(rejection);
+
+        const first = setupCardPayment.mock.calls[0]?.[2];
+        expect(JSON.parse(storage.getItem('payment')!)).toEqual({ cartId: 'cart-1', kind: 'payment', ...first });
+        expect(first).toMatchObject({ expectedPricingRevision: 1, expectedPriceTotal: 1000 });
+        expect(getCart).toHaveBeenCalledTimes(1);
+
+        await checkout.beginCardPayment();
+
+        expect(setupCardPayment.mock.calls[1]?.[2]).toEqual(first);
+        expect(beforePayment).toHaveBeenCalledTimes(1);
     });
 
     it('reuses a pending setup idempotency key after a timeout', async () => {
@@ -587,6 +736,31 @@ describe('CheckoutCoordinator', () => {
         expect(finalizeZeroDueCart.mock.calls[0]?.[2]).toMatchObject({ expectedPricingRevision: 4, expectedPriceTotal: 0 });
         expect(finalizeZeroDueCart.mock.calls[1]?.[2]).toMatchObject({ expectedPricingRevision: 5, expectedPriceTotal: 0 });
         expect(finalizeZeroDueCart.mock.calls[1]?.[2].idempotencyKey).not.toBe(finalizeZeroDueCart.mock.calls[0]?.[2].idempotencyKey);
+    });
+
+    it('retires a first zero-due acceptance rejected for discount configuration drift', async () => {
+        const response = cartResponse('cart-free', 0);
+        response.cart.pricingRevision = 4;
+        const getOrder = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 }))
+            .mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 })).mockResolvedValueOnce(paidOrder('cart-free'));
+        const getCart = vi.fn(async () => response);
+        const finalizeZeroDueCart = vi.fn().mockRejectedValueOnce(new ZynoSalesError(DISCOUNT_DRIFT_MESSAGE, { status: 409 }))
+            .mockResolvedValueOnce(response);
+        const { cart, checkout, storage } = checkoutFixture({ getOrder, getCart, finalizeZeroDueCart } as unknown as ZynoSalesClient);
+        cart.accept(response);
+
+        await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+
+        expect(storage.getItem('payment')).toBeNull();
+        expect(finalizeZeroDueCart).toHaveBeenCalledTimes(1);
+        expect(getCart).toHaveBeenCalledTimes(1);
+
+        await checkout.beginCardPayment();
+
+        const rejected = finalizeZeroDueCart.mock.calls[0]?.[2];
+        const fresh = finalizeZeroDueCart.mock.calls[1]?.[2];
+        expect(fresh).toMatchObject({ expectedPricingRevision: 4, expectedPriceTotal: 0 });
+        expect(fresh.idempotencyKey).not.toBe(rejected.idempotencyKey);
     });
 
     it('replays the same zero-due acceptance after a timeout', async () => {

@@ -744,6 +744,11 @@ function completedReference(reference: CartReference, orderId: string): Complete
     return { version: 2, mode: 'account', cartId: reference.cartId, orderId, scope: reference.scope };
 }
 
+/**
+ * Sales rejections that mean the accepted cart terms are stale, including discount configuration drift
+ * ("Discount configuration changed; refresh cart pricing and retry"). Any other 409 keeps its recovery marker.
+ */
 function isPricingConflict(error: unknown): boolean {
-    return error instanceof ZynoSalesError && error.status === 409 && /pricing changed|total changed|refresh before payment/i.test(error.message);
+    return error instanceof ZynoSalesError && error.status === 409
+        && /pricing changed|total changed|refresh before payment|discount configuration changed; refresh cart pricing and retry/i.test(error.message);
 }
