@@ -105,6 +105,94 @@ function checkoutFixture(client: ZynoSalesClient, storage = new TestStorage(), p
 }
 
 describe('CheckoutCoordinator', () => {
+    it.each([{ kind: 'payment', due: 1000 }, { kind: 'zero', due: 0 }] as const)(
+        'releases a stale unowned $kind marker only on the next deliberate attempt after a conflict', async ({ kind, due }) => {
+            const initial = cartResponse('cart-1', due);
+            initial.cart.pricingRevision = 1;
+            const updated = { ...initial, cart: { ...initial.cart, pricingRevision: 2 } };
+            let serverCart = initial;
+            const getOrder = vi.fn().mockRejectedValue(new ZynoSalesError('Not ready', { status: 404 }));
+            if (kind === 'zero') getOrder.mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 }))
+                .mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 }))
+                .mockRejectedValueOnce(new ZynoSalesError('Not ready', { status: 404 })).mockResolvedValueOnce(paidOrder());
+            const getCart = vi.fn(async () => serverCart);
+            const operation = vi.fn().mockRejectedValueOnce(new ZynoSalesError('Timed out'))
+                .mockRejectedValueOnce(new ZynoSalesError('Cart pricing changed', { status: 409 }))
+                .mockResolvedValueOnce(kind === 'zero' ? updated : paymentSetup(updated));
+            const beforePayment = vi.fn();
+            const client = { getOrder, getCart, setupCardPayment: operation, finalizeZeroDueCart: operation } as unknown as ZynoSalesClient;
+            const { cart, checkout, storage } = checkoutFixture(client, new TestStorage(), 'payment', { beforePayment });
+            cart.accept(initial);
+
+            await expect(checkout.beginCardPayment()).rejects.toThrow('Timed out');
+            const original = JSON.parse(storage.getItem('payment')!);
+            serverCart = updated;
+            await expect(checkout.beginCardPayment()).rejects.toMatchObject({ status: 409 });
+            expect(operation).toHaveBeenCalledTimes(2);
+            expect(operation.mock.calls[1]?.[2]).toEqual(operation.mock.calls[0]?.[2]);
+            expect(cart.getSnapshot().cart?.pricingRevision).toBe(2);
+            expect(JSON.parse(storage.getItem('payment')!)).toEqual(original);
+            expect(beforePayment).toHaveBeenCalledTimes(1);
+
+            await checkout.beginCardPayment();
+            expect(operation).toHaveBeenCalledTimes(3);
+            expect(operation.mock.calls[2]?.[2]).toMatchObject({ expectedPricingRevision: 2, expectedPriceTotal: due });
+            expect(operation.mock.calls[2]?.[2].idempotencyKey).not.toBe(original.idempotencyKey);
+            expect(beforePayment).toHaveBeenCalledTimes(2);
+            expect(beforePayment.mock.calls[1]?.[0].cart).toEqual(updated.cart);
+        }
+    );
+
+    it.each([false, true])('releases an unowned marker after a separately refreshed cart advances (bound: %s)', async bound => {
+        const updated = cartResponse();
+        updated.cart.pricingRevision = 2;
+        if (bound) updated.cart.customer = { bound: true, policyId: 'policy-1', policyRevision: 3, orderHistoryScope: 'ecomm' };
+        const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+        const getCart = vi.fn(async () => updated);
+        const setupCardPayment = vi.fn(async (_cartId: string, _cartKey: string, _input: { idempotencyKey: string; expectedPricingRevision?: number }) => paymentSetup(updated));
+        const beforePayment = vi.fn();
+        const { cart, checkout, storage } = checkoutFixture({ getOrder, getCustomerOrder: getOrder, getCart, setupCardPayment } as unknown as ZynoSalesClient, new TestStorage(), 'payment', { beforePayment });
+        cart.accept(updated);
+        storage.setItem('payment', JSON.stringify({ cartId: 'cart-1', idempotencyKey: 'other-tab-key', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000 }));
+        await checkout.beginCardPayment();
+        expect(getOrder.mock.invocationCallOrder[0]).toBeLessThan(setupCardPayment.mock.invocationCallOrder[0]!);
+        expect(setupCardPayment.mock.calls[0]?.[2]).toMatchObject({ expectedPricingRevision: 2 });
+        expect(setupCardPayment.mock.calls[0]?.[2].idempotencyKey).not.toBe('other-tab-key');
+        expect(beforePayment).toHaveBeenCalledTimes(1);
+    });
+
+    it.each(['paymentAttemptId', 'paymentIntentId', 'setupIntentId'] as const)(
+        'preserves an advanced-revision marker with an owned %s', async field => {
+            const response = cartResponse();
+            response.cart.pricingRevision = 2;
+            const getOrder = vi.fn(async () => { throw new ZynoSalesError('Not ready', { status: 404 }); });
+            const setupCardPayment = vi.fn(async (_cartId: string, _cartKey: string, _input: { idempotencyKey: string }) => { throw new ZynoSalesError('Timed out'); });
+            const { cart, checkout, storage } = checkoutFixture({ getOrder, setupCardPayment } as unknown as ZynoSalesClient);
+            cart.accept(response);
+            const pending = { cartId: 'cart-1', idempotencyKey: 'owned', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000, [field]: 'owned-id' };
+            storage.setItem('payment', JSON.stringify(pending));
+            await expect(checkout.beginCardPayment()).rejects.toThrow('Timed out');
+            expect(JSON.parse(storage.getItem('payment')!)).toEqual(pending);
+            expect(setupCardPayment.mock.calls[0]?.[2].idempotencyKey).toBe('owned');
+        }
+    );
+
+    it('recovers a paid order before releasing an unowned stale marker', async () => {
+        const response = cartResponse();
+        response.cart.pricingRevision = 2;
+        const getOrder = vi.fn(async () => paidOrder());
+        const setupCardPayment = vi.fn();
+        const beforePayment = vi.fn();
+        const { cart, checkout, storage } = checkoutFixture({ getOrder, setupCardPayment } as unknown as ZynoSalesClient, new TestStorage(), 'payment', { beforePayment });
+        cart.accept(response);
+        storage.setItem('payment', JSON.stringify({ cartId: 'cart-1', idempotencyKey: 'old', kind: 'payment', expectedPricingRevision: 1, expectedPriceTotal: 1000 }));
+        const result = await checkout.beginCardPayment();
+        expect(result).toBeNull();
+        expect(checkout.getSnapshot().order).toEqual(paidOrder());
+        expect(setupCardPayment).not.toHaveBeenCalled();
+        expect(beforePayment).not.toHaveBeenCalled();
+    });
+
     it('keeps a pending payment reference when a stale cart mutation is rejected', async () => {
         const response = cartResponse();
         response.cart.pricingRevision = 3;

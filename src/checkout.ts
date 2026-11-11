@@ -233,6 +233,14 @@ export class CheckoutCoordinator {
                 pending = null;
             }
 
+            const revision = this.cartSession.getSnapshot().cart?.pricingRevision;
+            if (pending && !pending.paymentAttemptId && !pending.paymentIntentId && !pending.setupIntentId
+                && pending.expectedPricingRevision !== undefined && revision !== undefined
+                && pending.expectedPricingRevision < revision) {
+                this.clearPending();
+                pending = null;
+            }
+
             if (pending?.kind === 'zero') {
                 await this.finalizeZeroDueCartInternal(reference, pending);
                 return null;
