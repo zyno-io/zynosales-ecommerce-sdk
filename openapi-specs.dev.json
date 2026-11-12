@@ -9,6 +9,7 @@
       "getSalesEcommCheckoutEmbeddedGetCart",
       "deleteSalesEcommCheckoutEmbeddedAbandonCart",
       "putSalesEcommCheckoutEmbeddedReplaceItems",
+      "postSalesEcommCheckoutEmbeddedRefreshPricing",
       "putSalesEcommCheckoutEmbeddedUpdateBuyer",
       "postSalesEcommCheckoutEmbeddedVerifyAddress",
       "postSalesEcommCheckoutEmbeddedCalculateShippingRates",

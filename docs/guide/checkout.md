@@ -223,6 +223,10 @@ Always render `cart.appliedDiscount` and the recalculated totals returned by
 Sales. A successful validation is not an applied discount. Only offer this UI
 when `config.capabilities.discountCodes` is enabled.
 
+Render `cart.automaticPromotion` separately from `cart.appliedDiscount` when
+Sales provides it. The server decides which discount applies and sends updated
+group amounts and totals after each mutation.
+
 ## Accept recurring membership terms
 
 After finishing buyer, item, discount, and delivery changes, render the server’s
@@ -254,6 +258,7 @@ Before payment, verify that:
 - `cart.taxStatus` is acceptable for your UI (typically `ok`)
 - no cart or checkout mutation is still busy
 - your UI uses the current `cart.priceDue` returned by Sales
+- the shopper has reviewed the current promotion groups and total
 
 Then continue to [Stripe and order completion](./stripe). For merchant-side
 validation immediately before payment setup, use the

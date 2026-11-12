@@ -3,6 +3,25 @@ import { describe, expect, it, vi } from 'vitest';
 import { ZynoSalesClient } from '../src/client';
 
 describe('ZynoSalesClient', () => {
+    it('sends revisioned DELETE mutations in JSON while keeping the cart key in its header', async () => {
+        const calls: Array<{ path: string; method: string; body: unknown }> = [];
+        const fetch: typeof globalThis.fetch = vi.fn(async input => {
+            const request = new Request(input);
+            expect(request.headers.get('x-zs-cart-key')).toBe('cart-capability');
+            const body = await request.json();
+            calls.push({ path: new URL(request.url).pathname, method: request.method, body });
+            return Response.json({});
+        });
+        const client = new ZynoSalesClient({ apiBase: 'https://sales.example', publishableKey: 'zs_pk_123', fetch });
+        await client.removeDiscount('cart', 'cart-capability', 8);
+        await client.removeFulfillment('cart', 'cart-capability', 8);
+        await client.abandonCart('cart', 'cart-capability', 8);
+        expect(calls).toEqual([
+            { path: '/embedded/sales/ecomm/carts/cart/discount-code', method: 'DELETE', body: { expectedPricingRevision: 8 } },
+            { path: '/embedded/sales/ecomm/carts/cart/fulfillment', method: 'DELETE', body: { expectedPricingRevision: 8 } },
+            { path: '/embedded/sales/ecomm/carts/cart', method: 'DELETE', body: { expectedPricingRevision: 8 } }
+        ]);
+    });
     it('calls a generated operation with the publishable-key header', async () => {
         const fetch: typeof globalThis.fetch = vi.fn(async (input) => {
             const request = new Request(input);

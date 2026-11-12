@@ -24,6 +24,12 @@ Generated browser-facing Sales contract types for advanced integrations.
 
 ***
 
+### expectedPricingRevision?
+
+> `optional` **expectedPricingRevision?**: `number`
+
+***
+
 ### name
 
 > **name**: `string`

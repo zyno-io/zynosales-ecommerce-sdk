@@ -12,6 +12,7 @@ export class CartSession {
     private readonly listeners = new Set<(snapshot: CartSnapshot) => void>();
     private readonly client: ZynoSalesClient;
     private readonly storage: ZynoSalesStorage;
+    private readonly automaticPromotions: boolean;
     private storageKey: string;
     private reference: CartReference | null = null;
     private cart: Cart | null = null;
@@ -20,9 +21,10 @@ export class CartSession {
     private readonly queue: SerialQueue;
     private mutationListener?: CartMutationListener;
 
-    public constructor(options: { client: ZynoSalesClient; storage: ZynoSalesStorage; storageKey: string; queue?: SerialQueue }) {
+    public constructor(options: { client: ZynoSalesClient; storage: ZynoSalesStorage; storageKey: string; queue?: SerialQueue; automaticPromotions?: boolean }) {
         this.client = options.client;
         this.storage = options.storage;
+        this.automaticPromotions = options.automaticPromotions !== false;
         this.storageKey = options.storageKey;
         this.queue = options.queue ?? new SerialQueue();
         this.reference = this.readReference();
@@ -63,6 +65,32 @@ export class CartSession {
         return this.restore();
     }
 
+    /** Re-evaluates automatic prices. Review the returned cart before accepting payment. */
+    public refreshPricing(): Promise<CartSnapshot> {
+        return this.enqueue(async () => {
+            if (!this.reference) return this.getSnapshot();
+            if (!this.cart) await this.restoreInternal();
+            if (!this.reference || !this.cart) return this.getSnapshot();
+            const revision = this.cart.pricingRevision;
+            if (revision === undefined) return this.restoreInternal();
+            this.setBusy(true);
+            try {
+                const response = await this.client.refreshPricing(this.reference.cartId, this.reference.cartKey, { expectedPricingRevision: revision });
+                this.accept(response);
+                this.notifyMutation();
+                return this.getSnapshot();
+            } catch (error) {
+                if (error instanceof ZynoSalesError && error.status === 409 && this.reference) {
+                    try { await this.restoreInternal(); } catch { /* Preserve the original conflict. */ }
+                }
+                this.setError(error);
+                throw error;
+            } finally {
+                this.setBusy(false);
+            }
+        });
+    }
+
     /** Replaces all cart line inputs. An empty list abandons the open cart. */
     public setItems(items: CartItemInput[]): Promise<CartSnapshot> {
         return this.enqueue(async () => this.replaceItems(items));
@@ -71,10 +99,14 @@ export class CartSession {
     /** Adds a product to the cart, merging the same product/notes combination when possible. */
     public add(item: CartItemInput): Promise<CartSnapshot> {
         return this.enqueue(async () => {
-            if (this.reference && !this.cart) await this.restoreInternal();
+            if (this.reference && !this.cart) {
+                await this.restoreInternal();
+                if (!this.reference) throw new ZynoSalesError('Your saved cart is no longer available.', { status: 404 });
+            }
             const current = this.cart ? this.toItemInputs() : [];
             const existing = current.find(
-                candidate => candidate.productId === item.productId && (candidate.notes ?? null) === (item.notes ?? null)
+                candidate => (!item.selectionId || candidate.selectionId === item.selectionId)
+                    && candidate.productId === item.productId && (candidate.notes ?? null) === (item.notes ?? null)
                     && (!item.membership || (candidate.membership?.pricingTierId ?? null) === (item.membership.pricingTierId ?? null))
             );
             if (existing) {
@@ -109,16 +141,25 @@ export class CartSession {
             this.setBusy(true);
 
             try {
-                await this.client.abandonCart(reference.cartId, reference.cartKey);
+                if (!this.cart) await this.restoreInternal();
+                const revision = this.cart?.pricingRevision;
+                if (revision === undefined) await this.client.abandonCart(reference.cartId, reference.cartKey);
+                else await this.client.abandonCart(reference.cartId, reference.cartKey, revision);
+                this.clearInternal();
+                this.notifyMutation();
             } catch (error) {
-                if (!isCapabilityLost(error)) {
+                if (isCapabilityLost(error)) {
+                    this.clearInternal();
+                    this.notifyMutation();
+                } else {
+                    if (error instanceof ZynoSalesError && error.status === 409) {
+                        try { await this.restoreInternal(); } catch { /* Preserve the original conflict. */ }
+                    }
                     this.setError(error);
                     throw error;
                 }
             } finally {
-                this.clearInternal();
                 this.setBusy(false);
-                this.notifyMutation();
             }
         });
     }
@@ -219,17 +260,33 @@ export class CartSession {
             return this.getSnapshot();
         }
 
+        if (this.reference && !this.cart) {
+            await this.restoreInternal();
+            if (!this.reference) throw new ZynoSalesError('Your saved cart is no longer available.', { status: 404 });
+        }
+        const revision = this.cart?.pricingRevision;
+        const revisioned = this.reference ? revision !== undefined : this.automaticPromotions;
+        const selections = revisioned ? items.map(item => ({ ...item, selectionId: item.selectionId ?? createSelectionId() })) : items;
+
         this.setBusy(true);
         try {
             const response = this.reference
-                ? await this.client.replaceItems(this.reference.cartId, this.reference.cartKey, { items })
-                : await this.client.createCart({ items });
+                ? await this.client.replaceItems(this.reference.cartId, this.reference.cartKey, { items: selections, ...(revision === undefined ? {} : { expectedPricingRevision: revision }) })
+                : await this.client.createCart({ items: selections, ...(revisioned ? { expectedPricingRevision: 0 } : {}) });
             this.accept(response);
             this.notifyMutation();
+            if (revisioned && (response.cart.pricingRevision === undefined || response.cart.items.some(item => !item.selectionId))) {
+                throw new ZynoSalesError('Sales did not acknowledge revision-aware cart pricing. Update the server or disable automaticPromotions.', { status: 422 });
+            }
             return this.getSnapshot();
         } catch (error) {
             if (isCapabilityLost(error)) this.clearInternal();
-            else this.setError(error);
+            else {
+                if (error instanceof ZynoSalesError && error.status === 409 && this.reference) {
+                    try { await this.restoreInternal(); } catch { /* Preserve the original conflict. */ }
+                }
+                this.setError(error);
+            }
             throw error;
         } finally {
             this.setBusy(false);
@@ -264,16 +321,25 @@ export class CartSession {
         const reference = this.reference;
         this.setBusy(true);
         try {
-            await this.client.abandonCart(reference.cartId, reference.cartKey);
+            if (!this.cart) await this.restoreInternal();
+            const revision = this.cart?.pricingRevision;
+            if (revision === undefined) await this.client.abandonCart(reference.cartId, reference.cartKey);
+            else await this.client.abandonCart(reference.cartId, reference.cartKey, revision);
+            this.clearInternal();
+            this.notifyMutation();
         } catch (error) {
-            if (!isCapabilityLost(error)) {
+            if (isCapabilityLost(error)) {
+                this.clearInternal();
+                this.notifyMutation();
+            } else {
+                if (error instanceof ZynoSalesError && error.status === 409) {
+                    try { await this.restoreInternal(); } catch { /* Preserve the original conflict. */ }
+                }
                 this.setError(error);
                 throw error;
             }
         } finally {
-            this.clearInternal();
             this.setBusy(false);
-            this.notifyMutation();
         }
     }
 
@@ -283,7 +349,7 @@ export class CartSession {
         return this.cart.items.flatMap(item => {
             const quantity = item.id === targetId ? targetQuantity : item.qty;
             if (!quantity || quantity < 1) return [];
-            return [{ productId: item.product.id, qty: quantity, notes: item.notes,
+            return [{ productId: item.product.id, qty: quantity, notes: item.notes, ...(item.selectionId ? { selectionId: item.selectionId } : {}),
                 ...(item.membership ? { membership: { pricingTierId: item.membership.pricingTierId } } : {}) }];
         });
     }
@@ -382,4 +448,9 @@ function sameCartReference(left: CartReference, right: CartReference): boolean {
         && left.scope.policyId === right.scope.policyId
         && left.scope.policyRevision === right.scope.policyRevision
         && left.scope.orderHistoryScope === right.scope.orderHistoryScope;
+}
+
+function createSelectionId(): string {
+    if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+    throw new ZynoSalesError('The current runtime does not support crypto.randomUUID().');
 }

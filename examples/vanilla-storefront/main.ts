@@ -12,8 +12,13 @@ if (firstProduct) {
 }
 
 const unsubscribe = storefront.cart.subscribe(snapshot => {
-    // Render `snapshot.cart` with your preferred DOM/UI framework.
-    console.log(snapshot.cart?.priceDue);
+    const cart = snapshot.cart;
+    // Render one row per cart item using Sales' exact price groups when present.
+    for (const item of cart?.items ?? []) {
+        console.log(item.product.name, item.qty, item.priceGroups);
+    }
+    console.log(cart?.automaticPromotion?.name, cart?.automaticPromotion?.savings, cart?.priceDue);
+    if (cart?.automaticPromotionSuppressedReason) console.log(cart.automaticPromotionSuppressedReason);
 });
 
 // Call unsubscribe when the storefront is unmounted.

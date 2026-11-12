@@ -10,6 +10,7 @@ const expectedOperationIds = [
     'getSalesEcommCheckoutEmbeddedGetCart',
     'deleteSalesEcommCheckoutEmbeddedAbandonCart',
     'putSalesEcommCheckoutEmbeddedReplaceItems',
+    'postSalesEcommCheckoutEmbeddedRefreshPricing',
     'putSalesEcommCheckoutEmbeddedUpdateBuyer',
     'postSalesEcommCheckoutEmbeddedVerifyAddress',
     'postSalesEcommCheckoutEmbeddedCalculateShippingRates',
