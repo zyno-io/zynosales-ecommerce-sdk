@@ -26,7 +26,7 @@
 - Keep `docs/guide/` authored, product-generic integration documentation. Do
   not add merchant-specific migration material, deployment details, or private
   source references.
-- `docs/api/` is generated from the public TypeScript entry points and TSDoc.
+- `docs/api/` is ignored generated output from the public TypeScript entry points and TSDoc; never commit it. Documentation CI/deployment regenerates it from a clean checkout.
   Do not edit it directly; run `yarn docs:api` after changing exported APIs or
   their documentation. `yarn docs:build` regenerates it before building the
   VitePress site.

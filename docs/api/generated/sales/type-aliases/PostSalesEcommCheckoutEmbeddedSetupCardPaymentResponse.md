@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponse
-
-> **PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponse** = [`PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses`](PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses.md)\[keyof [`PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses`](PostSalesEcommCheckoutEmbeddedSetupCardPaymentResponses.md)\]

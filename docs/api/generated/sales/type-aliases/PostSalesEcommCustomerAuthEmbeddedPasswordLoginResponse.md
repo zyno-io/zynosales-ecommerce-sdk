@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponse
-
-> **PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponse** = [`PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses`](PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses.md)\[keyof [`PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses`](PostSalesEcommCustomerAuthEmbeddedPasswordLoginResponses.md)\]

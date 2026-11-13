@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponse
-
-> **PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponse** = [`PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses`](PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses.md)\[keyof [`PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses`](PostSalesEcommCheckoutEmbeddedQuoteShippingSelectionResponses.md)\]

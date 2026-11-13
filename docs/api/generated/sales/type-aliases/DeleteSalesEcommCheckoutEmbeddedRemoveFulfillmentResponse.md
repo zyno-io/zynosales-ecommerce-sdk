@@ -1,3 +1,0 @@
-# Type Alias: DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponse
-
-> **DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponse** = [`DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses`](DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses.md)\[keyof [`DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses`](DeleteSalesEcommCheckoutEmbeddedRemoveFulfillmentResponses.md)\]

@@ -1,3 +1,0 @@
-# Type Alias: PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponse
-
-> **PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponse** = [`PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses`](PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses.md)\[keyof [`PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses`](PutSalesEcommCheckoutEmbeddedUpdateFulfillmentResponses.md)\]

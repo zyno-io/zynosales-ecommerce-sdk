@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponse
-
-> **PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponse** = [`PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses`](PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses.md)\[keyof [`PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses`](PostSalesEcommCheckoutEmbeddedApplyDiscountCodeResponses.md)\]
