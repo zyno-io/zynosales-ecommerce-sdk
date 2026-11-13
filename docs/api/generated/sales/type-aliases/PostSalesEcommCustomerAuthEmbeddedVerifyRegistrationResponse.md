@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponse
-
-> **PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponse** = [`PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses`](PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses.md)\[keyof [`PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses`](PostSalesEcommCustomerAuthEmbeddedVerifyRegistrationResponses.md)\]

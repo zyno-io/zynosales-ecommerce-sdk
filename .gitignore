@@ -4,3 +4,7 @@ node_modules/
 dist/
 docs/.vitepress/dist/
 coverage/
+
+# Generated during documentation build/deployment.
+docs/api/
+docs/.vitepress/cache/

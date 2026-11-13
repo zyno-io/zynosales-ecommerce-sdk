@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCustomerAuthEmbeddedInitializeResponse
-
-> **PostSalesEcommCustomerAuthEmbeddedInitializeResponse** = [`PostSalesEcommCustomerAuthEmbeddedInitializeResponses`](PostSalesEcommCustomerAuthEmbeddedInitializeResponses.md)\[keyof [`PostSalesEcommCustomerAuthEmbeddedInitializeResponses`](PostSalesEcommCustomerAuthEmbeddedInitializeResponses.md)\]

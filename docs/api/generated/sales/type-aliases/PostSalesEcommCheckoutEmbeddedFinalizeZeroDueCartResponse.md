@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponse
-
-> **PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponse** = [`PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses`](PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses.md)\[keyof [`PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses`](PostSalesEcommCheckoutEmbeddedFinalizeZeroDueCartResponses.md)\]

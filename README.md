@@ -78,3 +78,5 @@ yarn docs:dev
 ```
 
 See `examples/vanilla-storefront` for a minimal call-sequence reference.
+
+The API-reference Markdown under `docs/api/` and the built VitePress site are generated, ignored outputs. `yarn docs:build` creates both from the authored guides and public TypeScript entry points; documentation deployment builds them from a clean checkout.

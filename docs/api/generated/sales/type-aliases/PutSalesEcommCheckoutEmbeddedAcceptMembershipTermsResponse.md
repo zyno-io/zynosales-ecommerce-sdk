@@ -1,3 +1,0 @@
-# Type Alias: PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponse
-
-> **PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponse** = [`PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses`](PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses.md)\[keyof [`PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses`](PutSalesEcommCheckoutEmbeddedAcceptMembershipTermsResponses.md)\]

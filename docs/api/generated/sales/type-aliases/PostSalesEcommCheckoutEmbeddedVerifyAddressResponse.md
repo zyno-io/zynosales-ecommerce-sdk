@@ -1,3 +1,0 @@
-# Type Alias: PostSalesEcommCheckoutEmbeddedVerifyAddressResponse
-
-> **PostSalesEcommCheckoutEmbeddedVerifyAddressResponse** = [`PostSalesEcommCheckoutEmbeddedVerifyAddressResponses`](PostSalesEcommCheckoutEmbeddedVerifyAddressResponses.md)\[keyof [`PostSalesEcommCheckoutEmbeddedVerifyAddressResponses`](PostSalesEcommCheckoutEmbeddedVerifyAddressResponses.md)\]
